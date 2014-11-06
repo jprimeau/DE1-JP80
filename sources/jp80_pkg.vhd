@@ -13,6 +13,8 @@ package jp80_pkg is
     subtype t_opcode is std_logic_vector(7 downto 0);
     subtype t_control is std_logic_vector(31 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
+    
+    subtype t_regaddr is std_logic_vector(2 downto 0);
 
     -- Op code
 --    constant I_ACI      : t_opcode := x"CE";

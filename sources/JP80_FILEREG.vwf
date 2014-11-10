@@ -1,3 +1,4 @@
+/* Simulator = Quartus II Simulator */
 /*
 WARNING: Do NOT edit the input and output ports in this file in a text
 editor if you plan to continue editing the block that represents it in
@@ -508,7 +509,8 @@ TRANSITION_LIST("input[4]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
+		LEVEL 0 FOR 80.0;
+		LEVEL 1 FOR 920.0;
 	}
 }
 
@@ -544,7 +546,8 @@ TRANSITION_LIST("input[0]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 1 FOR 1000.0;
+		LEVEL 1 FOR 80.0;
+		LEVEL 0 FOR 920.0;
 	}
 }
 
@@ -769,7 +772,8 @@ TRANSITION_LIST("reg_wr_sel[0]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
+		LEVEL 0 FOR 80.0;
+		LEVEL 1 FOR 920.0;
 	}
 }
 
@@ -779,7 +783,9 @@ TRANSITION_LIST("we")
 	{
 		REPEAT = 1;
 		LEVEL 1 FOR 40.0;
-		LEVEL 0 FOR 960.0;
+		LEVEL 0 FOR 40.0;
+		LEVEL 1 FOR 40.0;
+		LEVEL 0 FOR 880.0;
 	}
 }
 
@@ -788,9 +794,11 @@ TRANSITION_LIST("en_a")
 	NODE
 	{
 		REPEAT = 1;
+		LEVEL 0 FOR 120.0;
+		LEVEL 1 FOR 40.0;
 		LEVEL 0 FOR 80.0;
 		LEVEL 1 FOR 40.0;
-		LEVEL 0 FOR 880.0;
+		LEVEL 0 FOR 720.0;
 	}
 }
 
@@ -799,7 +807,11 @@ TRANSITION_LIST("en_b")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
+		LEVEL 0 FOR 160.0;
+		LEVEL 1 FOR 40.0;
+		LEVEL 0 FOR 40.0;
+		LEVEL 1 FOR 40.0;
+		LEVEL 0 FOR 720.0;
 	}
 }
 

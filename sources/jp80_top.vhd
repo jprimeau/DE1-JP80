@@ -26,44 +26,44 @@ entity jp80_top is
         reqio_out   : out t_wire
         
         -- BEGIN: SIMULATION ONLY
---        Lp_out      : out t_wire;
---        Cp_out      : out t_wire;
---        Ep_out      : out t_wire;
---        Laddr_out   : out t_wire;
---        Ldata_out   : out t_wire;
---        EdataL_out  : out t_wire;
---        EdataH_out  : out t_wire;
---        Li_out      : out t_wire;
---        La_out      : out t_wire;
---        Ea_out      : out t_wire;
---        Lb_out      : out t_wire;
---        Eb_out      : out t_wire;
---        Lc_out      : out t_wire;
---        Ec_out      : out t_wire;
---        Ld_out      : out t_wire;
---        Ed_out      : out t_wire;
---        Le_out      : out t_wire;
---        Ee_out      : out t_wire;
---        Lh_out      : out t_wire;
---        Eh_out      : out t_wire;
---        Ll_out      : out t_wire;
---        El_out      : out t_wire;
---        Lt_out      : out t_wire;
---        Et_out      : out t_wire;
---        Lu_out      : out t_wire;
---        Eu_out      : out t_wire;
---        Lsz_out     : out t_wire;
---        Wr_out      : out t_wire;
---        IO_out      : out t_wire;
---        halt_out    : out t_wire;
---        
---        bus_out     : out t_bus;
---        pc_out      : out t_address;
---        a_out       : out t_data;
---        tmp_out     : out t_data;
---        alu_out     : out t_data;
---        b_out       : out t_data;
---        c_out       : out t_data
+        Lp_out      : out t_wire;
+        Cp_out      : out t_wire;
+        Ep_out      : out t_wire;
+        Laddr_out   : out t_wire;
+        Ldata_out   : out t_wire;
+        EdataL_out  : out t_wire;
+        EdataH_out  : out t_wire;
+        Li_out      : out t_wire;
+        La_out      : out t_wire;
+        Ea_out      : out t_wire;
+        Lb_out      : out t_wire;
+        Eb_out      : out t_wire;
+        Lc_out      : out t_wire;
+        Ec_out      : out t_wire;
+        Ld_out      : out t_wire;
+        Ed_out      : out t_wire;
+        Le_out      : out t_wire;
+        Ee_out      : out t_wire;
+        Lh_out      : out t_wire;
+        Eh_out      : out t_wire;
+        Ll_out      : out t_wire;
+        El_out      : out t_wire;
+        Lt_out      : out t_wire;
+        Et_out      : out t_wire;
+        Lu_out      : out t_wire;
+        Eu_out      : out t_wire;
+        Lsz_out     : out t_wire;
+        Wr_out      : out t_wire;
+        IO_out      : out t_wire;
+        halt_out    : out t_wire;
+        
+        bus_out     : out t_bus;
+        pc_out      : out t_address;
+        a_out       : out t_data;
+        tmp_out     : out t_data;
+        alu_out     : out t_data;
+        b_out       : out t_data;
+        c_out       : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_top;
@@ -74,15 +74,15 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"00", -- 10H
-        x"DB",x"00",x"6F",x"DB",x"01",x"67",x"E9",x"DB", -- 18H
-        x"00",x"D3",x"00",x"DB",x"01",x"D3",x"01",x"C3", -- 20H
-        x"1F",x"00",x"3E",x"00",x"D3",x"00",x"3C",x"C3", -- 28H
-        x"2C",x"00",x"2E",x"00",x"26",x"00",x"3E",x"10", -- 30H
-        x"3D",x"C2",x"38",x"00",x"23",x"7D",x"D3",x"00", -- 38H
-        x"7C",x"D3",x"01",x"C3",x"36",x"00",x"FF",x"FF", -- 40H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 28H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 30H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 38H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 40H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 48H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 50H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 58H
@@ -106,6 +106,39 @@ architecture behv of jp80_top is
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
+        
+--        x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"00", -- 10H
+--        x"DB",x"00",x"6F",x"DB",x"01",x"67",x"E9",x"DB", -- 18H
+--        x"00",x"D3",x"00",x"DB",x"01",x"D3",x"01",x"C3", -- 20H
+--        x"1F",x"00",x"3E",x"00",x"D3",x"00",x"3C",x"C3", -- 28H
+--        x"2C",x"00",x"2E",x"00",x"26",x"00",x"3E",x"10", -- 30H
+--        x"3D",x"C2",x"38",x"00",x"23",x"7D",x"D3",x"00", -- 38H
+--        x"7C",x"D3",x"01",x"C3",x"36",x"00",x"FF",x"FF", -- 40H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 48H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 50H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 58H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 60H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 68H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 70H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 78H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 80H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 88H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 90H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 98H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A8H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B8H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C8H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
+--        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
     );
     
     signal cpu_data_inout   : t_data;

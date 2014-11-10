@@ -4,7 +4,7 @@ library ieee;
     
 use work.jp80_pkg.all;
     
-entity JP80_REGFILE is
+entity JP80_FILEREG is
     port (
         clk         : in t_wire;
         input       : in t_data;
@@ -17,9 +17,9 @@ entity JP80_REGFILE is
         out_a       : out t_data;
         out_b       : out t_data
     );
-end JP80_REGFILE;
+end JP80_FILEREG;
 
-architecture rtl of JP80_REGFILE is
+architecture rtl of JP80_FILEREG is
     type file_register is array(0 to 7) of t_data;
     signal registers : file_register;
     signal a_i, b_i : t_data;

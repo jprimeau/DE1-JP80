@@ -40,13 +40,14 @@ CMP = 111
 
 ==============================================
 
-MOV = 01dddsss
+MOV  = 01dddsss
+HLT  = 01110110
 
 LXI  = 00rr0001 (eg: 01 LXI B)
 INX  = 00rr0011 (eg: 03 INX B)
 DAD  = 00rr1001 (eg: 09 DAD B)
 DCX  = 00rr1011 (eg: 0B DCX B)
-INR	 = 00rrr100
+INR  = 00rrr100
 DCR  = 00sss101
 MVI  = 00rrr110
 
@@ -61,7 +62,7 @@ CMP = 10111rrr
 
 POP  = 11rr0001 (eg: C1 POP B)
 PUSH = 11rr0101 (eg: C5 POP B)
-RST =  11####11
+RST  = 11####11
 STAX = 
 LDAX = 
 
@@ -69,6 +70,7 @@ R*  = 11fff000
 J*  = 11fff010
 C*  = 11fff100
 Imm = 11alu110
+
 
 
 00	00000000	NOP

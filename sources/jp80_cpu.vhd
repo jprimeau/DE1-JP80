@@ -19,12 +19,12 @@ entity jp80_cpu is
         read_out    : out t_wire;
         write_out   : out t_wire;
         reqmem_out  : out t_wire;
-        reqio_out   : out t_wire
+        reqio_out   : out t_wire;
         
         -- BEGIN: SIMULATION ONLY
---        con_out     : out t_control;
---        bus_out     : out t_bus;
---        pc_out      : out t_address;
+        con_out     : out t_control;
+        bus_out     : out t_bus;
+        pc_out      : out t_address
 --        a_out       : out t_data;
 --        b_out       : out t_data;
 --        c_out       : out t_data;
@@ -38,20 +38,20 @@ architecture behv of jp80_cpu is
 
     signal clk      : t_wire;
 
-    signal ns, ps   : t_cpu_state;
+--    signal ns, ps   : t_cpu_state;
 
-    signal AF_reg   : t_address;
-    alias  A_reg    is AF_reg(15 downto 8);
-    alias  F_reg    is AF_reg(7 downto 0);
-    signal BC_reg   : t_address;
-    alias  B_reg    is BC_reg(15 downto 8);
-    alias  C_reg    is BC_reg(7 downto 0);
-    signal DE_reg   : t_address;
-    alias  D_reg    is DE_reg(15 downto 8);
-    alias  E_reg    is DE_reg(7 downto 0);
-    signal HL_reg   : t_address;
-    alias  H_reg    is HL_reg(15 downto 8);
-    alias  L_reg    is HL_reg(7 downto 0);
+--    signal AF_reg   : t_address;
+--    alias  A_reg    is AF_reg(15 downto 8);
+--    alias  F_reg    is AF_reg(7 downto 0);
+--    signal BC_reg   : t_address;
+--    alias  B_reg    is BC_reg(15 downto 8);
+--    alias  C_reg    is BC_reg(7 downto 0);
+--    signal DE_reg   : t_address;
+--    alias  D_reg    is DE_reg(15 downto 8);
+--    alias  E_reg    is DE_reg(7 downto 0);
+--    signal HL_reg   : t_address;
+--    alias  H_reg    is HL_reg(15 downto 8);
+--    alias  L_reg    is HL_reg(7 downto 0);
 --    signal A_reg    : t_data;
 --    signal B_reg    : t_data;
 --    signal C_reg    : t_data;
@@ -72,7 +72,7 @@ architecture behv of jp80_cpu is
     alias  w_bus_h  is w_bus(15 downto 8);
     alias  w_bus_l  is w_bus(7 downto 0);
     
-    signal op_code  : t_opcode;
+    signal opcode   : t_opcode;
     
     signal alu_code : t_alucode;
     signal alu_a    : t_aluio;
@@ -84,11 +84,6 @@ architecture behv of jp80_cpu is
     signal flag_z   : t_wire;
     signal flag_s   : t_wire;
     
-    signal en_a_reg : t_wire;
-    signal wr_reg   : t_wire;
-    signal src_reg  : t_regaddr;
-    signal dst_reg  : t_regaddr;
-    
 begin
     addr_out    <= ADDR_reg;
     data_inout  <= DATA_reg when con(Wr) = '1' else (others=>'Z');
@@ -98,9 +93,9 @@ begin
     reqio_out   <= con(IO);
     
     -- BEGIN: SIMULATION ONLY
---    con_out     <= con;
---    bus_out     <= w_bus;
---    pc_out      <= PC_reg;
+    con_out     <= con;
+    bus_out     <= w_bus;
+    pc_out      <= PC_reg;
 --    a_out       <= A_reg;
 --    b_out       <= B_reg;
 --    c_out       <= C_reg;
@@ -128,14 +123,14 @@ begin
         if reset = '1' then
             PC_reg <= (others => '0');
         elsif clk'event and clk = '0' then
-            if con(Cp) = '1' then
+            if con(Ipc) = '1' then
                 PC_reg <= PC_reg + 1;
-            elsif con(Lp) = '1' then
+            elsif con(Lpc) = '1' then
                 PC_reg <= w_bus;
             end if;
         end if;
     end process program_counter;
-    w_bus <= PC_reg when con(Ep) = '1' else (others => 'Z');
+    w_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
 
     ADDR_register:
     process (clk, reset)
@@ -154,7 +149,7 @@ begin
     begin
         if reset = '1' then
             DATA_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
+        elsif clk'event and clk = '0' then
             if con(Ldata) = '1' then
                 DATA_reg <= w_bus_l;
             else
@@ -195,26 +190,32 @@ begin
     port map (
         clk         => clk,
         input       => w_bus_l,
-        en_a        => en_a_reg,
-        en_b        => '0',
-        reg_a_sel   => src_reg,
-        reg_b_sel   => "000",
-        reg_wr_sel  => dst_reg,
-        we          => wr_reg,
-        out_a       => w_bus_l,
-        out_b       => open
+        en_a        => con(EregA),
+        en_b        => con(EregB),
+        reg_a_sel   => con(RegA2 downto RegA0),
+        reg_b_sel   => con(RegB2 downto RegB0),
+        reg_wr_sel  => con(RegI2 downto RegI0),
+        we          => con(LregI),
+        out_a       => open,
+        out_b       => w_bus_l
     );
     
     MICROCODE : work.JP80_MCODE
     port map (
         clk         => clk,
         reset       => reset,
-        op_code     => op_code,
-        dst_reg     => dst_reg,
-        src_reg     => src_reg,
-        en_a_reg    => en_a_reg,
-        wr_reg      => wr_reg,
+        opcode      => opcode,
         con         => con
+    );
+
+    ALU : work.JP80_ALU
+    port map (
+        alucode     => clk,
+        bus_a       => ,
+        bus_b       => ,
+        flag_in     => ,
+        q           => ,
+        flag_out    => 
     );
     
 --    B_register:
@@ -306,7 +307,7 @@ begin
             end if;
         end if;
     end process I_register;
-    op_code <= I_reg;
+    opcode <= I_reg;
     
     arithmetic_logic_unit:
     process (clk, reset)

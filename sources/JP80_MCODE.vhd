@@ -7,11 +7,7 @@ entity JP80_MCODE is
     port (
         clk         : in t_wire;
         reset       : in t_wire;
-        op_code     : in t_opcode;
-        dst_reg     : out t_regaddr;
-        src_reg     : out t_regaddr;
-        en_a_reg    : out t_wire;
-        wr_reg      : out t_wire;
+        opcode      : in t_opcode;
         con         : out t_control
     );
 end JP80_MCODE;
@@ -28,46 +24,71 @@ begin
         end if;
     end process;
     
-    process (ps, op_code)
+    process (ps, opcode)
     begin
+        con <= (others => '0');
         case ps is
-        
         when reset_state =>
             ns <= address_state;
         
 		when address_state =>
-            con(Ep) <= '1';
+            con(Epc) <= '1';
             con(Laddr) <= '1';
-			ns <= increment_state;
+            ns <= memory_state;
+--			ns <= increment_state;
             
-		when increment_state =>
-            con(Cp) <= '1';
-			ns <= memory_state;
+--		when increment_state =>
+--            con(Ipc) <= '1';
+--			ns <= memory_state;
             
 		when memory_state =>
+            con(Ipc) <= '1';
             con(EdataL) <= '1';
             con(Li) <= '1';
 			ns <= decode_instruction;
         
         when decode_instruction =>
-            case op_code(7 downto 6) is
-                when "10" => -- ALU stuff
-                    alu_op <= op_code(5 downto 3);
-                    src_reg <= op_code(2 downto 0);
+            case opcode(7 downto 6) is
+                when "00" =>
+                    case opcode(2 downto 0) is
+                    when "010" =>
+--                        <= opcode(5 downto 3);
+                    when "110" => -- MVI r,<b>
+--                        con(RegI2 downto RegI0) <= opcode(5 downto 3);
+                        con(Epc)    <= '1';
+                        con(Laddr)  <= '1';
+                        ns <= mbyte_to_reg;
+                    when others =>
+                        con <= (others => '0');
+                        ns <= address_state;
+                    end case;
                 when "01" => -- MOV r,r or HLT
-                    if op_code = "01110110" then
+                    if opcode(5 downto 0) = "110110" then
                         con(HALT) <= '1'; -- HLT is the exception in the "01" range
                     else
-                        dst_reg <= op_code(5 downto 3);
-                        src_reg <= op_code(2 downto 0);
-                        en_a_reg <= '1';
-                        wr_reg <= '1';
+                        con(RegB2 downto RegB0) <= opcode(5 downto 3);
+                        con(RegI2 downto RegI0) <= opcode(2 downto 0);
+                        con(EregB)  <= '1';
+                        con(LregI)  <= '1';
                     end if;
+                    ns <= address_state;
+                when "10" => -- ALU stuff
+--                    alu_op <= opcode(5 downto 3);
+--                    src_reg <= opcode(2 downto 0);
                 when others =>
-                    null;
+                    con <= (others => '0');
+                    ns <= address_state;
             end case;
             
+        when mbyte_to_reg =>
+            con(RegI2 downto RegI0) <= opcode(5 downto 3);
+            con(Ipc)    <= '1';
+            con(EdataL) <= '1';
+            con(LregI)  <= '1';
+            ns <= address_state;
+            
 		when others =>
+            con <= (others => '0');
 			ns <= address_state;
 		end case;
     end process;

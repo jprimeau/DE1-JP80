@@ -53,7 +53,7 @@ package jp80_pkg is
     constant I_DCRA     : t_opcode := x"3D";
     constant I_DCRB     : t_opcode := x"05";
     constant I_DCRC     : t_opcode := x"0D";
-    constant I_HLT      : t_opcode := x"76";
+--    constant I_HLT      : t_opcode := x"76";
     constant I_IN       : t_opcode := x"DB";
     constant I_INRA     : t_opcode := x"3C";
     constant I_INRB     : t_opcode := x"04";
@@ -64,85 +64,85 @@ package jp80_pkg is
     constant I_JZ       : t_opcode := x"CA";
     constant I_LDA      : t_opcode := x"3A";
     
-    constant I_MOVAA    : t_opcode := x"7F";
-    constant I_MOVAB    : t_opcode := x"78";
-    constant I_MOVAC    : t_opcode := x"79";
-    constant I_MOVAD    : t_opcode := x"7A";
-    constant I_MOVAE    : t_opcode := x"7B";
-    constant I_MOVAH    : t_opcode := x"7C";
-    constant I_MOVAL    : t_opcode := x"7D";
-    constant I_MOVAM    : t_opcode := x"7E";
-    
-    constant I_MOVBA    : t_opcode := x"47";
-    constant I_MOVBB    : t_opcode := x"40";
-    constant I_MOVBC    : t_opcode := x"41";
-    constant I_MOVBD    : t_opcode := x"42";
-    constant I_MOVBE    : t_opcode := x"43";
-    constant I_MOVBH    : t_opcode := x"44";
-    constant I_MOVBL    : t_opcode := x"45";
-    constant I_MOVBM    : t_opcode := x"46";
-    
-    constant I_MOVCA    : t_opcode := x"4F";
-    constant I_MOVCB    : t_opcode := x"48";
-    constant I_MOVCC    : t_opcode := x"49";
-    constant I_MOVCD    : t_opcode := x"4A";
-    constant I_MOVCE    : t_opcode := x"4B";
-    constant I_MOVCH    : t_opcode := x"4C";
-    constant I_MOVCL    : t_opcode := x"4D";
-    constant I_MOVCM    : t_opcode := x"4E";
-
-    constant I_MOVDA    : t_opcode := x"57";
-    constant I_MOVDB    : t_opcode := x"50";
-    constant I_MOVDC    : t_opcode := x"51";
-    constant I_MOVDD    : t_opcode := x"52";
-    constant I_MOVDE    : t_opcode := x"53";
-    constant I_MOVDH    : t_opcode := x"54";
-    constant I_MOVDL    : t_opcode := x"55";
-    constant I_MOVDM    : t_opcode := x"56";
-
-    constant I_MOVEA    : t_opcode := x"5F";
-    constant I_MOVEB    : t_opcode := x"58";
-    constant I_MOVEC    : t_opcode := x"59";
-    constant I_MOVED    : t_opcode := x"5A";
-    constant I_MOVEE    : t_opcode := x"5B";
-    constant I_MOVEH    : t_opcode := x"5C";
-    constant I_MOVEL    : t_opcode := x"5D";
-    constant I_MOVEM    : t_opcode := x"5E";
-
-    constant I_MOVHA    : t_opcode := x"67";
-    constant I_MOVHB    : t_opcode := x"60";
-    constant I_MOVHC    : t_opcode := x"61";
-    constant I_MOVHD    : t_opcode := x"62";
-    constant I_MOVHE    : t_opcode := x"63";
-    constant I_MOVHH    : t_opcode := x"64";
-    constant I_MOVHL    : t_opcode := x"65";
-    constant I_MOVHM    : t_opcode := x"66";
-
-    constant I_MOVLA    : t_opcode := x"6F";
-    constant I_MOVLB    : t_opcode := x"68";
-    constant I_MOVLC    : t_opcode := x"69";
-    constant I_MOVLD    : t_opcode := x"6A";
-    constant I_MOVLE    : t_opcode := x"6B";
-    constant I_MOVLH    : t_opcode := x"6C";
-    constant I_MOVLL    : t_opcode := x"6D";
-    constant I_MOVLM    : t_opcode := x"6E";
-
-    constant I_MOVMA    : t_opcode := x"77";
-    constant I_MOVMB    : t_opcode := x"70";
-    constant I_MOVMC    : t_opcode := x"71";
-    constant I_MOVMD    : t_opcode := x"72";
-    constant I_MOVME    : t_opcode := x"73";
-    constant I_MOVMH    : t_opcode := x"74";
-    constant I_MOVML    : t_opcode := x"75";
-    
-    constant I_MVIA     : t_opcode := x"3E";
-    constant I_MVIB     : t_opcode := x"06";
-    constant I_MVIC     : t_opcode := x"0E";
-    constant I_MVID     : t_opcode := x"16";
-    constant I_MVIE     : t_opcode := x"1E";
-    constant I_MVIH     : t_opcode := x"26";
-    constant I_MVIL     : t_opcode := x"2E";
-    constant I_MVIM     : t_opcode := x"36";
+--    constant I_MOVAA    : t_opcode := x"7F";
+--    constant I_MOVAB    : t_opcode := x"78";
+--    constant I_MOVAC    : t_opcode := x"79";
+--    constant I_MOVAD    : t_opcode := x"7A";
+--    constant I_MOVAE    : t_opcode := x"7B";
+--    constant I_MOVAH    : t_opcode := x"7C";
+--    constant I_MOVAL    : t_opcode := x"7D";
+--    constant I_MOVAM    : t_opcode := x"7E";
+--    
+--    constant I_MOVBA    : t_opcode := x"47";
+--    constant I_MOVBB    : t_opcode := x"40";
+--    constant I_MOVBC    : t_opcode := x"41";
+--    constant I_MOVBD    : t_opcode := x"42";
+--    constant I_MOVBE    : t_opcode := x"43";
+--    constant I_MOVBH    : t_opcode := x"44";
+--    constant I_MOVBL    : t_opcode := x"45";
+--    constant I_MOVBM    : t_opcode := x"46";
+--    
+--    constant I_MOVCA    : t_opcode := x"4F";
+--    constant I_MOVCB    : t_opcode := x"48";
+--    constant I_MOVCC    : t_opcode := x"49";
+--    constant I_MOVCD    : t_opcode := x"4A";
+--    constant I_MOVCE    : t_opcode := x"4B";
+--    constant I_MOVCH    : t_opcode := x"4C";
+--    constant I_MOVCL    : t_opcode := x"4D";
+--    constant I_MOVCM    : t_opcode := x"4E";
+--
+--    constant I_MOVDA    : t_opcode := x"57";
+--    constant I_MOVDB    : t_opcode := x"50";
+--    constant I_MOVDC    : t_opcode := x"51";
+--    constant I_MOVDD    : t_opcode := x"52";
+--    constant I_MOVDE    : t_opcode := x"53";
+--    constant I_MOVDH    : t_opcode := x"54";
+--    constant I_MOVDL    : t_opcode := x"55";
+--    constant I_MOVDM    : t_opcode := x"56";
+--
+--    constant I_MOVEA    : t_opcode := x"5F";
+--    constant I_MOVEB    : t_opcode := x"58";
+--    constant I_MOVEC    : t_opcode := x"59";
+--    constant I_MOVED    : t_opcode := x"5A";
+--    constant I_MOVEE    : t_opcode := x"5B";
+--    constant I_MOVEH    : t_opcode := x"5C";
+--    constant I_MOVEL    : t_opcode := x"5D";
+--    constant I_MOVEM    : t_opcode := x"5E";
+--
+--    constant I_MOVHA    : t_opcode := x"67";
+--    constant I_MOVHB    : t_opcode := x"60";
+--    constant I_MOVHC    : t_opcode := x"61";
+--    constant I_MOVHD    : t_opcode := x"62";
+--    constant I_MOVHE    : t_opcode := x"63";
+--    constant I_MOVHH    : t_opcode := x"64";
+--    constant I_MOVHL    : t_opcode := x"65";
+--    constant I_MOVHM    : t_opcode := x"66";
+--
+--    constant I_MOVLA    : t_opcode := x"6F";
+--    constant I_MOVLB    : t_opcode := x"68";
+--    constant I_MOVLC    : t_opcode := x"69";
+--    constant I_MOVLD    : t_opcode := x"6A";
+--    constant I_MOVLE    : t_opcode := x"6B";
+--    constant I_MOVLH    : t_opcode := x"6C";
+--    constant I_MOVLL    : t_opcode := x"6D";
+--    constant I_MOVLM    : t_opcode := x"6E";
+--
+--    constant I_MOVMA    : t_opcode := x"77";
+--    constant I_MOVMB    : t_opcode := x"70";
+--    constant I_MOVMC    : t_opcode := x"71";
+--    constant I_MOVMD    : t_opcode := x"72";
+--    constant I_MOVME    : t_opcode := x"73";
+--    constant I_MOVMH    : t_opcode := x"74";
+--    constant I_MOVML    : t_opcode := x"75";
+--    
+--    constant I_MVIA     : t_opcode := x"3E";
+--    constant I_MVIB     : t_opcode := x"06";
+--    constant I_MVIC     : t_opcode := x"0E";
+--    constant I_MVID     : t_opcode := x"16";
+--    constant I_MVIE     : t_opcode := x"1E";
+--    constant I_MVIH     : t_opcode := x"26";
+--    constant I_MVIL     : t_opcode := x"2E";
+--    constant I_MVIM     : t_opcode := x"36";
     
     constant I_NOP      : t_opcode := x"00";
     constant I_ORAB     : t_opcode := x"B0";
@@ -162,30 +162,30 @@ package jp80_pkg is
     constant I_XRAC     : t_opcode := x"A9";
     constant I_XRI      : t_opcode := x"EE";
     
-    constant Lp     : integer := 00;
-    constant Cp     : integer := 01;
-    constant Ep     : integer := 02;
+    constant Lpc    : integer := 00;
+    constant Ipc    : integer := 01;
+    constant Epc    : integer := 02;
     constant Laddr  : integer := 03;
     constant Ldata  : integer := 04;
     constant EdataL : integer := 05;
     constant EdataH : integer := 06;
     constant Li     : integer := 07;
-    constant La     : integer := 08;
-    constant Ea     : integer := 09;
-    constant Lb     : integer := 10;
-    constant Eb     : integer := 11;
-    constant Lc     : integer := 12;
-    constant Ec     : integer := 13;
-    constant Ld     : integer := 14;
-    constant Ed     : integer := 15;
-    constant Le     : integer := 16;
-    constant Ee     : integer := 17;
-    constant Lh     : integer := 18;
-    constant Eh     : integer := 19;
-    constant Ll     : integer := 20;
-    constant El     : integer := 21;
-    constant Lm     : integer := 22;
-    constant Em     : integer := 23;
+--    constant La     : integer := 08;
+--    constant Ea     : integer := 09;
+--    constant Lb     : integer := 10;
+--    constant Eb     : integer := 11;
+--    constant Lc     : integer := 12;
+--    constant Ec     : integer := 13;
+--    constant Ld     : integer := 14;
+--    constant Ed     : integer := 15;
+--    constant Le     : integer := 16;
+--    constant Ee     : integer := 17;
+--    constant Lh     : integer := 18;
+--    constant Eh     : integer := 19;
+--    constant Ll     : integer := 20;
+--    constant El     : integer := 21;
+--    constant Lm     : integer := 22;
+--    constant Em     : integer := 23;
     constant Lt     : integer := 24;
     constant Et     : integer := 25;
     constant Eu     : integer := 26;
@@ -194,24 +194,47 @@ package jp80_pkg is
     constant Wr     : integer := 29;
     constant IO     : integer := 30;
     constant HALT   : integer := 31;
+    
+    constant EregA  : integer := 08;
+    constant EregB  : integer := 09;
+    constant LregI  : integer := 10;
+    constant RegA0  : integer := 11;
+    constant RegA1  : integer := 12;
+    constant RegA2  : integer := 13;
+    constant RegB0  : integer := 14;
+    constant RegB1  : integer := 15;
+    constant RegB2  : integer := 16;
+    constant RegI0  : integer := 17;
+    constant RegI1  : integer := 18;
+    constant RegI2  : integer := 19;
+    
+    constant FlagC  : integer := 00;
+    constant FlagP  : integer := 02;
+    constant FlagH  : integer := 04;
+    constant FlagI  : integer := 05;
+    constant FlagZ  : integer := 06;
+    constant FlagS  : integer := 07;
+    
 
     type t_cpu_state is (
         reset_state, address_state, increment_state, memory_state, decode_instruction,
-        add_1, add_2, ana_1,ana_2, ani_1, ani_2, ani_3,
-        call_1, call_2, call_3, call_4, call_5, call_6,
-        dcra_1, dcrb_1, dcrc_1,
-        in_1, in_2, in_3, in_4,
-        inra_1, inrb_1, inrc_1, jm_1, jm_2, jm_3, jm_4, jm_5, 
-        jmp_1, jmp_2, jmp_3, jmp_4, jmp_5,
-        jnz_1, jnz_2, jnz_3, jnz_4, jnz_5,
-        jz_1, jz_2, jz_3, jz_4, jz_5,
-        lda_1, lda_2, lda_3, lda_4, lda_5, lda_6, lda_7,
-        mvia_1, mvia_2, mvib_1, mvib_2, mvic_1, mvic_2, mvid_1, mvid_2,
-        mvie_1, mvie_2, mvih_1, mvih_2, mvil_1, mvil_2,
-        ora_1, ori_1, ori_2, ori_3, 
-        out_1, out_2, out_3, out_4, ret_1, ret_2, 
-        sta_1, sta_2, sta_3, sta_4, sta_5, sta_6, sta_7, sub_1,
-        xra_1, xri_1, xri_2, xri_3
+--        add_1, add_2, ana_1,ana_2, ani_1, ani_2, ani_3,
+--        call_1, call_2, call_3, call_4, call_5, call_6,
+--        dcra_1, dcrb_1, dcrc_1,
+--        in_1, in_2, in_3, in_4,
+--        inra_1, inrb_1, inrc_1, jm_1, jm_2, jm_3, jm_4, jm_5, 
+--        jmp_1, jmp_2, jmp_3, jmp_4, jmp_5,
+--        jnz_1, jnz_2, jnz_3, jnz_4, jnz_5,
+--        jz_1, jz_2, jz_3, jz_4, jz_5,
+--        lda_1, lda_2, lda_3, lda_4, lda_5, lda_6, lda_7,
+--        mvia_1, mvia_2, mvib_1, mvib_2, mvic_1, mvic_2, mvid_1, mvid_2,
+--        mvie_1, mvie_2, mvih_1, mvih_2, mvil_1, mvil_2,
+--        ora_1, ori_1, ori_2, ori_3, 
+--        out_1, out_2, out_3, out_4, ret_1, ret_2, 
+--        sta_1, sta_2, sta_3, sta_4, sta_5, sta_6, sta_7, sub_1,
+--        xra_1, xri_1, xri_2, xri_3,
+        
+        mbyte_to_reg
     );
     
     type t_aluio is (

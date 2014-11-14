@@ -23,31 +23,25 @@ entity jp80_top is
         read_out    : out t_wire;
         write_out   : out t_wire;
         reqmem_out  : out t_wire;
-        reqio_out   : out t_wire
+        reqio_out   : out t_wire;
         
         -- BEGIN: SIMULATION ONLY
-        Lp_out      : out t_wire;
-        Cp_out      : out t_wire;
-        Ep_out      : out t_wire;
+        Lpc_out     : out t_wire;
+        Ipc_out     : out t_wire;
+        Epc_out     : out t_wire;
         Laddr_out   : out t_wire;
         Ldata_out   : out t_wire;
         EdataL_out  : out t_wire;
         EdataH_out  : out t_wire;
         Li_out      : out t_wire;
-        La_out      : out t_wire;
-        Ea_out      : out t_wire;
-        Lb_out      : out t_wire;
-        Eb_out      : out t_wire;
-        Lc_out      : out t_wire;
-        Ec_out      : out t_wire;
-        Ld_out      : out t_wire;
-        Ed_out      : out t_wire;
-        Le_out      : out t_wire;
-        Ee_out      : out t_wire;
-        Lh_out      : out t_wire;
-        Eh_out      : out t_wire;
-        Ll_out      : out t_wire;
-        El_out      : out t_wire;
+
+        EregA_out   : out t_wire;
+        EregB_out   : out t_wire;
+        LregI_out   : out t_wire;
+        RegA_out    : out t_regaddr;
+        RegB_out    : out t_regaddr;
+        RegI_out    : out t_regaddr;
+        
         Lt_out      : out t_wire;
         Et_out      : out t_wire;
         Lu_out      : out t_wire;
@@ -58,12 +52,12 @@ entity jp80_top is
         halt_out    : out t_wire;
         
         bus_out     : out t_bus;
-        pc_out      : out t_address;
-        a_out       : out t_data;
-        tmp_out     : out t_data;
-        alu_out     : out t_data;
-        b_out       : out t_data;
-        c_out       : out t_data
+        pc_out      : out t_address
+--        a_out       : out t_data;
+--        tmp_out     : out t_data;
+--        alu_out     : out t_data;
+--        b_out       : out t_data;
+--        c_out       : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_top;
@@ -74,7 +68,7 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
+        x"3E",x"01",x"78",x"76",x"FF",x"FF",x"FF",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
@@ -166,39 +160,33 @@ begin
     reqio_out       <= cpu_reqio;
     
     -- BEGIN: SIMULATION ONLY
---    Lp_out      <= cpu_con(Lp);
---    Cp_out      <= cpu_con(Cp);
---    Ep_out      <= cpu_con(Ep);
---    Laddr_out   <= cpu_con(Laddr);
---    Ldata_out   <= cpu_con(Ldata);
---    EdataL_out  <= cpu_con(EdataL);
---    EdataH_out  <= cpu_con(EdataH);
---    Li_out      <= cpu_con(Li);
---    La_out      <= cpu_con(La);
---    Ea_out      <= cpu_con(Ea);
---    Lb_out      <= cpu_con(Lb);
---    Eb_out      <= cpu_con(Eb);
---    Lc_out      <= cpu_con(Lc);
---    Ec_out      <= cpu_con(Ec);
---    Ld_out      <= cpu_con(Ld);
---    Ed_out      <= cpu_con(Ed);
---    Le_out      <= cpu_con(Le);
---    Ee_out      <= cpu_con(Ee);
---    Lh_out      <= cpu_con(Lh);
---    Eh_out      <= cpu_con(Eh);
---    Ll_out      <= cpu_con(Ll);
---    El_out      <= cpu_con(El);
---    Lt_out      <= cpu_con(Lt);
---    Et_out      <= cpu_con(Et);
---    Lu_out      <= cpu_con(Lu);
---    Eu_out      <= cpu_con(Eu);
---    Lsz_out     <= cpu_con(Lsz);
---    Wr_out      <= cpu_con(Wr);
---    IO_out      <= cpu_con(IO);
---    halt_out    <= cpu_con(HALT);
---    
---    bus_out     <= cpu_bus;
---    pc_out      <= cpu_pc;
+    Lpc_out     <= cpu_con(Lpc);
+    Ipc_out     <= cpu_con(Ipc);
+    Epc_out     <= cpu_con(Epc);
+    Laddr_out   <= cpu_con(Laddr);
+    Ldata_out   <= cpu_con(Ldata);
+    EdataL_out  <= cpu_con(EdataL);
+    EdataH_out  <= cpu_con(EdataH);
+    Li_out      <= cpu_con(Li);
+
+    EregA_out   <= cpu_con(EregA);
+    EregB_out   <= cpu_con(EregB);
+    LregI_out   <= cpu_con(LregI);
+    RegA_out    <= cpu_con(RegA2 downto RegA0);
+    RegB_out    <= cpu_con(RegB2 downto RegB0);
+    RegI_out    <= cpu_con(RegI2 downto RegI0);
+    
+    Lt_out      <= cpu_con(Lt);
+    Et_out      <= cpu_con(Et);
+    Lu_out      <= cpu_con(Lu);
+    Eu_out      <= cpu_con(Eu);
+    Lsz_out     <= cpu_con(Lsz);
+    Wr_out      <= cpu_con(Wr);
+    IO_out      <= cpu_con(IO);
+    halt_out    <= cpu_con(HALT);
+    
+    bus_out     <= cpu_bus;
+    pc_out      <= cpu_pc;
 --    a_out       <= cpu_a;
 --    b_out       <= cpu_b;
 --    c_out       <= cpu_c;
@@ -237,12 +225,12 @@ begin
         read_out    => cpu_read,
         write_out   => cpu_write,
         reqmem_out  => cpu_reqmem,
-        reqio_out   => cpu_reqio
+        reqio_out   => cpu_reqio,
         
         -- BEGIN: SIMULATION ONLY
---        con_out     => cpu_con,
---        bus_out     => cpu_bus,
---        pc_out      => cpu_pc,
+        con_out     => cpu_con,
+        bus_out     => cpu_bus,
+        pc_out      => cpu_pc
 --        a_out       => cpu_a,
 --        b_out       => cpu_b,
 --        c_out       => cpu_c,

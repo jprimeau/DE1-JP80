@@ -60,6 +60,7 @@ architecture behv of jp80_cpu is
 --    signal F_reg    : t_data; -- FLAG
 --    signal H_reg    : t_data;
 --    signal L_reg    : t_data;
+    signal FLAG_Reg : t_data;
     signal TMP_reg  : t_data;
     signal ALU_reg  : t_data;
     signal PC_reg   : t_address;
@@ -74,15 +75,10 @@ architecture behv of jp80_cpu is
     
     signal opcode   : t_opcode;
     
-    signal alu_code : t_alucode;
-    signal alu_a    : t_aluio;
-    signal alu_b    : t_aluio;
-    signal alu_q    : t_aluio;
+    signal alu_a    : t_data;
+    signal alu_b    : t_data;
 
     signal con      : t_control := (others => '0');
-    
-    signal flag_z   : t_wire;
-    signal flag_s   : t_wire;
     
 begin
     addr_out    <= ADDR_reg;
@@ -197,7 +193,9 @@ begin
         reg_wr_sel  => con(RegI2 downto RegI0),
         we          => con(LregI),
         out_a       => open,
-        out_b       => w_bus_l
+        out_b       => w_bus_l,
+        alu_a_out   => alu_a,
+        alu_b_out   => alu_b
     );
     
     MICROCODE : work.JP80_MCODE
@@ -208,15 +206,15 @@ begin
         con         => con
     );
 
---    ALU : work.JP80_ALU
---    port map (
---        alucode     => clk,
---        bus_a       => ,
---        bus_b       => ,
---        flag_in     => ,
---        q           => ,
---        flag_out    => 
---    );
+    ALU : work.JP80_ALU
+    port map (
+        alucode     => con(ALU2 downto ALU0),
+        bus_a       => alu_a,
+        bus_b       => alu_b,
+        flag_in     => FLAG_Reg,
+        q           => ALU_Reg,
+        flag_out    => FLAG_Reg
+    );
     
 --    B_register:
 --    process (clk, reset)
@@ -308,94 +306,6 @@ begin
         end if;
     end process I_register;
     opcode <= I_reg;
-    
-    arithmetic_logic_unit:
-    process (clk, reset)
-        variable a  : t_data;
-        variable b  : t_data;
-    begin
-        if reset = '1' then
-            ALU_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lu) = '1' then
---                case alu_a is
---                    when ALU_A_REG => a := A_reg;
---                    when ALU_B_REG => a := B_reg;
---                    when ALU_C_REG => a := C_reg;
---                    when ALU_D_REG => a := D_reg;
---                    when ALU_E_REG => a := E_reg;
---                    when ALU_H_REG => a := H_reg;
---                    when ALU_L_REG => a := L_reg;
---                end case;
---                case alu_b is
---                    when ALU_A_REG => b := A_reg;
---                    when ALU_B_REG => b := B_reg;
---                    when ALU_C_REG => b := C_reg;
---                    when ALU_D_REG => b := D_reg;
---                    when ALU_E_REG => b := E_reg;
---                    when ALU_H_REG => b := H_reg;
---                    when ALU_L_REG => b := L_reg;
---                end case;
-                a := w_bus_l;
-                b := TMP_reg;
-                case alu_code is
-                when ALU_NOT =>
-                    ALU_reg <= not a;
-                when ALU_AND =>
-                    ALU_reg <= a and b;
-                when ALU_OR =>
-                    ALU_reg <= a or b;
-                when ALU_XOR =>
-                    ALU_reg <= a xor b;
-                when ALU_ROL =>
-                    ALU_reg <= to_stdlogicvector(to_bitvector(a) rol 1);
-                when ALU_ROR =>
-                    ALU_reg <= to_stdlogicvector(to_bitvector(a) ror 1);
-                when ALU_ONES =>
-                    ALU_reg <= (others => '1');
-                when ALU_INC =>
-                    ALU_reg <= a + 1;
-                when ALU_DEC =>
-                    ALU_reg <= a - 1;
-                when ALU_ADD =>
-                    ALU_reg <= a + b;
-                when ALU_SUB =>
-                    ALU_reg <= a - b;
-                when others =>
-                    null;
-                end case;
---                case alu_q is
---                    when ALU_A_REG => A_reg <= ALU_reg;
---                    when ALU_B_REG => B_reg <= ALU_reg;
---                    when ALU_C_REG => C_reg <= ALU_reg;
---                    when ALU_D_REG => D_reg <= ALU_reg;
---                    when ALU_E_REG => E_reg <= ALU_reg;
---                    when ALU_H_REG => H_reg <= ALU_reg;
---                    when ALU_L_REG => L_reg <= ALU_reg;
---                end case;
-            end if;
-        end if;
-    end process arithmetic_logic_unit;
-    w_bus_l <= ALU_reg when con(Eu) = '1' else (others => 'Z');
-    
-    flags:
-    process (clk, con)
-    begin
-        if clk'event and clk = '1' then
-            if con(Lsz) = '1' then
-                if ALU_reg(7) = '1' then
-                    flag_s <= '1';
-                else
-                    flag_s <= '0';
-                end if;
-                if ALU_reg = "0" then
-                    flag_z <= '1';
-                else
-                    flag_z <= '0';
-                end if;
-            end if;
-        end if;
-    end process flags;
     
 --    cpu_state_machine_reg:
 --    process (clk, reset)

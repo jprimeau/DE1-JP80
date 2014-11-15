@@ -208,6 +208,10 @@ package jp80_pkg is
     constant RegI1  : integer := 18;
     constant RegI2  : integer := 19;
     
+    constant ALU0   : integer := 20;
+    constant ALU1   : integer := 21;
+    constant ALU2   : integer := 22;
+    
     constant FlagC  : integer := 00;
     constant FlagP  : integer := 02;
     constant FlagH  : integer := 04;
@@ -237,26 +241,26 @@ package jp80_pkg is
         mbyte_to_reg
     );
     
-    type t_aluio is (
-        ALU_A_REG,
-        ALU_B_REG,
-        ALU_C_REG,
-        ALU_D_REG,
-        ALU_E_REG,
-        ALU_H_REG,
-        ALU_L_REG
-    );
+--    type t_aluio is (
+--        ALU_A_REG,
+--        ALU_B_REG,
+--        ALU_C_REG,
+--        ALU_D_REG,
+--        ALU_E_REG,
+--        ALU_H_REG,
+--        ALU_L_REG
+--    );
     
-    constant ALU_NOT        : t_alucode := x"0";
-    constant ALU_AND        : t_alucode := x"1";
-    constant ALU_OR         : t_alucode := x"2";
-    constant ALU_XOR        : t_alucode := x"3";
-    constant ALU_ROL        : t_alucode := x"4";
-    constant ALU_ROR        : t_alucode := x"5";
-    constant ALU_INC        : t_alucode := x"6";
-    constant ALU_DEC        : t_alucode := x"7";
-    constant ALU_ADD        : t_alucode := x"8";
-    constant ALU_SUB        : t_alucode := x"9";
-    constant ALU_ONES       : t_alucode := x"A";
+--    constant ALU_NOT        : t_alucode := x"0";
+--    constant ALU_AND        : t_alucode := x"1";
+--    constant ALU_OR         : t_alucode := x"2";
+--    constant ALU_XOR        : t_alucode := x"3";
+--    constant ALU_ROL        : t_alucode := x"4";
+--    constant ALU_ROR        : t_alucode := x"5";
+--    constant ALU_INC        : t_alucode := x"6";
+--    constant ALU_DEC        : t_alucode := x"7";
+--    constant ALU_ADD        : t_alucode := x"8";
+--    constant ALU_SUB        : t_alucode := x"9";
+--    constant ALU_ONES       : t_alucode := x"A";
 
 end package jp80_pkg;

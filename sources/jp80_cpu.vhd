@@ -208,15 +208,15 @@ begin
         con         => con
     );
 
-    ALU : work.JP80_ALU
-    port map (
-        alucode     => clk,
-        bus_a       => ,
-        bus_b       => ,
-        flag_in     => ,
-        q           => ,
-        flag_out    => 
-    );
+--    ALU : work.JP80_ALU
+--    port map (
+--        alucode     => clk,
+--        bus_a       => ,
+--        bus_b       => ,
+--        flag_in     => ,
+--        q           => ,
+--        flag_out    => 
+--    );
     
 --    B_register:
 --    process (clk, reset)

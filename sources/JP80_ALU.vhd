@@ -22,12 +22,13 @@ architecture rtl of JP80_ALU is
     signal p_i      : t_wire;
     signal sub_i    : t_wire;
     signal q_i      : t_data;
+    signal carry_i  : t_wire;
 
 	procedure AddSub(
             a               : std_logic_vector;
             b               : std_logic_vector;
-            c_in            : std_logic;
             sub             : std_logic;
+            c_in            : std_logic;
             signal result   : out std_logic_vector;
             signal c_out    : out std_logic
         ) is
@@ -46,8 +47,8 @@ architecture rtl of JP80_ALU is
 begin
     sub_i <= alucode(1);
     -- Use carry in for ADC and SBB
-    c_i <= sub_i xor (not alucode(2) and alucode(0) and flag_in(FlagC));
-    AddSub(bus_a(3 downto 0), bus_b(3 downto 0), sub_i, c_i, q_i(3 downto 0), h_i);
+    carry_i <= sub_i xor (not alucode(2) and alucode(0) and flag_in(FlagC));
+    AddSub(bus_a(3 downto 0), bus_b(3 downto 0), sub_i, carry_i, q_i(3 downto 0), h_i);
 	AddSub(bus_a(6 downto 4), bus_b(6 downto 4), sub_i, h_i, q_i(6 downto 4), c7_i);
 	AddSub(bus_a(7 downto 7), bus_b(7 downto 7), sub_i, c7_i, q_i(7 downto 7), c_i);
 	p_i <= c_i xor c7_i;

@@ -73,8 +73,12 @@ begin
                     end if;
                     ns <= address_state;
                 when "10" => -- ALU stuff
-                    con(RegA2 downto RegA0) <= opcode(2 downto 0);
-                    con(EregA)  <= '1';
+                    con(ALU2 downto ALU0) <= opcode(5 downto 3);
+                    con(RegA2 downto RegA0) <= "111";
+                    con(RegB2 downto RegB0) <= opcode(2 downto 0);
+                    con(RegI2 downto RegI0) <= "111";
+                    con(LregI)  <= '1';
+                    con(Eu)     <= '1';
                 when others =>
                     con <= (others => '0');
                     ns <= address_state;

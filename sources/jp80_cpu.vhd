@@ -212,6 +212,7 @@ begin
         bus_a       => alu_a,
         bus_b       => alu_b,
         flag_in     => FLAG_Reg,
+        en          => con(Eu),
         q           => ALU_Reg,
         flag_out    => FLAG_Reg
     );

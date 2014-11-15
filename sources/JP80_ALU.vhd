@@ -10,6 +10,7 @@ entity JP80_ALU is
         bus_a       : in t_data;
         bus_b       : in t_data;
         flag_in     : in t_data;
+        en          : in t_wire;
         q           : out t_data;
         flag_out    : out t_data
     );
@@ -30,8 +31,8 @@ architecture rtl of JP80_ALU is
         b           : in t_data;
         sub         : in t_wire;
         cin         : in t_wire;
-        signal q    : out t_data; 
-        signal cout : out t_data
+        signal q_o  : out t_data; 
+        signal c_o  : out t_data
     ) is
         variable b_i, c_i : t_data;
     begin
@@ -48,15 +49,15 @@ architecture rtl of JP80_ALU is
         c_i(5) := (a(5) and b_i(5)) or (a(5) and c_i(4)) or (b_i(5) and c_i(4));
         c_i(6) := (a(6) and b_i(6)) or (a(6) and c_i(5)) or (b_i(6) and c_i(5));
         c_i(7) := (a(7) and b_i(7)) or (a(7) and c_i(6)) or (b_i(7) and c_i(6));
-        q(0) <= a(0) xor b_i(0) xor cin;
-        q(1) <= a(1) xor b_i(1) xor c_i(0);
-        q(2) <= a(2) xor b_i(2) xor c_i(1);
-        q(3) <= a(3) xor b_i(3) xor c_i(2);
-        q(4) <= a(4) xor b_i(4) xor c_i(3);
-        q(5) <= a(5) xor b_i(5) xor c_i(5);
-        q(6) <= a(6) xor b_i(6) xor c_i(6);
-        q(7) <= a(7) xor b_i(7) xor c_i(7);
-        cout <= c_i;
+        q_o(0) <= a(0) xor b_i(0) xor cin;
+        q_o(1) <= a(1) xor b_i(1) xor c_i(0);
+        q_o(2) <= a(2) xor b_i(2) xor c_i(1);
+        q_o(3) <= a(3) xor b_i(3) xor c_i(2);
+        q_o(4) <= a(4) xor b_i(4) xor c_i(3);
+        q_o(5) <= a(5) xor b_i(5) xor c_i(5);
+        q_o(6) <= a(6) xor b_i(6) xor c_i(6);
+        q_o(7) <= a(7) xor b_i(7) xor c_i(7);
+        c_o <= c_i;
     end;
 begin
     sub_i <= alucode(1);
@@ -72,23 +73,21 @@ begin
     begin
         case alucode is
         when "000" | "001" => -- ADD or ADC
-            q <= q_i;
             flag_out(FlagC) <= c_i;
             flag_out(FlagH) <= h_i;
             flag_out(FlagP) <= p_i;
         when "010" | "011" | "111" => -- SUB or SBB or CMP
-            q <= q_i;
             flag_out(FlagC) <= not c_i;
             flag_out(FlagH) <= not h_i;
             flag_out(FlagP) <= p_i;
         when "100" => -- ANA
-            q <= bus_a and bus_b;
+            q_i <= bus_a and bus_b;
             flag_out(FlagH) <= '1';
         when "101" => -- XRA
-            q <= bus_a xor bus_b;
+            q_i <= bus_a xor bus_b;
             flag_out(FlagH) <= '0';
         when "110" => -- ORA
-            q <= bus_a or bus_b;
+            q_i <= bus_a or bus_b;
             flag_out(FlagH) <= '0';
         when others =>
             null;
@@ -106,4 +105,5 @@ begin
             null;
         end case;
     end process;
+    q <= q_i when En = '1' else (others=>'Z');
 end architecture;

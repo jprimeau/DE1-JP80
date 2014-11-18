@@ -52,10 +52,10 @@ entity jp80_top is
         halt_out    : out t_wire;
         
         bus_out     : out t_bus;
-        pc_out      : out t_address
+        pc_out      : out t_address;
 --        a_out       : out t_data;
 --        tmp_out     : out t_data;
---        alu_out     : out t_data;
+        alu_out     : out t_data
 --        b_out       : out t_data;
 --        c_out       : out t_data
         -- END: SIMULATION ONLY
@@ -68,7 +68,7 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"3E",x"01",x"78",x"76",x"FF",x"FF",x"FF",x"FF", -- 00H
+        x"3E",x"10",x"06",x"05",x"80",x"76",x"FF",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
@@ -191,7 +191,7 @@ begin
 --    b_out       <= cpu_b;
 --    c_out       <= cpu_c;
 --    tmp_out     <= cpu_tmp;
---    alu_out     <= cpu_alu;
+    alu_out     <= cpu_alu;
     -- END: SIMULATION ONLY
 
     memory:
@@ -230,12 +230,12 @@ begin
         -- BEGIN: SIMULATION ONLY
         con_out     => cpu_con,
         bus_out     => cpu_bus,
-        pc_out      => cpu_pc
+        pc_out      => cpu_pc,
 --        a_out       => cpu_a,
 --        b_out       => cpu_b,
 --        c_out       => cpu_c,
 --        tmp_out     => cpu_tmp,
---        alu_out     => cpu_alu
+        alu_out     => cpu_alu
         -- END: SIMULATION ONLY
     );
 

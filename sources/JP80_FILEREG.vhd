@@ -27,7 +27,7 @@ architecture rtl of JP80_FILEREG is
 begin
     process (clk)
     begin
-        if clk'event and clk = '1' then
+        if clk'event and clk = '0' then
             if we = '1' then
                 registers(conv_integer(reg_wr_sel)) <= input;
             end if;

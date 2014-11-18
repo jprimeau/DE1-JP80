@@ -170,7 +170,7 @@ package jp80_pkg is
     constant EdataL : integer := 05;
     constant EdataH : integer := 06;
     constant Li     : integer := 07;
---    constant La     : integer := 08;
+    constant La     : integer := 23;
 --    constant Ea     : integer := 09;
 --    constant Lb     : integer := 10;
 --    constant Eb     : integer := 11;
@@ -238,7 +238,7 @@ package jp80_pkg is
 --        sta_1, sta_2, sta_3, sta_4, sta_5, sta_6, sta_7, sub_1,
 --        xra_1, xri_1, xri_2, xri_3,
         
-        mbyte_to_reg
+        mbyte_to_reg_1, mbyte_to_reg_2, alu_to_acc
     );
     
 --    type t_aluio is (

@@ -19,7 +19,7 @@ begin
     begin
         if reset = '1' then
             ps <= reset_state;
-        elsif clk'event and clk='0' then
+        elsif clk'event and clk='1' then
             ps <= ns;
         end if;
     end process;
@@ -34,15 +34,20 @@ begin
 		when address_state =>
             con(Epc) <= '1';
             con(Laddr) <= '1';
-            ns <= memory_state;
---			ns <= increment_state;
             
---		when increment_state =>
---            con(Ipc) <= '1';
---			ns <= memory_state;
+--            con(RegB2 downto RegB0) <= "111";
+--            con(EregB)  <= '1';
+--            con(La)  <= '1';
+    
+--            ns <= memory_state;
+			ns <= increment_state;
+            
+		when increment_state =>
+            con(Ipc) <= '1';
+			ns <= memory_state;
             
 		when memory_state =>
-            con(Ipc) <= '1';
+--            con(Ipc) <= '1';
             con(EdataL) <= '1';
             con(Li) <= '1';
 			ns <= decode_instruction;
@@ -54,10 +59,9 @@ begin
                     when "010" =>
 --                        <= opcode(5 downto 3);
                     when "110" => -- MVI r,<b>
---                        con(RegI2 downto RegI0) <= opcode(5 downto 3);
                         con(Epc)    <= '1';
                         con(Laddr)  <= '1';
-                        ns <= mbyte_to_reg;
+                        ns <= mbyte_to_reg_1;
                     when others =>
                         con <= (others => '0');
                         ns <= address_state;
@@ -76,18 +80,26 @@ begin
                     con(ALU2 downto ALU0) <= opcode(5 downto 3);
                     con(RegA2 downto RegA0) <= "111";
                     con(RegB2 downto RegB0) <= opcode(2 downto 0);
-                    con(RegI2 downto RegI0) <= "111";
-                    con(LregI)  <= '1';
-                    con(Eu)     <= '1';
+                    con(Lu)     <= '1';
+                    ns <= alu_to_acc;
                 when others =>
                     con <= (others => '0');
                     ns <= address_state;
             end case;
             
-        when mbyte_to_reg =>
-            con(RegI2 downto RegI0) <= opcode(5 downto 3);
+        when mbyte_to_reg_1 =>
             con(Ipc)    <= '1';
+            ns <= mbyte_to_reg_2;
+            
+        when mbyte_to_reg_2 =>
             con(EdataL) <= '1';
+            con(RegI2 downto RegI0) <= opcode(5 downto 3);
+            con(LregI)  <= '1';
+            ns <= address_state;
+            
+        when alu_to_acc =>
+            con(RegI2 downto RegI0) <= "111";
+            con(Eu)     <= '1';
             con(LregI)  <= '1';
             ns <= address_state;
             

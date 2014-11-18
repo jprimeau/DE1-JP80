@@ -24,12 +24,12 @@ entity jp80_cpu is
         -- BEGIN: SIMULATION ONLY
         con_out     : out t_control;
         bus_out     : out t_bus;
-        pc_out      : out t_address
+        pc_out      : out t_address;
 --        a_out       : out t_data;
 --        b_out       : out t_data;
 --        c_out       : out t_data;
 --        tmp_out     : out t_data;
---        alu_out     : out t_data
+        alu_out     : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_cpu;
@@ -60,14 +60,23 @@ architecture behv of jp80_cpu is
 --    signal F_reg    : t_data; -- FLAG
 --    signal H_reg    : t_data;
 --    signal L_reg    : t_data;
+
+    signal ACC_latch    : t_data;
     signal FLAG_Reg : t_data;
     signal TMP_reg  : t_data;
     signal ALU_reg  : t_data;
+    signal ALU_q    : t_data;
     signal PC_reg   : t_address;
     signal SP_reg   : t_address;
     signal ADDR_reg : t_address;
     signal DATA_reg : t_data;
     signal I_reg    : t_data;
+    
+    -- Buses
+    signal addr_bus     : t_address;
+    alias  addr_bus_h   is addr_bus(15 downto 8);
+    alias  addr_bus_l   is addr_bus(7 downto 0);
+    signal data_bus     : t_data;
 
     signal w_bus    : t_bus;
     alias  w_bus_h  is w_bus(15 downto 8);
@@ -96,7 +105,7 @@ begin
 --    b_out       <= B_reg;
 --    c_out       <= C_reg;
 --    tmp_out     <= TMP_reg;
---    alu_out     <= ALU_reg;
+    alu_out     <= ALU_reg;
     -- END: SIMULATION ONLY
 
     run:
@@ -118,24 +127,24 @@ begin
     begin
         if reset = '1' then
             PC_reg <= (others => '0');
-        elsif clk'event and clk = '0' then
+        elsif clk'event and clk = '1' then
             if con(Ipc) = '1' then
                 PC_reg <= PC_reg + 1;
             elsif con(Lpc) = '1' then
-                PC_reg <= w_bus;
+                PC_reg <= addr_bus;
             end if;
         end if;
     end process program_counter;
-    w_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
+    addr_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
 
     ADDR_register:
     process (clk, reset)
     begin
         if reset = '1' then
             ADDR_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
+        elsif clk'event and clk = '0' then
             if con(Laddr) = '1' then
-                ADDR_reg <= w_bus;
+                ADDR_reg <= addr_bus;
             end if;
         end if;
     end process ADDR_register;
@@ -156,6 +165,18 @@ begin
     w_bus_l <= DATA_reg when con(EdataL) = '1' else (others => 'Z');
     w_bus_h <= DATA_reg when con(EdataH) = '1' else (others => 'Z');
     
+    ACC_latch_process:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            ACC_latch <= (others => '0');
+        elsif clk'event and clk = '0' then
+            if con(La) = '1' then
+                ACC_latch <= w_bus_l;
+            end if;
+        end if;
+    end process ACC_latch_process;
+    
 --    A_register:
 --    process (clk, reset)
 --    begin
@@ -169,18 +190,18 @@ begin
 --    end process A_register;
 --    w_bus_l <= A_reg when con(Ea) = '1' else (others => 'Z');
     
-    TMP_register:
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            TMP_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lt) = '1' then
-                TMP_reg <= w_bus_l;
-            end if;
-        end if;
-    end process TMP_register;
-    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
+--    TMP_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            TMP_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lt) = '1' then
+--                TMP_reg <= w_bus_l;
+--            end if;
+--        end if;
+--    end process TMP_register;
+--    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
     
     REGISTERS : work.JP80_FILEREG
     port map (
@@ -205,15 +226,28 @@ begin
         opcode      => opcode,
         con         => con
     );
-
+    
+    ALU_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            ALU_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lu) = '1' then
+                ALU_reg <= ALU_q;
+            end if;
+        end if;
+    end process ALU_register;
+    w_bus_l <= ALU_reg when con(Eu) = '1' else (others => 'Z');
+    
     ALU : work.JP80_ALU
     port map (
         alucode     => con(ALU2 downto ALU0),
         bus_a       => alu_a,
         bus_b       => alu_b,
         flag_in     => FLAG_Reg,
-        en          => con(Eu),
-        q           => ALU_Reg,
+--        en          => con(Eu),
+        q           => ALU_q,
         flag_out    => FLAG_Reg
     );
     
@@ -300,7 +334,7 @@ begin
     begin
         if reset = '1' then
             I_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
+        elsif clk'event and clk = '0' then
             if con(Li) = '1' then
                 I_reg <= w_bus_l;
             end if;

@@ -51,9 +51,10 @@ entity jp80_top is
         IO_out      : out t_wire;
         halt_out    : out t_wire;
         
-        bus_out     : out t_bus;
+        addr_bus_out    : out t_address;
+        data_bus_out    : out t_data;
         pc_out      : out t_address;
---        a_out       : out t_data;
+        acc_out     : out t_data;
 --        tmp_out     : out t_data;
         alu_out     : out t_data
 --        b_out       : out t_data;
@@ -143,9 +144,10 @@ architecture behv of jp80_top is
     signal cpu_reqio        : t_wire;
     
     signal cpu_con          : t_control := (others => '0');
-    signal cpu_bus          : t_address;
+    signal cpu_addr_bus     : t_address;
+    signal cpu_data_bus     : t_data;
     signal cpu_pc           : t_address;
-    signal cpu_a            : t_data;
+    signal cpu_acc          : t_data;
     signal cpu_b            : t_data;
     signal cpu_c            : t_data;
     signal cpu_tmp          : t_data;
@@ -185,9 +187,10 @@ begin
     IO_out      <= cpu_con(IO);
     halt_out    <= cpu_con(HALT);
     
-    bus_out     <= cpu_bus;
+    addr_bus_out    <= cpu_addr_bus;
+    data_bus_out    <= cpu_data_bus;
     pc_out      <= cpu_pc;
---    a_out       <= cpu_a;
+    acc_out     <= cpu_acc;
 --    b_out       <= cpu_b;
 --    c_out       <= cpu_c;
 --    tmp_out     <= cpu_tmp;
@@ -229,9 +232,10 @@ begin
         
         -- BEGIN: SIMULATION ONLY
         con_out     => cpu_con,
-        bus_out     => cpu_bus,
+        addr_bus_out    => cpu_addr_bus,
+        data_bus_out    => cpu_data_bus,
         pc_out      => cpu_pc,
---        a_out       => cpu_a,
+        acc_out     => cpu_acc,
 --        b_out       => cpu_b,
 --        c_out       => cpu_c,
 --        tmp_out     => cpu_tmp,

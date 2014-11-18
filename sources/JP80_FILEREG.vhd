@@ -15,9 +15,7 @@ entity JP80_FILEREG is
         reg_wr_sel  : in t_regaddr;
         we          : in t_wire;
         out_a       : out t_data;
-        out_b       : out t_data;
-        alu_a_out   : out t_data;
-        alu_b_out   : out t_data
+        out_b       : out t_data
     );
 end JP80_FILEREG;
 
@@ -35,6 +33,4 @@ begin
     end process;
     out_a <= registers(conv_integer(reg_a_sel)) when en_a = '1' else (others=>'Z');
     out_b <= registers(conv_integer(reg_b_sel)) when en_b = '1' else (others=>'Z');
-    alu_a_out <= registers(conv_integer(reg_a_sel));
-    alu_b_out <= registers(conv_integer(reg_b_sel));
 end architecture;

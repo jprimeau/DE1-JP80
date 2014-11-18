@@ -8,6 +8,9 @@ entity JP80_MCODE is
         clk         : in t_wire;
         reset       : in t_wire;
         opcode      : in t_opcode;
+        
+        use_alu_q   : out t_flag;
+        
         con         : out t_control
     );
 end JP80_MCODE;
@@ -81,7 +84,10 @@ begin
                     con(RegA2 downto RegA0) <= "111";
                     con(RegB2 downto RegB0) <= opcode(2 downto 0);
                     con(Lu)     <= '1';
-                    ns <= alu_to_acc;
+                    con(RegI2 downto RegI0) <= "111";
+                    con(LregI)  <= '1';
+                    ns <= address_state;
+--                    ns <= alu_to_acc;
                 when others =>
                     con <= (others => '0');
                     ns <= address_state;
@@ -97,11 +103,11 @@ begin
             con(LregI)  <= '1';
             ns <= address_state;
             
-        when alu_to_acc =>
-            con(RegI2 downto RegI0) <= "111";
-            con(Eu)     <= '1';
-            con(LregI)  <= '1';
-            ns <= address_state;
+--        when alu_to_acc =>
+--            con(RegI2 downto RegI0) <= "111";
+--            con(Eu)     <= '1';
+--            con(LregI)  <= '1';
+--            ns <= address_state;
             
 		when others =>
             con <= (others => '0');

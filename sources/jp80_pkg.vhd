@@ -7,6 +7,7 @@ use ieee.std_logic_1164.all;
 package jp80_pkg is
 
     subtype t_wire is std_logic;
+    subtype t_flag is std_logic;
     subtype t_bus is std_logic_vector(15 downto 0);
     subtype t_address is std_logic_vector(15 downto 0);
     subtype t_data is std_logic_vector(7 downto 0);

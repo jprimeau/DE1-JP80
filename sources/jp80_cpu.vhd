@@ -23,9 +23,10 @@ entity jp80_cpu is
         
         -- BEGIN: SIMULATION ONLY
         con_out     : out t_control;
-        bus_out     : out t_bus;
+        addr_bus_out    : out t_address;
+        data_bus_out    : out t_data;
         pc_out      : out t_address;
---        a_out       : out t_data;
+        acc_out     : out t_data;
 --        b_out       : out t_data;
 --        c_out       : out t_data;
 --        tmp_out     : out t_data;
@@ -40,18 +41,18 @@ architecture behv of jp80_cpu is
 
 --    signal ns, ps   : t_cpu_state;
 
-    signal AF_reg   : t_address;
-    alias  A_reg    is AF_reg(15 downto 8);
-    alias  F_reg    is AF_reg(7 downto 0);
-    signal BC_reg   : t_address;
-    alias  B_reg    is BC_reg(15 downto 8);
-    alias  C_reg    is BC_reg(7 downto 0);
-    signal DE_reg   : t_address;
-    alias  D_reg    is DE_reg(15 downto 8);
-    alias  E_reg    is DE_reg(7 downto 0);
-    signal HL_reg   : t_address;
-    alias  H_reg    is HL_reg(15 downto 8);
-    alias  L_reg    is HL_reg(7 downto 0);
+--    signal AF_reg   : t_address;
+--    alias  A_reg    is AF_reg(15 downto 8);
+--    alias  F_reg    is AF_reg(7 downto 0);
+--    signal BC_reg   : t_address;
+--    alias  B_reg    is BC_reg(15 downto 8);
+--    alias  C_reg    is BC_reg(7 downto 0);
+--    signal DE_reg   : t_address;
+--    alias  D_reg    is DE_reg(15 downto 8);
+--    alias  E_reg    is DE_reg(7 downto 0);
+--    signal HL_reg   : t_address;
+--    alias  H_reg    is HL_reg(15 downto 8);
+--    alias  L_reg    is HL_reg(7 downto 0);
 --    signal A_reg    : t_data;
 --    signal B_reg    : t_data;
 --    signal C_reg    : t_data;
@@ -63,8 +64,8 @@ architecture behv of jp80_cpu is
 
     signal ACC_reg  : t_data;
     signal FLAG_Reg : t_data;
-    signal TMP_reg  : t_data;
-    signal ALU_reg  : t_data;
+--    signal TMP_reg  : t_data;
+--    signal ALU_reg  : t_data;
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
     signal SP_reg   : t_address;
@@ -78,16 +79,27 @@ architecture behv of jp80_cpu is
     alias  addr_bus_l   is addr_bus(7 downto 0);
     signal data_bus     : t_data;
 
-    signal w_bus    : t_bus;
-    alias  w_bus_h  is w_bus(15 downto 8);
-    alias  w_bus_l  is w_bus(7 downto 0);
+--    signal w_bus    : t_bus;
+--    alias  w_bus_h  is w_bus(15 downto 8);
+--    alias  w_bus_l  is w_bus(7 downto 0);
     
     signal opcode   : t_opcode;
     
     signal alu_a    : t_data;
     signal alu_b    : t_data;
+    signal bus_a    : t_data;
+    signal bus_b    : t_data;
+    signal reg_a    : t_data;
+    signal reg_b    : t_data;
+    
+    -- Microcode signals
+    signal use_alu_q    : t_flag;
 
     signal con      : t_control := (others => '0');
+    alias reg_a_addr is con(RegA2 downto RegA0);
+    alias reg_b_addr is con(RegB2 downto RegB0);
+    alias reg_i_addr is con(RegI2 downto RegI0);
+    alias alu_op     is con(ALU2 downto ALU0);
     
 begin
     addr_out    <= ADDR_reg;
@@ -99,13 +111,14 @@ begin
     
     -- BEGIN: SIMULATION ONLY
     con_out     <= con;
-    bus_out     <= w_bus;
+    addr_bus_out    <= addr_bus;
+    data_bus_out    <= data_bus;
     pc_out      <= PC_reg;
---    a_out       <= A_reg;
+    acc_out     <= ACC_reg;
 --    b_out       <= B_reg;
 --    c_out       <= C_reg;
 --    tmp_out     <= TMP_reg;
-    alu_out     <= ALU_reg;
+    alu_out     <= ALU_Q;
     -- END: SIMULATION ONLY
 
     run:
@@ -156,45 +169,44 @@ begin
             DATA_reg <= (others => '0');
         elsif clk'event and clk = '0' then
             if con(Ldata) = '1' then
-                DATA_reg <= w_bus_l;
+                DATA_reg <= data_bus;
             else
                 DATA_reg <= data_inout;
             end if;
         end if;
     end process DATA_register;
-    w_bus_l <= DATA_reg when con(EdataL) = '1' else (others => 'Z');
-    w_bus_h <= DATA_reg when con(EdataH) = '1' else (others => 'Z');
+    data_bus <= DATA_reg when con(EdataL) = '1' else (others => 'Z');
    
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            AF_reg <= (others => '0');
-            BC_reg <= (others => '0');
-            DE_reg <= (others => '0');
-            HL_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(LregI) = '1' then
-                case con(RegI2 downto RegI0) is
-                    when "111" => A_reg <= data_bus;
-                    when "000" => B_reg <= data_bus;
-                    when "001" => C_reg <= data_bus;
-                    when "010" => D_reg <= data_bus;
-                    when "011" => E_reg <= data_bus;
-                    when "100" => H_reg <= data_bus;
-                    when "101" => L_reg <= data_bus;
-                    when others => null;
-                end case;
-            end if;
-        end if;
-    end process;
-    data_bus <= A_reg when con(RegA2 downto RegA0) = "111" and con(EregA) = '1' else
-                B_reg when con(RegA2 downto RegA0) = "000" and con(EregA) = '1' else
-                C_reg when con(RegA2 downto RegA0) = "001" and con(EregA) = '1' else
-                D_reg when con(RegA2 downto RegA0) = "010" and con(EregA) = '1' else
-                E_reg when con(RegA2 downto RegA0) = "011" and con(EregA) = '1' else
-                H_reg when con(RegA2 downto RegA0) = "100" and con(EregA) = '1' else
-                L_reg when con(RegA2 downto RegA0) = "101" and con(EregA) = '1' else
-                (others => 'Z');
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            AF_reg <= (others => '0');
+--            BC_reg <= (others => '0');
+--            DE_reg <= (others => '0');
+--            HL_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(LregI) = '1' then
+--                case con(RegI2 downto RegI0) is
+--                    when "111" => A_reg <= w_bus_l;
+--                    when "000" => B_reg <= w_bus_l;
+--                    when "001" => C_reg <= w_bus_l;
+--                    when "010" => D_reg <= w_bus_l;
+--                    when "011" => E_reg <= w_bus_l;
+--                    when "100" => H_reg <= w_bus_l;
+--                    when "101" => L_reg <= w_bus_l;
+--                    when others => null;
+--                end case;
+--            end if;
+--        end if;
+--    end process;
+--    w_bus_l <= A_reg when con(RegA2 downto RegA0) = "111" and con(EregA) = '1' else
+--                B_reg when con(RegA2 downto RegA0) = "000" and con(EregA) = '1' else
+--                C_reg when con(RegA2 downto RegA0) = "001" and con(EregA) = '1' else
+--                D_reg when con(RegA2 downto RegA0) = "010" and con(EregA) = '1' else
+--                E_reg when con(RegA2 downto RegA0) = "011" and con(EregA) = '1' else
+--                H_reg when con(RegA2 downto RegA0) = "100" and con(EregA) = '1' else
+--                L_reg when con(RegA2 downto RegA0) = "101" and con(EregA) = '1' else
+--                (others => 'Z');
     
 --    TMP_register:
 --    process (clk, reset)
@@ -209,48 +221,81 @@ begin
 --    end process TMP_register;
 --    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
     
---    REGISTERS : work.JP80_FILEREG
---    port map (
---        clk         => clk,
---        input       => w_bus_l,
---        en_a        => con(EregA),
---        en_b        => con(EregB),
---        reg_a_sel   => con(RegA2 downto RegA0),
---        reg_b_sel   => con(RegB2 downto RegB0),
---        reg_wr_sel  => con(RegI2 downto RegI0),
---        we          => con(LregI),
---        out_a       => open,
---        out_b       => w_bus_l,
---        alu_a_out   => alu_a,
---        alu_b_out   => alu_b
---    );
+    REGISTERS : work.JP80_FILEREG
+    port map (
+        clk         => clk,
+        input       => data_bus,
+        en_a        => con(EregA),
+        en_b        => con(EregB),
+        reg_a_sel   => reg_a_addr,
+        reg_b_sel   => reg_b_addr,
+        reg_wr_sel  => reg_i_addr,
+        we          => con(LregI),
+        out_a       => reg_a,
+        out_b       => reg_b
+    );
     
     MICROCODE : work.JP80_MCODE
     port map (
         clk         => clk,
         reset       => reset,
         opcode      => opcode,
+        
+        use_alu_q   => use_alu_q,
+        
         con         => con
     );
     
-    ALU_register:
-    process (clk, reset)
+    curr_data <= DATA_reg when use_alu_q = '0' else ALU_q;
+    
+    process (clk)
     begin
-        if reset = '1' then
-            ALU_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lu) = '1' then
-                ALU_reg <= ALU_q;
-            end if;
+        if clk'event and clk = '1' then
+            case reg_a_addr is
+            when "111" =>
+                bus_a <= ACC_reg;
+            when others =>
+                bus_a <= reg_a;
+            end case;
+            case reg_b_addr is
+            when "111" =>
+                bus_b <= ACC_reg;
+            when others =>
+                bus_b <= reg_b;
+            end case;
         end if;
-    end process ALU_register;
-    w_bus_l <= ALU_reg when con(Eu) = '1' else (others => 'Z');
+        if use_alu_q = '1' then
+            ACC_reg <= ALU_q;
+        else
+            ACC_reg <= DATA_reg;
+        end if;
+    end process;
+--    
+--    process (con(Lu))
+--    begin
+--        if con(Lu) = '1' then
+--            ACC_reg <= ALU_q;
+--        end if;
+--    end process;
+    
+--    ALU_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            ALU_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lu) = '1' then
+--                ALU_reg <= ALU_q;
+--            end if;
+--        end if;
+--    end process ALU_register;
+--    w_bus_l <= ALU_reg when con(Eu) = '1' else (others => 'Z');
     
     ALU : work.JP80_ALU
     port map (
-        alucode     => con(ALU2 downto ALU0),
-        bus_a       => A_reg,
-        bus_b       => data_bus_l,
+        alucode     => alu_op,
+        bus_a       => bus_a,
+        bus_b       => bus_b,
         flag_in     => FLAG_Reg,
 --        en          => con(Eu),
         q           => ALU_q,
@@ -264,7 +309,7 @@ begin
             I_reg <= (others => '0');
         elsif clk'event and clk = '0' then
             if con(Li) = '1' then
-                I_reg <= w_bus_l;
+                I_reg <= data_bus;
             end if;
         end if;
     end process I_register;

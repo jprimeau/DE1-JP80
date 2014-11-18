@@ -40,18 +40,18 @@ architecture behv of jp80_cpu is
 
 --    signal ns, ps   : t_cpu_state;
 
---    signal AF_reg   : t_address;
---    alias  A_reg    is AF_reg(15 downto 8);
---    alias  F_reg    is AF_reg(7 downto 0);
---    signal BC_reg   : t_address;
---    alias  B_reg    is BC_reg(15 downto 8);
---    alias  C_reg    is BC_reg(7 downto 0);
---    signal DE_reg   : t_address;
---    alias  D_reg    is DE_reg(15 downto 8);
---    alias  E_reg    is DE_reg(7 downto 0);
---    signal HL_reg   : t_address;
---    alias  H_reg    is HL_reg(15 downto 8);
---    alias  L_reg    is HL_reg(7 downto 0);
+    signal AF_reg   : t_address;
+    alias  A_reg    is AF_reg(15 downto 8);
+    alias  F_reg    is AF_reg(7 downto 0);
+    signal BC_reg   : t_address;
+    alias  B_reg    is BC_reg(15 downto 8);
+    alias  C_reg    is BC_reg(7 downto 0);
+    signal DE_reg   : t_address;
+    alias  D_reg    is DE_reg(15 downto 8);
+    alias  E_reg    is DE_reg(7 downto 0);
+    signal HL_reg   : t_address;
+    alias  H_reg    is HL_reg(15 downto 8);
+    alias  L_reg    is HL_reg(7 downto 0);
 --    signal A_reg    : t_data;
 --    signal B_reg    : t_data;
 --    signal C_reg    : t_data;
@@ -61,7 +61,7 @@ architecture behv of jp80_cpu is
 --    signal H_reg    : t_data;
 --    signal L_reg    : t_data;
 
-    signal ACC_latch    : t_data;
+    signal ACC_reg  : t_data;
     signal FLAG_Reg : t_data;
     signal TMP_reg  : t_data;
     signal ALU_reg  : t_data;
@@ -164,31 +164,37 @@ begin
     end process DATA_register;
     w_bus_l <= DATA_reg when con(EdataL) = '1' else (others => 'Z');
     w_bus_h <= DATA_reg when con(EdataH) = '1' else (others => 'Z');
-    
-    ACC_latch_process:
+   
     process (clk, reset)
     begin
         if reset = '1' then
-            ACC_latch <= (others => '0');
-        elsif clk'event and clk = '0' then
-            if con(La) = '1' then
-                ACC_latch <= w_bus_l;
+            AF_reg <= (others => '0');
+            BC_reg <= (others => '0');
+            DE_reg <= (others => '0');
+            HL_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(LregI) = '1' then
+                case con(RegI2 downto RegI0) is
+                    when "111" => A_reg <= data_bus;
+                    when "000" => B_reg <= data_bus;
+                    when "001" => C_reg <= data_bus;
+                    when "010" => D_reg <= data_bus;
+                    when "011" => E_reg <= data_bus;
+                    when "100" => H_reg <= data_bus;
+                    when "101" => L_reg <= data_bus;
+                    when others => null;
+                end case;
             end if;
         end if;
-    end process ACC_latch_process;
-    
---    A_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            A_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(La) = '1' then
---                A_reg <= w_bus_l;
---            end if;
---        end if;
---    end process A_register;
---    w_bus_l <= A_reg when con(Ea) = '1' else (others => 'Z');
+    end process;
+    data_bus <= A_reg when con(RegA2 downto RegA0) = "111" and con(EregA) = '1' else
+                B_reg when con(RegA2 downto RegA0) = "000" and con(EregA) = '1' else
+                C_reg when con(RegA2 downto RegA0) = "001" and con(EregA) = '1' else
+                D_reg when con(RegA2 downto RegA0) = "010" and con(EregA) = '1' else
+                E_reg when con(RegA2 downto RegA0) = "011" and con(EregA) = '1' else
+                H_reg when con(RegA2 downto RegA0) = "100" and con(EregA) = '1' else
+                L_reg when con(RegA2 downto RegA0) = "101" and con(EregA) = '1' else
+                (others => 'Z');
     
 --    TMP_register:
 --    process (clk, reset)
@@ -203,21 +209,21 @@ begin
 --    end process TMP_register;
 --    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
     
-    REGISTERS : work.JP80_FILEREG
-    port map (
-        clk         => clk,
-        input       => w_bus_l,
-        en_a        => con(EregA),
-        en_b        => con(EregB),
-        reg_a_sel   => con(RegA2 downto RegA0),
-        reg_b_sel   => con(RegB2 downto RegB0),
-        reg_wr_sel  => con(RegI2 downto RegI0),
-        we          => con(LregI),
-        out_a       => open,
-        out_b       => w_bus_l,
-        alu_a_out   => alu_a,
-        alu_b_out   => alu_b
-    );
+--    REGISTERS : work.JP80_FILEREG
+--    port map (
+--        clk         => clk,
+--        input       => w_bus_l,
+--        en_a        => con(EregA),
+--        en_b        => con(EregB),
+--        reg_a_sel   => con(RegA2 downto RegA0),
+--        reg_b_sel   => con(RegB2 downto RegB0),
+--        reg_wr_sel  => con(RegI2 downto RegI0),
+--        we          => con(LregI),
+--        out_a       => open,
+--        out_b       => w_bus_l,
+--        alu_a_out   => alu_a,
+--        alu_b_out   => alu_b
+--    );
     
     MICROCODE : work.JP80_MCODE
     port map (
@@ -243,91 +249,13 @@ begin
     ALU : work.JP80_ALU
     port map (
         alucode     => con(ALU2 downto ALU0),
-        bus_a       => alu_a,
-        bus_b       => alu_b,
+        bus_a       => A_reg,
+        bus_b       => data_bus_l,
         flag_in     => FLAG_Reg,
 --        en          => con(Eu),
         q           => ALU_q,
         flag_out    => FLAG_Reg
     );
-    
---    B_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            B_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Lb) = '1' then
---                B_reg <= w_bus_l;
---            end if;
---        end if;
---    end process B_register;
---    w_bus_l <= B_reg when con(Eb) = '1' else (others => 'Z');
-    
---    C_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            C_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Lc) = '1' then
---                C_reg <= w_bus_l;
---            end if;
---        end if;
---    end process C_register;
---    w_bus_l <= C_reg when con(Ec) = '1' else (others => 'Z');
-    
---    D_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            D_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Ld) = '1' then
---                D_reg <= w_bus_l;
---            end if;
---        end if;
---    end process D_register;
---    w_bus_l <= D_reg when con(Ed) = '1' else (others => 'Z');
-    
---    E_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            E_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Le) = '1' then
---                E_reg <= w_bus_l;
---            end if;
---        end if;
---    end process E_register;
---    w_bus_l <= E_reg when con(Ee) = '1' else (others => 'Z');
-    
---    H_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            H_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Lh) = '1' then
---                H_reg <= w_bus_l;
---            end if;
---        end if;
---    end process H_register;
---    w_bus_h <= H_reg when con(Eh) = '1' else (others => 'Z');
-    
---    L_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            L_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Ll) = '1' then
---                L_reg <= w_bus_l;
---            end if;
---        end if;
---    end process L_register;
---    w_bus_l <= L_reg when con(El) = '1' else (others => 'Z');
     
     I_register:
     process (clk, reset)

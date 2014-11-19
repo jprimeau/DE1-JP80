@@ -7,6 +7,29 @@ use work.jp80_pkg.all;
 entity JP80_FILEREG is
     port (
         clk         : in t_wire;
+        addr_bus_in : in t_address;
+        
+    en
+    00 -> disabled
+    01 -> high -> data
+    10 -> low -> data
+    11 -> addr
+    
+    addr_bus_in
+    data_bus_in
+    
+    addr_bus_out
+    data_bus_out
+    
+    in_reg_addr
+    out_reg_addr
+    
+    we
+    00 -> disabled
+    01 -> data -> high
+    10 -> data -> low
+    11 -> addr
+        
         input       : in t_data;
         en_a        : in t_wire;
         en_b        : in t_wire;

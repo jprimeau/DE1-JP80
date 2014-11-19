@@ -44,9 +44,9 @@ architecture behv of jp80_cpu is
 --    signal AF_reg   : t_address;
 --    alias  A_reg    is AF_reg(15 downto 8);
 --    alias  F_reg    is AF_reg(7 downto 0);
---    signal BC_reg   : t_address;
---    alias  B_reg    is BC_reg(15 downto 8);
---    alias  C_reg    is BC_reg(7 downto 0);
+    signal BC_reg   : t_address;
+    alias  B_reg    is BC_reg(15 downto 8);
+    alias  C_reg    is BC_reg(7 downto 0);
 --    signal DE_reg   : t_address;
 --    alias  D_reg    is DE_reg(15 downto 8);
 --    alias  E_reg    is DE_reg(7 downto 0);
@@ -220,20 +220,89 @@ begin
 --        end if;
 --    end process TMP_register;
 --    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
+
+
+    BC_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            BC_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lbc) = '1' then
+                BC_reg <= addr_bus;
+            else
+                if con(Lb) = '1' then
+                    B_reg <= data_bus;
+                end if;
+                if con(Lc) = '1' then
+                    C_reg <= data_bus;
+                end if;
+            end if;
+        end if;
+    end process BC_register;
+    data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
+    data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
+    addr_bus <= BC_reg when con(Ebc) = '1' else (others => 'Z');
     
-    REGISTERS : work.JP80_FILEREG
-    port map (
-        clk         => clk,
-        input       => data_bus,
-        en_a        => con(EregA),
-        en_b        => con(EregB),
-        reg_a_sel   => reg_a_addr,
-        reg_b_sel   => reg_b_addr,
-        reg_wr_sel  => reg_i_addr,
-        we          => con(LregI),
-        out_a       => reg_a,
-        out_b       => reg_b
-    );
+    DE_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            DE_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lde) = '1' then
+                DE_reg <= addr_bus;
+            else
+                if con(Ld) = '1' then
+                    D_reg <= data_bus;
+                end if;
+                if con(Le) = '1' then
+                    E_reg <= data_bus;
+                end if;
+            end if;
+        end if;
+    end process DE_register;
+    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
+    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
+    addr_bus <= DE_reg when con(Ede) = '1' else (others => 'Z');
+    
+    HL_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            HL_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lhl) = '1' then
+                HL_reg <= addr_bus;
+            else
+                if con(Lh) = '1' then
+                    H_reg <= data_bus;
+                end if;
+                if con(Ll) = '1' then
+                    L_reg <= data_bus;
+                end if;
+            end if;
+        end if;
+    end process HL_register;
+    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
+    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
+    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
+    
+
+    
+--    REGISTERS : work.JP80_FILEREG
+--    port map (
+--        clk         => clk,
+--        input       => data_bus,
+--        en_a        => con(EregA),
+--        en_b        => con(EregB),
+--        reg_a_sel   => reg_a_addr,
+--        reg_b_sel   => reg_b_addr,
+--        reg_wr_sel  => reg_i_addr,
+--        we          => con(LregI),
+--        out_a       => reg_a,
+--        out_b       => reg_b
+--    );
     
     MICROCODE : work.JP80_MCODE
     port map (

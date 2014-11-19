@@ -6,54 +6,43 @@ use work.jp80_pkg.all;
     
 entity JP80_FILEREG is
     port (
-        clk         : in t_wire;
-        addr_bus_in : in t_address;
-        
-    en
-    00 -> disabled
-    01 -> high -> data
-    10 -> low -> data
-    11 -> addr
-    
-    addr_bus_in
-    data_bus_in
-    
-    addr_bus_out
-    data_bus_out
-    
-    in_reg_addr
-    out_reg_addr
-    
-    we
-    00 -> disabled
-    01 -> data -> high
-    10 -> data -> low
-    11 -> addr
-        
-        input       : in t_data;
-        en_a        : in t_wire;
-        en_b        : in t_wire;
-        reg_a_sel   : in t_regaddr;
-        reg_b_sel   : in t_regaddr;
-        reg_wr_sel  : in t_regaddr;
-        we          : in t_wire;
-        out_a       : out t_data;
-        out_b       : out t_data
+        clk             : in t_wire;
+        data_in_h       : in t_data;
+        data_in_l       : in t_data;
+        we_h            : in t_wire;
+        we_l            : in t_wire;
+        reg_addr_in     : in t_regaddr;
+        reg_addr_out_a  : in t_regaddr;
+        reg_addr_out_b  : in t_regaddr;
+        data_out_a_h    : out t_data;
+        data_out_a_l    : out t_data;
+        en_a_h          : in t_wire;
+        en_a_l          : in t_wire;
+        data_out_b_h    : out t_data;
+        data_out_b_l    : out t_data;
+        en_b_h          : in t_wire;
+        en_b_l          : in t_wire
     );
 end JP80_FILEREG;
 
 architecture rtl of JP80_FILEREG is
-    type file_register is array(0 to 7) of t_data;
-    signal registers : file_register;
+    type file_register is array(0 to 3) of t_data;
+    signal regs_h : file_register;
+    signal regs_l : file_register;
 begin
     process (clk)
     begin
         if clk'event and clk = '0' then
-            if we = '1' then
-                registers(conv_integer(reg_wr_sel)) <= input;
+            if we_h = '1' then
+                regs_h(conv_integer(reg_addr_in)) <= data_in_h;
+            end if;
+            if we_l = '1' then
+                regs_l(conv_integer(reg_addr_in)) <= data_in_l;
             end if;
         end if;
     end process;
-    out_a <= registers(conv_integer(reg_a_sel)) when en_a = '1' else (others=>'Z');
-    out_b <= registers(conv_integer(reg_b_sel)) when en_b = '1' else (others=>'Z');
+    data_out_a_h <= regs_h(conv_integer(reg_addr_out_a)) when en_a_h = '1' else (others=>'Z');
+    data_out_a_l <= regs_l(conv_integer(reg_addr_out_a)) when en_a_l = '1' else (others=>'Z');
+    data_out_b_h <= regs_h(conv_integer(reg_addr_out_b)) when en_b_h = '1' else (others=>'Z');
+    data_out_b_l <= regs_l(conv_integer(reg_addr_out_b)) when en_b_l = '1' else (others=>'Z');
 end architecture;

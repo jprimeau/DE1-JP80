@@ -222,71 +222,71 @@ begin
 --    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
 
 
-    BC_register:
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            BC_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lbc) = '1' then
-                BC_reg <= addr_bus;
-            else
-                if con(Lb) = '1' then
-                    B_reg <= data_bus;
-                end if;
-                if con(Lc) = '1' then
-                    C_reg <= data_bus;
-                end if;
-            end if;
-        end if;
-    end process BC_register;
-    data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
-    data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
-    addr_bus <= BC_reg when con(Ebc) = '1' else (others => 'Z');
-    
-    DE_register:
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            DE_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lde) = '1' then
-                DE_reg <= addr_bus;
-            else
-                if con(Ld) = '1' then
-                    D_reg <= data_bus;
-                end if;
-                if con(Le) = '1' then
-                    E_reg <= data_bus;
-                end if;
-            end if;
-        end if;
-    end process DE_register;
-    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
-    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
-    addr_bus <= DE_reg when con(Ede) = '1' else (others => 'Z');
-    
-    HL_register:
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            HL_reg <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(Lhl) = '1' then
-                HL_reg <= addr_bus;
-            else
-                if con(Lh) = '1' then
-                    H_reg <= data_bus;
-                end if;
-                if con(Ll) = '1' then
-                    L_reg <= data_bus;
-                end if;
-            end if;
-        end if;
-    end process HL_register;
-    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
-    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
-    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
+--    BC_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            BC_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lbc) = '1' then
+--                BC_reg <= addr_bus;
+--            else
+--                if con(Lb) = '1' then
+--                    B_reg <= data_bus;
+--                end if;
+--                if con(Lc) = '1' then
+--                    C_reg <= data_bus;
+--                end if;
+--            end if;
+--        end if;
+--    end process BC_register;
+--    data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
+--    data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
+--    addr_bus <= BC_reg when con(Ebc) = '1' else (others => 'Z');
+--    
+--    DE_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            DE_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lde) = '1' then
+--                DE_reg <= addr_bus;
+--            else
+--                if con(Ld) = '1' then
+--                    D_reg <= data_bus;
+--                end if;
+--                if con(Le) = '1' then
+--                    E_reg <= data_bus;
+--                end if;
+--            end if;
+--        end if;
+--    end process DE_register;
+--    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
+--    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
+--    addr_bus <= DE_reg when con(Ede) = '1' else (others => 'Z');
+--    
+--    HL_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            HL_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lhl) = '1' then
+--                HL_reg <= addr_bus;
+--            else
+--                if con(Lh) = '1' then
+--                    H_reg <= data_bus;
+--                end if;
+--                if con(Ll) = '1' then
+--                    L_reg <= data_bus;
+--                end if;
+--            end if;
+--        end if;
+--    end process HL_register;
+--    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
+--    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
+--    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
     
 
     
@@ -315,7 +315,7 @@ begin
         con         => con
     );
     
-    curr_data <= DATA_reg when use_alu_q = '0' else ALU_q;
+--    curr_data <= DATA_reg when use_alu_q = '0' else ALU_q;
     
     process (clk)
     begin

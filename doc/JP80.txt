@@ -1,0 +1,184 @@
+Registers
+---------
+ACC
+B
+C
+D
+E
+HL
+PC
+SP
+
+Epc     Enable Program Counter
+Lmar    Load Memory Address Register
+Eacc    Enable Accumulator
+Lalu    Load Arithmetic Logic Unit
+Ipc     Increment Program Counter
+
+Groups
+ALU             CMA, CMC, DAA, RAL, RAR, RLC, RRC
+ALU+data(8b)    ACI, ADI, ANI, ORI, SBI, SUI, XRI
+ALU+R           ADC, ADD, ANA, DCR, INR, ORA, SBB, SUB, XRA
+ALU+M           ADC, ADD, ANA, DCR, INR, ORA, SBB, SUB, XRA
+
+        M1T1    Epc, Lmar, Eacc, Lalu
+        M1T2    Ipc
+        M1T3    Emdr, Li
+        M1T4    *
+
+        M2T1    Esrc, Lmar
+        M2T2    Inc
+        M2T3    Emdr, Ldst
+        
+        M3T1    Esrc, Lmar
+        M3T2    Inc
+        M3T3    Emdr, Ldst
+        
+ACI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+ADC R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+ADC M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+ADD R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+ADD M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+ADI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+ANA R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+ANA M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+ANI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+***CALL address(16b)       3/5/18
+***CC address(16b)         3/2/9 3/5/18
+***CNC address(16b)        3/2/9 3/5/18
+***CP address(16b)         3/2/9 3/5/18
+***CM address(16b)         3/2/9 3/5/18
+***CPE address(16b)        3/2/9 3/5/18
+***CPO address(16b)        3/2/9 3/5/18
+***CZ address(16b)         3/2/9 3/5/18
+***CNZ address(16b)        3/2/9 3/5/18
+CMA                     1/1/4
+        M1T4    ALU
+CMC                     1/1/4
+        M1T4    ALU
+CMP R                   1/1/4
+        M1T4    FLAG
+CMP M                   1/2/7
+        M1T4    FLAG, SRC(hl), DST(alu), M2
+CPI data(8b)            2/2/7
+        M1T4    FLAG, SRC(pc), DST(alu), M2
+DAA                     1/1/4
+        M1T4    ALU
+***DAD Rp                  1/3/10
+DCR R                   1/1/4
+        M1T4    ALU
+DCR M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+***DCX Rp                  1/1/6
+***DI                      1/1/4
+***EI                      1/1/4
+HLT                     1/1/4
+        M1T4    halt
+***IN port address(8b)     2/3/10 
+INR R                   1/1/4
+        M1T4    ALU
+INR M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+***INX Rp                  1/1/6
+***JMP address(16b)        3/3/10
+***JC address(16b)         3/2/7 3/3/10
+***JNC address(16b)        3/2/7 3/3/10
+***JP address(16b)         3/2/7 3/3/10
+***JM address(16b)         3/2/7 3/3/10
+***JPE address(16b)        3/2/7 3/3/10
+***JPO address(16b)        3/2/7 3/3/10
+***JZ address(16b)         3/2/7 3/3/10
+***JNZ address(16b)        3/2/7 3/3/10
+***LDA address(16b)        3/4/13
+        X1      SRC(pc), DST(l), M2
+        X2      SRC(pc), DST(h), M2
+        X3      SRC(hl), DST(acc), M2
+***LDAX Rp                 1/2/7
+        X3      SRC(p), DST(acc), M2
+***LHLD address(16b)       3/5/16
+***LXI Rp,data(16b)        3/3/10
+MOV Rd, Rs              1/1/4
+        M1T4    SRC(reg), DST(reg)
+MOV M, Rs               1/2/7
+        M1T4    SRC(reg), DST(hl)
+MOV Rd, M               1/2/7
+        M1T4    SRC(hl), DST(reg), M2
+MVI R,data(8b)          2/2/7
+        M1T4    SRC(pc), DST(reg), M2
+***MVI M,data(8b)          2/3/10
+NOP                     1/1/4
+        M1T4    nop
+ORA R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+ORA M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+ORI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+***OUT port address(8b)    2/3/10
+***PCHL                    1/1/6
+***POP Rp                  1/3/10
+***PUSH Rp                 1/3/12
+RAL                     1/1/4
+        M1T4    ALU
+RAR                     1/1/4
+        M1T4    ALU
+RLC                     1/1/4
+        M1T4    ALU
+RRC                     1/1/4
+        M1T4    ALU
+***RET                     1/3/10
+***RC                      1/1/6 1/3/12
+***RNC                     1/1/6 1/3/12
+***RP                      1/1/6 1/3/12
+***RM                      1/1/6 1/3/12
+***RPE                     1/1/6 1/3/12
+***RPO                     1/1/6 1/3/12
+***RZ                      1/1/6 1/3/12
+***RNZ                     1/1/6 1/3/12
+***RIM                     1/1/4
+***RST n                   1/1/4
+SBB R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+SBB M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+SBI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+***SHLD address(16b)       3/5/16
+***SIM                     1/1/4
+***SPHL                    1/1/6
+***STA address(16b)        3/4/13
+        X1      SRC(pc), DST(l), M2
+        X2      SRC(pc), DST(h), M2
+        X3      SRC(hl), DST(mem), M3
+***STAX Rp                 1/2/7
+STC                     1/1/4
+        M1T4    FLAG
+SUB R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+SUB M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+SUI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+***XCHG                    1/1/4
+XRA R                   1/1/4
+        M1T4    ALU, SRC(reg), DST(alu)
+XRA M                   1/2/7
+        M1T4    ALU, SRC(hl), DST(alu), M2
+XRI data(8b)            2/2/7
+        M1T4    ALU, SRC(pc), DST(alu), M2
+***XTHL                    1/5/16
+
+data_to_alu
+flags_to_alu
+reg_to_alu
+alu_to_acc
+mem_to_alu

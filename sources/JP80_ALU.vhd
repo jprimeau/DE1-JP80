@@ -16,15 +16,15 @@ entity JP80_ALU is
 end JP80_ALU;
 
 architecture rtl of JP80_ALU is
-    signal cout_i   : t_data;
-    signal c_i      : t_wire;
-    signal c7_i     : t_wire;
-    signal h_i      : t_wire;
-    signal p_i      : t_wire;
-    signal sub_i    : t_wire;
-    signal q_i      : t_data;
-	signal q_t      : t_data;
-    signal cin_i    : t_wire;
+    signal cout_i   : t_data := (others=>'0');
+    signal c_i      : t_wire := '0';
+    signal c7_i     : t_wire := '0';
+    signal h_i      : t_wire := '0';
+    signal p_i      : t_wire := '0';
+    signal sub_i    : t_wire := '0';
+    signal q_i      : t_data := (others=>'0');
+	signal q_t      : t_data := (others=>'0');
+    signal cin_i    : t_wire := '0';
     
     procedure AddSub(
         a_i         : in t_data;

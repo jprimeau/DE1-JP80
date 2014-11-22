@@ -33,6 +33,15 @@ entity jp80_top is
         Lmdr_out    : out t_wire;
         Emdr_out    : out t_wire;
         Lir_out     : out t_wire;
+        Esrc_out    : out t_wire;
+        Ldst_out    : out t_wire;
+        LaluA_out   : out t_wire;
+        LaluB_out   : out t_wire;
+        
+        srcACC_out  : out t_wire;
+        srcB_out    : out t_wire;
+        dstACC_out  : out t_wire;
+        dstB_out    : out t_wire;
 
 --        EregA_out   : out t_wire;
 --        EregB_out   : out t_wire;
@@ -51,11 +60,11 @@ entity jp80_top is
         halt_out    : out t_wire;
         
         addr_bus_out    : out t_address;
---        data_bus_out    : out t_data;
+        data_bus_out    : out t_data;
         pc_out      : out t_address;
         acc_out     : out t_8bit;
 --        tmp_out     : out t_data;
---        alu_out     : out t_data
+        alu_out     : out t_data;
         bc_out          : out t_16bit;
 --        c_out       : out t_data
         tstate_out      : out t_tstate
@@ -69,7 +78,7 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"3E",x"10",x"47",x"76",x"80",x"76",x"FF",x"FF", -- 00H
+        x"3E",x"10",x"06",x"05",x"80",x"76",x"FF",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
@@ -152,6 +161,8 @@ architecture behv of jp80_top is
     signal cpu_c            : t_data;
     signal cpu_tmp          : t_data;
     signal cpu_alu          : t_data;
+    signal cpu_src          : t_regaddr;
+    signal cpu_dst          : t_regaddr;
     signal cpu_tstate       : t_tstate;
     
 begin
@@ -170,6 +181,15 @@ begin
     Lmdr_out    <= cpu_con(Lmdr);
     Emdr_out    <= cpu_con(Emdr);
     Lir_out     <= cpu_con(Lir);
+    Esrc_out    <= cpu_con(Esrc);
+    Ldst_out    <= cpu_con(Ldst);
+    LaluA_out   <= cpu_con(LaluA);
+    LaluB_out   <= cpu_con(LaluB);
+    
+    srcACC_out  <= cpu_src(sdACC);
+    srcB_out    <= cpu_src(sdB);
+    dstACC_out  <= cpu_dst(sdACC);
+    dstB_out    <= cpu_dst(sdB);
 
 --    EregA_out   <= cpu_con(EregA);
 --    EregB_out   <= cpu_con(EregB);
@@ -188,13 +208,13 @@ begin
     halt_out    <= cpu_con(HALT);
     
     addr_bus_out    <= cpu_addr_bus;
---    data_bus_out    <= cpu_data_bus;
+    data_bus_out    <= cpu_data_bus;
     pc_out          <= cpu_pc;
     acc_out         <= cpu_acc;
     bc_out          <= cpu_bc;
 --    c_out       <= cpu_c;
 --    tmp_out     <= cpu_tmp;
---    alu_out     <= cpu_alu;
+    alu_out         <= cpu_alu;
     tstate_out      <= cpu_tstate;
     -- END: SIMULATION ONLY
 
@@ -241,6 +261,8 @@ begin
 --        c_out       => cpu_c,
 --        tmp_out     => cpu_tmp,
         alu_out     => cpu_alu,
+        src_out     => cpu_src,
+        dst_out     => cpu_dst,
         tstate_out  => cpu_tstate
         -- END: SIMULATION ONLY
     );

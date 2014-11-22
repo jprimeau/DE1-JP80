@@ -15,8 +15,13 @@ package jp80_pkg is
     subtype t_control is std_logic_vector(31 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
     
-    subtype t_regaddr is std_logic_vector(2 downto 0);
+    subtype t_regaddr is std_logic_vector(15 downto 0);
     subtype t_aluop is std_logic_vector(2 downto 0);
+    
+    subtype t_8bit is std_logic_vector(7 downto 0);
+    subtype t_16bit is std_logic_vector(15 downto 0);
+    
+    subtype t_tstate is integer;
 
     -- Op code
 --    constant I_ACI      : t_opcode := x"CE";
@@ -166,12 +171,14 @@ package jp80_pkg is
     constant Lpc    : integer := 00;
     constant Ipc    : integer := 01;
     constant Epc    : integer := 02;
-    constant Laddr  : integer := 03;
-    constant Ldata  : integer := 04;
-    constant EdataL : integer := 05;
-    constant EdataH : integer := 06;
-    constant Li     : integer := 07;
-    constant La     : integer := 23;
+    constant Lmar   : integer := 03;
+    constant Lmdr   : integer := 04;
+    constant Emdr   : integer := 05;
+
+    constant Lir    : integer := 07;
+    constant Esrc   : integer := 08;
+    constant Ldst   : integer := 09;
+--    constant La     : integer := 23;
 --    constant Ea     : integer := 09;
 --    constant Lb     : integer := 10;
 --    constant Eb     : integer := 11;
@@ -196,18 +203,28 @@ package jp80_pkg is
     constant IO     : integer := 30;
     constant HALT   : integer := 31;
     
-    constant EregA  : integer := 08;
-    constant EregB  : integer := 09;
-    constant LregI  : integer := 10;
-    constant RegA0  : integer := 11;
-    constant RegA1  : integer := 12;
-    constant RegA2  : integer := 13;
-    constant RegB0  : integer := 14;
-    constant RegB1  : integer := 15;
-    constant RegB2  : integer := 16;
-    constant RegI0  : integer := 17;
-    constant RegI1  : integer := 18;
-    constant RegI2  : integer := 19;
+    -- Sources and destinations
+    constant sdB    : integer := 00;
+    constant sdC    : integer := 01;
+    constant sdD    : integer := 02;
+    constant sdE    : integer := 03;
+    constant sdH    : integer := 04;
+    constant sdL    : integer := 05;
+    constant sdACC  : integer := 07;
+    constant sdPC	: integer := 11;
+    
+--    constant EregA  : integer := 08;
+--    constant EregB  : integer := 09;
+--    constant LregI  : integer := 10;
+--    constant RegA0  : integer := 11;
+--    constant RegA1  : integer := 12;
+--    constant RegA2  : integer := 13;
+--    constant RegB0  : integer := 14;
+--    constant RegB1  : integer := 15;
+--    constant RegB2  : integer := 16;
+--    constant RegI0  : integer := 17;
+--    constant RegI1  : integer := 18;
+--    constant RegI2  : integer := 19;
     
     constant ALU0   : integer := 20;
     constant ALU1   : integer := 21;
@@ -222,7 +239,11 @@ package jp80_pkg is
     
 
     type t_cpu_state is (
-        reset_state, address_state, increment_state, memory_state, decode_instruction,
+        reset_state,
+        opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
+        memory_read_1, memory_read_2, memory_read_3,
+        decode_instruction
+--        address_state, increment_state, memory_state, decode_instruction,
 --        add_1, add_2, ana_1,ana_2, ani_1, ani_2, ani_3,
 --        call_1, call_2, call_3, call_4, call_5, call_6,
 --        dcra_1, dcrb_1, dcrc_1,
@@ -239,7 +260,7 @@ package jp80_pkg is
 --        sta_1, sta_2, sta_3, sta_4, sta_5, sta_6, sta_7, sub_1,
 --        xra_1, xri_1, xri_2, xri_3,
         
-        mbyte_to_reg_1, mbyte_to_reg_2, alu_to_acc
+--        mbyte_to_reg_1, mbyte_to_reg_2, alu_to_acc
     );
     
 --    type t_aluio is (

@@ -29,36 +29,36 @@ entity jp80_top is
         Lpc_out     : out t_wire;
         Ipc_out     : out t_wire;
         Epc_out     : out t_wire;
-        Laddr_out   : out t_wire;
-        Ldata_out   : out t_wire;
-        EdataL_out  : out t_wire;
-        EdataH_out  : out t_wire;
-        Li_out      : out t_wire;
+        Lmar_out    : out t_wire;
+        Lmdr_out    : out t_wire;
+        Emdr_out    : out t_wire;
+        Lir_out     : out t_wire;
 
-        EregA_out   : out t_wire;
-        EregB_out   : out t_wire;
-        LregI_out   : out t_wire;
-        RegA_out    : out t_regaddr;
-        RegB_out    : out t_regaddr;
-        RegI_out    : out t_regaddr;
+--        EregA_out   : out t_wire;
+--        EregB_out   : out t_wire;
+--        LregI_out   : out t_wire;
+--        RegA_out    : out t_regaddr;
+--        RegB_out    : out t_regaddr;
+--        RegI_out    : out t_regaddr;
         
-        Lt_out      : out t_wire;
-        Et_out      : out t_wire;
-        Lu_out      : out t_wire;
-        Eu_out      : out t_wire;
-        Lsz_out     : out t_wire;
-        Wr_out      : out t_wire;
-        IO_out      : out t_wire;
+--        Lt_out      : out t_wire;
+--        Et_out      : out t_wire;
+--        Lu_out      : out t_wire;
+--        Eu_out      : out t_wire;
+--        Lsz_out     : out t_wire;
+--        Wr_out      : out t_wire;
+--        IO_out      : out t_wire;
         halt_out    : out t_wire;
         
         addr_bus_out    : out t_address;
-        data_bus_out    : out t_data;
+--        data_bus_out    : out t_data;
         pc_out      : out t_address;
-        acc_out     : out t_data;
+        acc_out     : out t_8bit;
 --        tmp_out     : out t_data;
-        alu_out     : out t_data
---        b_out       : out t_data;
+--        alu_out     : out t_data
+        bc_out          : out t_16bit;
 --        c_out       : out t_data
+        tstate_out      : out t_tstate
         -- END: SIMULATION ONLY
     );
 end entity jp80_top;
@@ -69,7 +69,7 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"3E",x"10",x"06",x"05",x"80",x"76",x"FF",x"FF", -- 00H
+        x"3E",x"10",x"47",x"76",x"80",x"76",x"FF",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
@@ -148,10 +148,11 @@ architecture behv of jp80_top is
     signal cpu_data_bus     : t_data;
     signal cpu_pc           : t_address;
     signal cpu_acc          : t_data;
-    signal cpu_b            : t_data;
+    signal cpu_bc           : t_16bit;
     signal cpu_c            : t_data;
     signal cpu_tmp          : t_data;
     signal cpu_alu          : t_data;
+    signal cpu_tstate       : t_tstate;
     
 begin
     addr_out        <= cpu_addr;
@@ -165,36 +166,36 @@ begin
     Lpc_out     <= cpu_con(Lpc);
     Ipc_out     <= cpu_con(Ipc);
     Epc_out     <= cpu_con(Epc);
-    Laddr_out   <= cpu_con(Laddr);
-    Ldata_out   <= cpu_con(Ldata);
-    EdataL_out  <= cpu_con(EdataL);
-    EdataH_out  <= cpu_con(EdataH);
-    Li_out      <= cpu_con(Li);
+    Lmar_out    <= cpu_con(Lmar);
+    Lmdr_out    <= cpu_con(Lmdr);
+    Emdr_out    <= cpu_con(Emdr);
+    Lir_out     <= cpu_con(Lir);
 
-    EregA_out   <= cpu_con(EregA);
-    EregB_out   <= cpu_con(EregB);
-    LregI_out   <= cpu_con(LregI);
-    RegA_out    <= cpu_con(RegA2 downto RegA0);
-    RegB_out    <= cpu_con(RegB2 downto RegB0);
-    RegI_out    <= cpu_con(RegI2 downto RegI0);
+--    EregA_out   <= cpu_con(EregA);
+--    EregB_out   <= cpu_con(EregB);
+--    LregI_out   <= cpu_con(LregI);
+--    RegA_out    <= cpu_con(RegA2 downto RegA0);
+--    RegB_out    <= cpu_con(RegB2 downto RegB0);
+--    RegI_out    <= cpu_con(RegI2 downto RegI0);
     
-    Lt_out      <= cpu_con(Lt);
-    Et_out      <= cpu_con(Et);
-    Lu_out      <= cpu_con(Lu);
-    Eu_out      <= cpu_con(Eu);
-    Lsz_out     <= cpu_con(Lsz);
-    Wr_out      <= cpu_con(Wr);
-    IO_out      <= cpu_con(IO);
+--    Lt_out      <= cpu_con(Lt);
+--    Et_out      <= cpu_con(Et);
+--    Lu_out      <= cpu_con(Lu);
+--    Eu_out      <= cpu_con(Eu);
+--    Lsz_out     <= cpu_con(Lsz);
+--    Wr_out      <= cpu_con(Wr);
+--    IO_out      <= cpu_con(IO);
     halt_out    <= cpu_con(HALT);
     
     addr_bus_out    <= cpu_addr_bus;
-    data_bus_out    <= cpu_data_bus;
-    pc_out      <= cpu_pc;
-    acc_out     <= cpu_acc;
---    b_out       <= cpu_b;
+--    data_bus_out    <= cpu_data_bus;
+    pc_out          <= cpu_pc;
+    acc_out         <= cpu_acc;
+    bc_out          <= cpu_bc;
 --    c_out       <= cpu_c;
 --    tmp_out     <= cpu_tmp;
-    alu_out     <= cpu_alu;
+--    alu_out     <= cpu_alu;
+    tstate_out      <= cpu_tstate;
     -- END: SIMULATION ONLY
 
     memory:
@@ -234,12 +235,13 @@ begin
         con_out     => cpu_con,
         addr_bus_out    => cpu_addr_bus,
         data_bus_out    => cpu_data_bus,
-        pc_out      => cpu_pc,
-        acc_out     => cpu_acc,
---        b_out       => cpu_b,
+        pc_out          => cpu_pc,
+        acc_out         => cpu_acc,
+        bc_out          => cpu_bc,
 --        c_out       => cpu_c,
 --        tmp_out     => cpu_tmp,
-        alu_out     => cpu_alu
+        alu_out     => cpu_alu,
+        tstate_out  => cpu_tstate
         -- END: SIMULATION ONLY
     );
 

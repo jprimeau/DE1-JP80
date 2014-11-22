@@ -21,7 +21,14 @@ entity JP80_FILEREG is
         data_out_b_h    : out t_data;
         data_out_b_l    : out t_data;
         en_b_h          : in t_wire;
-        en_b_l          : in t_wire
+        en_b_l          : in t_wire;
+        
+        -- BEGIN: SIMULATION ONLY
+        reg_bc          : out t_16bit;
+        reg_de          : out t_16bit;
+        reg_hl          : out t_16bit;
+        reg_sp          : out t_16bit
+        -- END: SIMULATION ONLY
     );
 end JP80_FILEREG;
 
@@ -45,4 +52,11 @@ begin
     data_out_a_l <= regs_l(conv_integer(reg_addr_out_a)) when en_a_l = '1' else (others=>'Z');
     data_out_b_h <= regs_h(conv_integer(reg_addr_out_b)) when en_b_h = '1' else (others=>'Z');
     data_out_b_l <= regs_l(conv_integer(reg_addr_out_b)) when en_b_l = '1' else (others=>'Z');
+    
+    -- BEGIN: SIMULATION ONLY
+--    reg_bc <= regs_h(conv_integer("00")) & regs_l(conv_integer("000"))
+--    reg_de <= regs_h(conv_integer("00")) & regs_l(conv_integer("000"))
+--    reg_hl <= regs_h(conv_integer("00")) & regs_l(conv_integer("000"))
+--    reg_sp <= regs_h(conv_integer("00")) & regs_l(conv_integer("000"))
+    -- END: SIMULATION ONLY
 end architecture;

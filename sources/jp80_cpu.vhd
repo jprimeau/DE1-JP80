@@ -26,11 +26,13 @@ entity jp80_cpu is
         addr_bus_out    : out t_address;
         data_bus_out    : out t_data;
         pc_out      : out t_address;
-        acc_out     : out t_data;
---        b_out       : out t_data;
+        acc_out     : out t_8bit;
+        bc_out      : out t_16bit;
 --        c_out       : out t_data;
 --        tmp_out     : out t_data;
-        alu_out     : out t_data
+        alu_out     : out t_data;
+        
+        tstate_out  : out t_tstate
         -- END: SIMULATION ONLY
     );
 end entity jp80_cpu;
@@ -44,15 +46,15 @@ architecture behv of jp80_cpu is
 --    signal AF_reg   : t_address;
 --    alias  A_reg    is AF_reg(15 downto 8);
 --    alias  F_reg    is AF_reg(7 downto 0);
-    signal BC_reg   : t_address;
+    signal BC_reg   : t_16bit;
     alias  B_reg    is BC_reg(15 downto 8);
     alias  C_reg    is BC_reg(7 downto 0);
---    signal DE_reg   : t_address;
---    alias  D_reg    is DE_reg(15 downto 8);
---    alias  E_reg    is DE_reg(7 downto 0);
---    signal HL_reg   : t_address;
---    alias  H_reg    is HL_reg(15 downto 8);
---    alias  L_reg    is HL_reg(7 downto 0);
+    signal DE_reg   : t_16bit;
+    alias  D_reg    is DE_reg(15 downto 8);
+    alias  E_reg    is DE_reg(7 downto 0);
+    signal HL_reg   : t_16bit;
+    alias  H_reg    is HL_reg(15 downto 8);
+    alias  L_reg    is HL_reg(7 downto 0);
 --    signal A_reg    : t_data;
 --    signal B_reg    : t_data;
 --    signal C_reg    : t_data;
@@ -62,16 +64,16 @@ architecture behv of jp80_cpu is
 --    signal H_reg    : t_data;
 --    signal L_reg    : t_data;
 
-    signal ACC_reg  : t_data;
+    signal ACC_reg  : t_8bit;
     signal FLAG_Reg : t_data;
 --    signal TMP_reg  : t_data;
 --    signal ALU_reg  : t_data;
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
     signal SP_reg   : t_address;
-    signal ADDR_reg : t_address;
-    signal DATA_reg : t_data;
-    signal I_reg    : t_data;
+    signal MAR_reg  : t_address;
+    signal MDR_reg  : t_data;
+    signal IR_reg   : t_data;
     
     -- Buses
     signal addr_bus     : t_address;
@@ -96,14 +98,17 @@ architecture behv of jp80_cpu is
     signal use_alu_q    : t_flag;
 
     signal con      : t_control := (others => '0');
-    alias reg_a_addr is con(RegA2 downto RegA0);
-    alias reg_b_addr is con(RegB2 downto RegB0);
-    alias reg_i_addr is con(RegI2 downto RegI0);
-    alias alu_op     is con(ALU2 downto ALU0);
+    signal src      : t_regaddr := (others => '0');
+    signal dst      : t_regaddr := (others => '0');
+    signal tstate   : integer := 0;
+--    alias reg_a_addr is con(RegA2 downto RegA0);
+--    alias reg_b_addr is con(RegB2 downto RegB0);
+--    alias reg_i_addr is con(RegI2 downto RegI0);
+--    alias alu_op     is con(ALU2 downto ALU0);
     
 begin
-    addr_out    <= ADDR_reg;
-    data_inout  <= DATA_reg when con(Wr) = '1' else (others=>'Z');
+    addr_out    <= MAR_reg;
+    data_inout  <= MDR_reg when con(Wr) = '1' else (others=>'Z');
     read_out    <= not con(Wr);
     write_out   <= con(Wr);
     reqmem_out  <= not con(IO);
@@ -115,10 +120,11 @@ begin
     data_bus_out    <= data_bus;
     pc_out      <= PC_reg;
     acc_out     <= ACC_reg;
---    b_out       <= B_reg;
+    bc_out       <= BC_reg;
 --    c_out       <= C_reg;
 --    tmp_out     <= TMP_reg;
     alu_out     <= ALU_Q;
+    tstate_out  <= tstate;
     -- END: SIMULATION ONLY
 
     run:
@@ -135,7 +141,7 @@ begin
         end if;
     end process run;
 
-    program_counter:
+    PC_register:
     process (clk, reset)
     begin
         if reset = '1' then
@@ -147,35 +153,35 @@ begin
                 PC_reg <= addr_bus;
             end if;
         end if;
-    end process program_counter;
-    addr_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
+    end process PC_register;
+    addr_bus <= PC_reg when con(Epc) = '1' or (src(sdPC) = '1' and con(Esrc) = '1') else (others => 'Z');
 
-    ADDR_register:
+    MAR_register:
     process (clk, reset)
     begin
         if reset = '1' then
-            ADDR_reg <= (others => '0');
+            MAR_reg <= (others => '0');
         elsif clk'event and clk = '0' then
-            if con(Laddr) = '1' then
-                ADDR_reg <= addr_bus;
+            if con(Lmar) = '1' then
+                MAR_reg <= addr_bus;
             end if;
         end if;
-    end process ADDR_register;
+    end process MAR_register;
     
-    DATA_register:
+    MDR_register:
     process (clk, reset)
     begin
         if reset = '1' then
-            DATA_reg <= (others => '0');
+            MDR_reg <= (others => '0');
         elsif clk'event and clk = '0' then
-            if con(Ldata) = '1' then
-                DATA_reg <= data_bus;
+            if con(Lmdr) = '1' then
+                MDR_reg <= data_bus;
             else
-                DATA_reg <= data_inout;
+                MDR_reg <= data_inout;
             end if;
         end if;
-    end process DATA_register;
-    data_bus <= DATA_reg when con(EdataL) = '1' else (others => 'Z');
+    end process MDR_register;
+    data_bus <= MDR_reg when con(Emdr) = '1' else (others => 'Z');
    
 --    process (clk, reset)
 --    begin
@@ -221,50 +227,56 @@ begin
 --    end process TMP_register;
 --    w_bus_l <= TMP_reg when con(Et) = '1' else (others => 'Z');
 
+    ACC_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            ACC_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if dst(sdACC) = '1' and con(Ldst) = '1' then
+                ACC_reg <= data_bus;
+            end if;
+        end if;
+    end process ACC_register;
+    data_bus <= ACC_reg when src(sdACC) = '1' and con(Esrc) = '1' else (others => 'Z');
 
---    BC_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            BC_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Lbc) = '1' then
---                BC_reg <= addr_bus;
---            else
---                if con(Lb) = '1' then
---                    B_reg <= data_bus;
---                end if;
---                if con(Lc) = '1' then
---                    C_reg <= data_bus;
---                end if;
---            end if;
---        end if;
---    end process BC_register;
---    data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
---    data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
---    addr_bus <= BC_reg when con(Ebc) = '1' else (others => 'Z');
---    
+    BC_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            BC_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Ldst) = '1' then
+                if dst(sdB) = '1' then
+                    B_reg <= data_bus;
+                end if;
+                if dst(sdC) = '1' then
+                    C_reg <= data_bus;
+                end if;
+            end if;
+        end if;
+    end process BC_register;
+    data_bus <= B_reg when src(sdB) = '1' and con(Esrc) = '1' else (others => 'Z');
+    data_bus <= C_reg when src(sdC) = '1' and con(Esrc) = '1' else (others => 'Z');
+--    addr_bus <= BC_reg when con(Eb) = '1' and con(Ec) = '1' else (others => 'Z');
+    
 --    DE_register:
 --    process (clk, reset)
 --    begin
 --        if reset = '1' then
 --            DE_reg <= (others => '0');
 --        elsif clk'event and clk = '1' then
---            if con(Lde) = '1' then
---                DE_reg <= addr_bus;
---            else
---                if con(Ld) = '1' then
---                    D_reg <= data_bus;
---                end if;
---                if con(Le) = '1' then
---                    E_reg <= data_bus;
---                end if;
+--            if con(Ld) = '1' then
+--                D_reg <= data_bus;
+--            end if;
+--            if con(Le) = '1' then
+--                E_reg <= data_bus;
 --            end if;
 --        end if;
 --    end process DE_register;
 --    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
 --    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
---    addr_bus <= DE_reg when con(Ede) = '1' else (others => 'Z');
+--    addr_bus <= DE_reg when con(Ed) = '1' and con(Ee) = '1' else (others => 'Z');
 --    
 --    HL_register:
 --    process (clk, reset)
@@ -272,7 +284,7 @@ begin
 --        if reset = '1' then
 --            HL_reg <= (others => '0');
 --        elsif clk'event and clk = '1' then
---            if con(Lhl) = '1' then
+--            if con(Lh) = '1' and con(Ll) = '1'  then
 --                HL_reg <= addr_bus;
 --            else
 --                if con(Lh) = '1' then
@@ -292,16 +304,29 @@ begin
     
 --    REGISTERS : work.JP80_FILEREG
 --    port map (
---        clk         => clk,
---        input       => data_bus,
---        en_a        => con(EregA),
---        en_b        => con(EregB),
---        reg_a_sel   => reg_a_addr,
---        reg_b_sel   => reg_b_addr,
---        reg_wr_sel  => reg_i_addr,
---        we          => con(LregI),
---        out_a       => reg_a,
---        out_b       => reg_b
+--        clk             => clk,
+--        data_in_h       => data_bus,
+--        data_in_l       => data_bus,
+--        we_h            => '0',
+--        we_l            => con(LregI),
+--        reg_addr_in     => con(RegI2 downto RegI0),
+--        reg_addr_out_a  => con(RegA2 downto RegA0),
+--        reg_addr_out_b  => con(RegB2 downto RegB0),
+--        data_out_a_h    => open,
+--        data_out_a_l    => open,
+--        en_a_h          => '0',
+--        en_a_l          => con(EregA),
+--        data_out_b_h    => open,
+--        data_out_b_l    => data_bus,
+--        en_b_h          => '0',
+--        en_b_l          => con(EregB)
+--        
+--        -- BEGIN: SIMULATION ONLY
+--       ,reg_bc          => out_reg_bc,
+--        reg_de          => out_reg_de,
+--        reg_hl          => out_reg_hl,
+--        reg_sp          => out_reg_sp
+--        -- END: SIMULATION ONLY
 --    );
     
     MICROCODE : work.JP80_MCODE
@@ -312,34 +337,39 @@ begin
         
         use_alu_q   => use_alu_q,
         
-        con         => con
+        con         => con,
+        src         => src,
+        dst         => dst,
+        tstate      => tstate
     );
     
 --    curr_data <= DATA_reg when use_alu_q = '0' else ALU_q;
     
-    process (clk)
-    begin
-        if clk'event and clk = '1' then
-            case reg_a_addr is
-            when "111" =>
-                bus_a <= ACC_reg;
-            when others =>
-                bus_a <= reg_a;
-            end case;
-            case reg_b_addr is
-            when "111" =>
-                bus_b <= ACC_reg;
-            when others =>
-                bus_b <= reg_b;
-            end case;
-        end if;
-        if use_alu_q = '1' then
-            ACC_reg <= ALU_q;
-        else
-            ACC_reg <= DATA_reg;
-        end if;
-    end process;
---    
+--    process (clk)
+--    begin
+--        if clk'event and clk = '1' then
+--            case reg_a_addr is
+--            when "111" =>
+--                bus_a <= ACC_reg;
+--            when "110" =>
+----                bus_a <= ;ACC_reg;
+--            when others =>
+--                bus_a <= reg_a;
+--            end case;
+--            case reg_b_addr is
+--            when "111" =>
+--                bus_b <= ACC_reg;
+--            when others =>
+--                bus_b <= reg_b;
+--            end case;
+--        end if;
+--        if use_alu_q = '1' then
+--            ACC_reg <= ALU_q;
+--        else
+--            ACC_reg <= DATA_reg;
+--        end if;
+--    end process;
+    
 --    process (con(Lu))
 --    begin
 --        if con(Lu) = '1' then
@@ -360,29 +390,28 @@ begin
 --    end process ALU_register;
 --    w_bus_l <= ALU_reg when con(Eu) = '1' else (others => 'Z');
     
-    ALU : work.JP80_ALU
-    port map (
-        alucode     => alu_op,
-        bus_a       => bus_a,
-        bus_b       => bus_b,
-        flag_in     => FLAG_Reg,
---        en          => con(Eu),
-        q           => ALU_q,
-        flag_out    => FLAG_Reg
-    );
+--    ALU : work.JP80_ALU
+--    port map (
+--        alucode     => alu_op,
+--        bus_a       => bus_a,
+--        bus_b       => bus_b,
+--        flag_in     => FLAG_Reg,
+--        q           => ALU_q,
+--        flag_out    => FLAG_Reg
+--    );
     
-    I_register:
+    IR_register:
     process (clk, reset)
     begin
         if reset = '1' then
-            I_reg <= (others => '0');
+            IR_reg <= (others => '0');
         elsif clk'event and clk = '0' then
-            if con(Li) = '1' then
-                I_reg <= data_bus;
+            if con(Lir) = '1' then
+                IR_reg <= data_bus;
             end if;
         end if;
-    end process I_register;
-    opcode <= I_reg;
+    end process IR_register;
+    opcode <= IR_reg;
     
 --    cpu_state_machine_reg:
 --    process (clk, reset)

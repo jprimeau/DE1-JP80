@@ -10,7 +10,6 @@ entity JP80_ALU is
         bus_a       : in t_data;
         bus_b       : in t_data;
         flag_in     : in t_data;
---        en          : in t_wire;
         q           : out t_data;
         flag_out    : out t_data
     );
@@ -109,5 +108,4 @@ begin
         end case;
     end process;
     q <= q_i;
---    q <= q_i when en = '1' else (others=>'Z');
 end architecture;

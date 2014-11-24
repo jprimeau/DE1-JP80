@@ -64,10 +64,11 @@ entity jp80_top is
         
         addr_bus_out    : out t_address;
         data_bus_out    : out t_data;
-        pc_out      : out t_address;
-        acc_out     : out t_8bit;
---        tmp_out     : out t_data;
-        alu_out     : out t_data;
+        pc_out          : out t_address;
+        acc_out         : out t_8bit;
+        alu_a_out       : out t_data;
+        alu_b_out       : out t_data;
+        alu_out         : out t_data;
         bc_out          : out t_16bit
         -- END: SIMULATION ONLY
     );
@@ -159,12 +160,9 @@ architecture behv of jp80_top is
     signal cpu_pc           : t_address;
     signal cpu_acc          : t_data;
     signal cpu_bc           : t_16bit;
---    signal cpu_c            : t_data;
---    signal cpu_tmp          : t_data;
+    signal cpu_alu_a        : t_data;
+    signal cpu_alu_b        : t_data;
     signal cpu_alu          : t_data;
---    signal cpu_src          : t_regaddr;
---    signal cpu_dst          : t_regaddr;
---    signal cpu_tstate       : t_tstate;
     
 begin
     addr_out        <= cpu_addr;
@@ -218,10 +216,9 @@ begin
     pc_out          <= cpu_pc;
     acc_out         <= cpu_acc;
     bc_out          <= cpu_bc;
---    c_out       <= cpu_c;
---    tmp_out     <= cpu_tmp;
+    alu_a_out       <= cpu_alu_a;
+    alu_b_out       <= cpu_alu_b;
     alu_out         <= cpu_alu;
---    tstate_out      <= cpu_tstate;
     -- END: SIMULATION ONLY
 
     memory:
@@ -264,12 +261,9 @@ begin
         pc_out          => cpu_pc,
         acc_out         => cpu_acc,
         bc_out          => cpu_bc,
---        c_out       => cpu_c,
---        tmp_out     => cpu_tmp,
+        alu_a_out       => cpu_alu_a,
+        alu_b_out       => cpu_alu_b,
         alu_out     => cpu_alu
---        src_out     => cpu_src,
---        dst_out     => cpu_dst,
---        tstate_out  => cpu_tstate
         -- END: SIMULATION ONLY
     );
 

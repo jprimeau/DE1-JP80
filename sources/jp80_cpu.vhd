@@ -28,6 +28,8 @@ entity jp80_cpu is
         pc_out      : out t_address;
         acc_out     : out t_8bit;
         bc_out      : out t_16bit;
+        alu_a_out   : out t_data;
+        alu_b_out   : out t_data;
         alu_out     : out t_data
         -- END: SIMULATION ONLY
     );
@@ -115,7 +117,9 @@ begin
     pc_out      <= PC_reg;
     acc_out     <= ACC_reg;
     bc_out       <= BC_reg;
-    alu_out     <= ALU_reg;
+    alu_a_out       <= alu_a;
+    alu_b_out       <= alu_b;
+    alu_out         <= ALU_q;
     -- END: SIMULATION ONLY
 
     run:
@@ -257,9 +261,24 @@ begin
         end if;
     end process ALU_register;
     data_bus <= ALU_reg when con(Eu) = '1' else (others => 'Z');
+    
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            alu_a <= (others => '0');
+            alu_b <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(LaluA) = '1' then
+                alu_a <= ACC_reg;
+            end if;
+            if con(LaluB) = '1' then
+                alu_b <= data_bus;
+            end if;
+        end if;
+    end process;
 
-    alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
-    alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
+--    alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
+--    alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
     
     ALU : work.JP80_ALU
     port map (
@@ -276,7 +295,7 @@ begin
     begin
         if reset = '1' then
             IR_reg <= (others => '0');
-        elsif clk'event and clk = '0' then
+        elsif clk'event and clk = '1' then
             if con(Lir) = '1' then
                 IR_reg <= data_bus;
             end if;
@@ -288,7 +307,7 @@ begin
     begin
         if reset = '1' then
             ps <= reset_state;
-        elsif clk'event and clk='1' then
+        elsif clk'event and clk='0' then
             ps <= ns;
         end if;
     end process;
@@ -332,11 +351,6 @@ begin
         when memory_read_3 =>
             con(Emdr) <= '1';
             con(DDD(opcode(5 downto 3))) <= '1';
---            if opcode(5 downto 3) = "111" then
---                con(Lacc) <= '1';
---            elsif opcode(5 downto 3) = "000" then
---                con(Lb) <= '1';
---            end if;
             ns <= opcode_fetch_1;
             
         when decode_instruction =>
@@ -361,11 +375,6 @@ begin
             when "10" => -- ALU stuff
                 aluop <= opcode(5 downto 3);
                 con(SSS(opcode(2 downto 0))) <= '1';
---                if opcode(2 downto 0) = "111" then
---                    con(Eacc) <= '1';
---                elsif opcode(2 downto 0) = "000" then
---                    con(Eb) <= '1';
---                end if;
                 con(LaluA) <= '1';
                 con(LaluB) <= '1';
                 con(Lu) <= '1';

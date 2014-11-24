@@ -2,7 +2,7 @@
 -- AUTHOR: Jonathan Primeau
 
 library ieee;
-use ieee.std_logic_1164.all;
+    use ieee.std_logic_1164.all;
 
 package jp80_pkg is
 
@@ -23,24 +23,22 @@ package jp80_pkg is
     
     subtype t_tstate is integer;
 
-    constant Lpc    : integer := 00;
-    constant Ipc    : integer := 01;
-    constant Epc    : integer := 02;
-    constant Lmar   : integer := 03;
-    constant Lmdr   : integer := 04;
-    constant Emdr   : integer := 05;
---    constant Eacc   : integer := 06;
-    constant Lir    : integer := 07;
-    constant Esrc   : integer := 08;
-    constant Ldst   : integer := 09;
-    constant LaluA  : integer := 10;
-    constant LaluB  : integer := 11;
---    constant La     : integer := 23;
---    constant Ea     : integer := 09;
---    constant Lb     : integer := 10;
---    constant Eb     : integer := 11;
---    constant Lc     : integer := 12;
---    constant Ec     : integer := 13;
+    constant Lpc    : integer := 00; -- Load Program Counter
+    constant Ipc    : integer := 01; -- Increment Program Counter
+    constant Epc    : integer := 02; -- Enable Program Counter
+    constant Lmar   : integer := 03; -- Load Memory Address Register
+    constant Lmdr   : integer := 04; -- Load Memory Data Register
+    constant Emdr   : integer := 05; -- Enable Memory Data Register
+    constant Lir    : integer := 06; -- Load Instruction Register
+    constant Lacc   : integer := 07; -- Load Accumulator
+    constant Eacc   : integer := 08; -- Enable Accumulator
+    constant Lb     : integer := 09; -- Load B register
+    constant Eb     : integer := 10; -- Enable C register
+    constant Lc     : integer := 11; -- Load C register
+    constant Ec     : integer := 12; -- Enable C register
+    
+    constant LaluA  : integer := 13;
+    constant LaluB  : integer := 14;
 --    constant Ld     : integer := 14;
 --    constant Ed     : integer := 15;
 --    constant Le     : integer := 16;
@@ -53,9 +51,9 @@ package jp80_pkg is
 --    constant Em     : integer := 23;
 --    constant Lt     : integer := 24;
 --    constant Et     : integer := 25;
---    constant Eu     : integer := 26;
+    constant Eu     : integer := 26;
     constant Lu     : integer := 27;
-    constant Lsz    : integer := 28;
+--    constant Lsz    : integer := 28;
     constant Wr     : integer := 29;
     constant IO     : integer := 30;
     constant HALT   : integer := 31;
@@ -70,9 +68,9 @@ package jp80_pkg is
     constant sdACC  : integer := 07;
     constant sdPC	: integer := 11;
     
-    constant ALU0   : integer := 20;
-    constant ALU1   : integer := 21;
-    constant ALU2   : integer := 22;
+--    constant ALU0   : integer := 20;
+--    constant ALU1   : integer := 21;
+--    constant ALU2   : integer := 22;
     
     constant FlagC  : integer := 00;
     constant FlagP  : integer := 02;
@@ -85,6 +83,8 @@ package jp80_pkg is
         reset_state,
         opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
         memory_read_1, memory_read_2, memory_read_3,
-        decode_instruction
+        decode_instruction,
+        
+        mvi_1, mvi_2
     );
 end package jp80_pkg;

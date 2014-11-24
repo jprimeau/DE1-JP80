@@ -255,6 +255,7 @@ INR  = 00rrr100
 DCR  = 00rrr101
 MVI  = 00rrr110
 
+      10ALUDDD
 ADD = 10000rrr
 ADC = 10001rrr
 SUB = 10010rrr

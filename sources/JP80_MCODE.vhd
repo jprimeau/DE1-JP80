@@ -21,10 +21,7 @@ end JP80_MCODE;
 architecture rtl of JP80_MCODE is
     signal ns, ps   : t_cpu_state;
     signal save_alu : t_flag;
-    signal sss, ddd : t_regaddr;
 begin
-    src <= sss;
-    dst <= ddd;
     process (clk, reset)
     begin
         if reset = '1' then
@@ -35,7 +32,15 @@ begin
     end process;
     
     process (ps, opcode)
+		variable DDD : std_logic_vector(2 downto 0);
+		variable SSS : std_logic_vector(2 downto 0);
     begin
+		DDD := opcode(5 downto 3);
+		SSS := opcode(2 downto 0);
+        
+        src <= (others=>'0');
+        dst <= (others=>'0');
+    
         con <= (others => '0');
         alu_to_acc <= '0';
         
@@ -44,8 +49,6 @@ begin
             ns <= opcode_fetch_1;
         
 		when opcode_fetch_1 =>
-            sss <= (others => '0');
-            ddd <= (others => '0');
             tstate <= 1;
             con(Epc) <= '1';
             con(Lmar) <= '1';
@@ -89,8 +92,10 @@ begin
                     case opcode(2 downto 0) is
                     when "010" =>
                     when "110" => -- MVI r,<b>
-                        sss(sdPC) <= '1';
-                        ddd(conv_integer(opcode(5 downto 3))) <= '1';
+                        src(sdPC) <= '1';
+                        con(Ssrc) <= '1';
+                        dst(conv_integer(DDD)) <= '1';
+                        con(Sdst) <= '1';
                         ns <= memory_read_1;
                     when others =>
                         con <= (others => '0');
@@ -100,15 +105,18 @@ begin
                     if opcode(5 downto 0) = "110110" then
                         con(HALT) <= '1'; -- HLT is the exception in the "01" range
                     else
-                        sss(conv_integer(opcode(2 downto 0))) <= '1';
-                        ddd(conv_integer(opcode(5 downto 3))) <= '1';
+                        src(conv_integer(SSS)) <= '1';
+                        con(Ssrc) <= '1';
+                        dst(conv_integer(DDD)) <= '1';
+                        con(Sdst) <= '1';
                         con(Esrc) <= '1';
                         con(Ldst) <= '1';
                     end if;
                     ns <= opcode_fetch_1;
                 when "10" => -- ALU stuff
                     aluop <= opcode(5 downto 3);
-                    sss(conv_integer(opcode(2 downto 0))) <= '1';
+                    src(conv_integer(SSS)) <= '1';
+                    con(Ssrc) <= '1';
                     con(LaluA) <= '1';
                     con(LaluB) <= '1';
                     con(Esrc) <= '1';

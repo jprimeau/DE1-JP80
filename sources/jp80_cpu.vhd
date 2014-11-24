@@ -28,12 +28,7 @@ entity jp80_cpu is
         pc_out      : out t_address;
         acc_out     : out t_8bit;
         bc_out      : out t_16bit;
---        c_out       : out t_data;
---        tmp_out     : out t_data;
-        alu_out     : out t_data;
-        src_out     : out t_regaddr;
-        dst_out     : out t_regaddr;
-        tstate_out  : out t_tstate
+        alu_out     : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_cpu;
@@ -42,11 +37,6 @@ architecture behv of jp80_cpu is
 
     signal clk      : t_wire;
 
---    signal ns, ps   : t_cpu_state;
-
---    signal AF_reg   : t_address;
---    alias  A_reg    is AF_reg(15 downto 8);
---    alias  F_reg    is AF_reg(7 downto 0);
     signal BC_reg   : t_16bit;
     alias  B_reg    is BC_reg(15 downto 8);
     alias  C_reg    is BC_reg(7 downto 0);
@@ -56,18 +46,9 @@ architecture behv of jp80_cpu is
     signal HL_reg   : t_16bit;
     alias  H_reg    is HL_reg(15 downto 8);
     alias  L_reg    is HL_reg(7 downto 0);
---    signal A_reg    : t_data;
---    signal B_reg    : t_data;
---    signal C_reg    : t_data;
---    signal D_reg    : t_data;
---    signal E_reg    : t_data;
---    signal F_reg    : t_data; -- FLAG
---    signal H_reg    : t_data;
---    signal L_reg    : t_data;
 
     signal ACC_reg  : t_8bit;
     signal FLAG_Reg : t_data;
---    signal TMP_reg  : t_data;
     signal ALU_reg  : t_data;
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
@@ -81,34 +62,43 @@ architecture behv of jp80_cpu is
     alias  addr_bus_h   is addr_bus(15 downto 8);
     alias  addr_bus_l   is addr_bus(7 downto 0);
     signal data_bus     : t_data;
-
---    signal w_bus    : t_bus;
---    alias  w_bus_h  is w_bus(15 downto 8);
---    alias  w_bus_l  is w_bus(7 downto 0);
     
     signal opcode   : t_opcode;
     
-    signal aluop        : t_aluop;
+    signal aluop        : t_aluop := "000";
     signal alu_a        : t_data;
     signal alu_b        : t_data;
-    signal alu_to_acc   : t_flag;
-    
-    signal bus_a    : t_data;
-    signal bus_b    : t_data;
-    signal reg_a    : t_data;
-    signal reg_b    : t_data;
-    
-    -- Microcode signals
-    signal use_alu_q    : t_flag;
 
+    -- Microcode signals
     signal con      : t_control := (others => '0');
-    signal src      : t_regaddr := (others => '0');
-    signal dst      : t_regaddr := (others => '0');
-    signal tstate   : integer := 0;
---    alias reg_a_addr is con(RegA2 downto RegA0);
---    alias reg_b_addr is con(RegB2 downto RegB0);
---    alias reg_i_addr is con(RegI2 downto RegI0);
---    alias alu_op     is con(ALU2 downto ALU0);
+    
+    signal ns, ps       : t_cpu_state;
+    signal save_alu     : t_flag := '0';
+    signal save_alu_p   : t_flag := '0';
+    
+    function SSS(src : std_logic_vector(2 downto 0))
+        return integer is
+    begin
+        if src = "000" then
+            return Eb;
+        elsif src = "001" then
+            return Ec;
+        else
+            return Eacc;
+        end if;
+    end SSS;
+    
+    function DDD(dst : std_logic_vector(2 downto 0))
+        return integer is
+    begin
+        if dst = "000" then
+            return Lb;
+        elsif dst = "001" then
+            return Lc;
+        else
+            return Lacc;
+        end if;
+    end DDD;
     
 begin
     addr_out    <= MAR_reg;
@@ -125,12 +115,7 @@ begin
     pc_out      <= PC_reg;
     acc_out     <= ACC_reg;
     bc_out       <= BC_reg;
---    c_out       <= C_reg;
---    tmp_out     <= TMP_reg;
     alu_out     <= ALU_reg;
-    src_out     <= src;
-    dst_out     <= dst;
-    tstate_out  <= tstate;
     -- END: SIMULATION ONLY
 
     run:
@@ -160,7 +145,7 @@ begin
             end if;
         end if;
     end process PC_register;
-    addr_bus <= PC_reg when con(Epc) = '1' or (src(sdPC) = '1' and con(Esrc) = '1') else (others => 'Z');
+    addr_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
 
     MAR_register:
     process (clk, reset)
@@ -195,14 +180,12 @@ begin
         if reset = '1' then
             ACC_reg <= (others => '0');
         elsif clk'event and clk = '1' then
-            if dst(sdACC) = '1' and con(Ldst) = '1' then
+            if con(Lacc) = '1' then
                 ACC_reg <= data_bus;
-            elsif alu_to_acc = '1' then
-                ACC_reg <= ALU_reg;
             end if;
         end if;
     end process ACC_register;
-    data_bus <= ACC_reg when src(sdACC) = '1' and con(Esrc) = '1' else (others => 'Z');
+    data_bus <= ACC_reg when con(Eacc) = '1' else (others => 'Z');
 
     BC_register:
     process (clk, reset)
@@ -210,19 +193,17 @@ begin
         if reset = '1' then
             BC_reg <= (others => '0');
         elsif clk'event and clk = '1' then
-            if con(Ldst) = '1' then
-                if dst(sdB) = '1' then
-                    B_reg <= data_bus;
-                end if;
-                if dst(sdC) = '1' then
-                    C_reg <= data_bus;
-                end if;
+            if con(Lb) = '1' then
+                B_reg <= data_bus;
+            end if;
+            if con(Lc) = '1' then
+                C_reg <= data_bus;
             end if;
         end if;
     end process BC_register;
-    data_bus <= B_reg when src(sdB) = '1' and con(Esrc) = '1' else (others => 'Z');
---    data_bus <= C_reg when src(sdC) = '1' and con(Esrc) = '1' else (others => 'Z');
---    addr_bus <= BC_reg when con(Eb) = '1' and con(Ec) = '1' else (others => 'Z');
+    data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
+    data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
+    addr_bus <= BC_reg when con(Eb) = '1' and con(Ec) = '1' else (others => 'Z');
     
 --    DE_register:
 --    process (clk, reset)
@@ -263,49 +244,7 @@ begin
 --    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
 --    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
 --    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
-    
 
-    
---    REGISTERS : work.JP80_FILEREG
---    port map (
---        clk             => clk,
---        data_in_h       => data_bus,
---        data_in_l       => data_bus,
---        we_h            => '0',
---        we_l            => con(LregI),
---        reg_addr_in     => con(RegI2 downto RegI0),
---        reg_addr_out_a  => con(RegA2 downto RegA0),
---        reg_addr_out_b  => con(RegB2 downto RegB0),
---        data_out_a_h    => open,
---        data_out_a_l    => open,
---        en_a_h          => '0',
---        en_a_l          => con(EregA),
---        data_out_b_h    => open,
---        data_out_b_l    => data_bus,
---        en_b_h          => '0',
---        en_b_l          => con(EregB)
---        
---        -- BEGIN: SIMULATION ONLY
---       ,reg_bc          => out_reg_bc,
---        reg_de          => out_reg_de,
---        reg_hl          => out_reg_hl,
---        reg_sp          => out_reg_sp
---        -- END: SIMULATION ONLY
---    );
-    
-    MICROCODE : work.JP80_MCODE
-    port map (
-        clk         => clk,
-        reset       => reset,
-        opcode      => opcode,
-        aluop       => aluop,
-        alu_to_acc  => alu_to_acc,
-        con         => con,
-        src         => src,
-        dst         => dst,
-        tstate      => tstate
-    );
-    
     ALU_register:
     process (clk, reset)
     begin
@@ -317,6 +256,7 @@ begin
             end if;
         end if;
     end process ALU_register;
+    data_bus <= ALU_reg when con(Eu) = '1' else (others => 'Z');
 
     alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
     alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
@@ -324,8 +264,8 @@ begin
     ALU : work.JP80_ALU
     port map (
         alucode     => aluop,
-        bus_a       => bus_a,
-        bus_b       => bus_b,
+        bus_a       => alu_a,
+        bus_b       => alu_b,
         flag_in     => FLAG_Reg,
         q           => ALU_Q,
         flag_out    => FLAG_Reg
@@ -343,5 +283,100 @@ begin
         end if;
     end process IR_register;
     opcode <= IR_reg;
+    
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            ps <= reset_state;
+        elsif clk'event and clk='1' then
+            ps <= ns;
+        end if;
+    end process;
+    
+    process (ps, opcode)
+    begin
+        con <= (others=>'0');
+        aluop <= (others=>'0');
+
+        case ps is
+        when reset_state =>
+            ns <= opcode_fetch_1;
+            
+        when opcode_fetch_1 =>
+            con(Epc) <= '1';
+            con(Lmar) <= '1';
+            if save_alu = '1' then
+                con(Eu) <= '1';
+                con(Lacc) <= '1';
+            end if;
+            ns <= opcode_fetch_2;
+            
+        when opcode_fetch_2 =>
+            con(Ipc) <= '1';
+            ns <= opcode_fetch_3;
+            
+        when opcode_fetch_3 =>
+            con(Emdr) <= '1';
+            con(Lir) <= '1';
+            ns <= decode_instruction;
+            
+        when memory_read_1 =>
+            con(Epc) <= '1';
+            con(Lmar) <= '1';
+            ns <= memory_read_2;
+            
+        when memory_read_2 =>
+            con(Ipc) <= '1';
+            ns <= memory_read_3;
+            
+        when memory_read_3 =>
+            con(Emdr) <= '1';
+            con(DDD(opcode(5 downto 3))) <= '1';
+--            if opcode(5 downto 3) = "111" then
+--                con(Lacc) <= '1';
+--            elsif opcode(5 downto 3) = "000" then
+--                con(Lb) <= '1';
+--            end if;
+            ns <= opcode_fetch_1;
+            
+        when decode_instruction =>
+            case opcode(7 downto 6) is
+            when "00" =>
+                case opcode(2 downto 0) is
+                when "010" =>
+                    ns <= reset_state;
+                when "110" => -- MVI r,<b>
+                    ns <= memory_read_1;
+                when others =>
+                    ns <= reset_state;
+                end case;
+            when "01" => -- MOV r,r or HLT
+                if opcode(5 downto 0) = "110110" then
+                    con(HALT) <= '1'; -- HLT is the exception in the "01" range
+                else
+                    con(SSS(opcode(2 downto 0))) <= '1';
+                    con(DDD(opcode(5 downto 3))) <= '1';
+                end if;
+                ns <= opcode_fetch_1;
+            when "10" => -- ALU stuff
+                aluop <= opcode(5 downto 3);
+                con(SSS(opcode(2 downto 0))) <= '1';
+--                if opcode(2 downto 0) = "111" then
+--                    con(Eacc) <= '1';
+--                elsif opcode(2 downto 0) = "000" then
+--                    con(Eb) <= '1';
+--                end if;
+                con(LaluA) <= '1';
+                con(LaluB) <= '1';
+                con(Lu) <= '1';
+                ns <= opcode_fetch_1;
+            when others =>
+                ns <= reset_state;
+            end case;
+        when others =>
+            ns <= reset_state;
+        end case;
+    end process;
+    save_alu <= '1' when opcode(7 downto 6) = "10" else '0';
 
 end architecture behv;

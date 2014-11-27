@@ -36,13 +36,13 @@ package jp80_pkg is
     constant Eb     : integer := 10; -- Enable C register
     constant Lc     : integer := 11; -- Load C register
     constant Ec     : integer := 12; -- Enable C register
-    
-    constant LaluA  : integer := 13;
-    constant LaluB  : integer := 14;
---    constant Ld     : integer := 14;
---    constant Ed     : integer := 15;
---    constant Le     : integer := 16;
---    constant Ee     : integer := 17;
+    constant Ld     : integer := 13;
+    constant Ed     : integer := 14;
+    constant Le     : integer := 15;
+    constant Ee     : integer := 16;
+    constant LaluA  : integer := 17;
+    constant LaluB  : integer := 18;
+
 --    constant Lh     : integer := 18;
 --    constant Eh     : integer := 19;
 --    constant Ll     : integer := 20;
@@ -83,8 +83,6 @@ package jp80_pkg is
         reset_state,
         opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
         memory_read_1, memory_read_2, memory_read_3,
-        decode_instruction,
---        alu_exec,
-        mvi_1, mvi_2
+        decode_instruction
     );
 end package jp80_pkg;

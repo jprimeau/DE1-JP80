@@ -209,24 +209,24 @@ begin
     data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
     addr_bus <= BC_reg when con(Eb) = '1' and con(Ec) = '1' else (others => 'Z');
     
---    DE_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            DE_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Ld) = '1' then
---                D_reg <= data_bus;
---            end if;
---            if con(Le) = '1' then
---                E_reg <= data_bus;
---            end if;
---        end if;
---    end process DE_register;
---    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
---    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
---    addr_bus <= DE_reg when con(Ed) = '1' and con(Ee) = '1' else (others => 'Z');
---    
+    DE_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            DE_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Ld) = '1' then
+                D_reg <= data_bus;
+            end if;
+            if con(Le) = '1' then
+                E_reg <= data_bus;
+            end if;
+        end if;
+    end process DE_register;
+    data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
+    data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
+    addr_bus <= DE_reg when con(Ed) = '1' and con(Ee) = '1' else (others => 'Z');
+    
 --    HL_register:
 --    process (clk, reset)
 --    begin
@@ -367,11 +367,6 @@ begin
             when others =>
                 ns <= reset_state;
             end case;
-            
---        when alu_exec =>
---            aluop <= opcode(5 downto 3);
---            con(Lu) <= '1';
---            ns <= opcode_fetch_1;
         when others =>
             ns <= reset_state;
         end case;

@@ -84,7 +84,7 @@ package jp80_pkg is
         opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
         memory_read_1, memory_read_2, memory_read_3,
         decode_instruction,
-        
+--        alu_exec,
         mvi_1, mvi_2
     );
 end package jp80_pkg;

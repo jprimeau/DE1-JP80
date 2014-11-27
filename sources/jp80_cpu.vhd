@@ -119,7 +119,7 @@ begin
     bc_out       <= BC_reg;
     alu_a_out       <= alu_a;
     alu_b_out       <= alu_b;
-    alu_out         <= ALU_q;
+    alu_out         <= ALU_reg;
     -- END: SIMULATION ONLY
 
     run:
@@ -253,7 +253,7 @@ begin
     process (clk, reset)
     begin
         if reset = '1' then
-            ALU_reg <= (others => '0');
+            ALU_reg <= (others => '1');
         elsif clk'event and clk = '1' then
             if con(Lu) = '1' then
                 ALU_reg <= ALU_q;
@@ -261,24 +261,9 @@ begin
         end if;
     end process ALU_register;
     data_bus <= ALU_reg when con(Eu) = '1' else (others => 'Z');
-    
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            alu_a <= (others => '0');
-            alu_b <= (others => '0');
-        elsif clk'event and clk = '1' then
-            if con(LaluA) = '1' then
-                alu_a <= ACC_reg;
-            end if;
-            if con(LaluB) = '1' then
-                alu_b <= data_bus;
-            end if;
-        end if;
-    end process;
 
---    alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
---    alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
+    alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
+    alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
     
     ALU : work.JP80_ALU
     port map (
@@ -286,7 +271,7 @@ begin
         bus_a       => alu_a,
         bus_b       => alu_b,
         flag_in     => FLAG_Reg,
-        q           => ALU_Q,
+        q           => ALU_q,
         flag_out    => FLAG_Reg
     );
     
@@ -382,6 +367,11 @@ begin
             when others =>
                 ns <= reset_state;
             end case;
+            
+--        when alu_exec =>
+--            aluop <= opcode(5 downto 3);
+--            con(Lu) <= '1';
+--            ns <= opcode_fetch_1;
         when others =>
             ns <= reset_state;
         end case;

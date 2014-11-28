@@ -14,13 +14,8 @@ package jp80_pkg is
     subtype t_opcode is std_logic_vector(7 downto 0);
     subtype t_control is std_logic_vector(31 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
-    
-    subtype t_regaddr is std_logic_vector(15 downto 0);
-    subtype t_aluop is std_logic_vector(2 downto 0);
-    
     subtype t_8bit is std_logic_vector(7 downto 0);
     subtype t_16bit is std_logic_vector(15 downto 0);
-    
     subtype t_tstate is integer;
 
     constant Lpc    : integer := 00; -- Load Program Counter
@@ -42,6 +37,9 @@ package jp80_pkg is
     constant Ee     : integer := 16;
     constant LaluA  : integer := 17;
     constant LaluB  : integer := 18;
+    constant LaddrL : integer := 18;
+    constant LaddrH : integer := 19;
+    constant Eaddr  : integer := 20;
 
 --    constant Lh     : integer := 18;
 --    constant Eh     : integer := 19;
@@ -82,7 +80,9 @@ package jp80_pkg is
     type t_cpu_state is (
         reset_state,
         opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
-        memory_read_1, memory_read_2, memory_read_3,
+        data_read_1, data_read_2, data_read_3,
+        addr_read_1, addr_read_2, addr_read_3,
+        addr_read_4, addr_read_5, addr_read_6,
         decode_instruction
     );
 end package jp80_pkg;

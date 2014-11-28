@@ -54,6 +54,7 @@ architecture behv of jp80_cpu is
     signal ALU_reg  : t_data;
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
+    signal ADDR_reg : t_address;
     signal SP_reg   : t_address;
     signal MAR_reg  : t_address;
     signal MDR_reg  : t_data;
@@ -65,16 +66,16 @@ architecture behv of jp80_cpu is
     alias  addr_bus_l   is addr_bus(7 downto 0);
     signal data_bus     : t_data;
     
-    signal opcode   : t_opcode;
+    signal opcode       : t_opcode;
     
-    signal aluop        : t_aluop := "000";
+    signal alucode      : t_alucode := "0000";
     signal alu_a        : t_data;
     signal alu_b        : t_data;
 
     -- Microcode signals
     signal con      : t_control := (others => '0');
     
-    signal ns, ps       : t_cpu_state;
+    signal ns, ps, cb   : t_cpu_state;
     signal save_alu     : t_flag := '0';
     signal save_alu_p   : t_flag := '0';
     
@@ -85,6 +86,10 @@ architecture behv of jp80_cpu is
             return Eb;
         elsif src = "001" then
             return Ec;
+        elsif src = "010" then
+            return Ed;
+        elsif src = "011" then
+            return Ee;
         else
             return Eacc;
         end if;
@@ -97,6 +102,10 @@ architecture behv of jp80_cpu is
             return Lb;
         elsif dst = "001" then
             return Lc;
+        elsif dst = "010" then
+            return Ld;
+        elsif dst = "011" then
+            return Le;
         else
             return Lacc;
         end if;
@@ -150,6 +159,21 @@ begin
         end if;
     end process PC_register;
     addr_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
+    
+    ADDR_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            ADDR_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(LaddrL) = '1' then
+                ADDR_reg(7 downto 0) <= data_bus;
+            elsif con(LaddrH) = '1' then
+                ADDR_reg(15 downto 8) <= data_bus;
+            end if;
+        end if;
+    end process ADDR_register;
+    addr_bus <= ADDR_reg when con(Eaddr) = '1' else (others => 'Z');
 
     MAR_register:
     process (clk, reset)
@@ -267,12 +291,12 @@ begin
     
     ALU : work.JP80_ALU
     port map (
-        alucode     => aluop,
-        bus_a       => alu_a,
-        bus_b       => alu_b,
-        flag_in     => FLAG_Reg,
+        alucode     => alucode,
+        a           => alu_a,
+        b           => alu_b,
+        f_in        => FLAG_Reg,
         q           => ALU_q,
-        flag_out    => FLAG_Reg
+        f_out       => FLAG_Reg
     );
     
     IR_register:
@@ -297,10 +321,10 @@ begin
         end if;
     end process;
     
-    process (ps, opcode)
+    process (ps, opcode, save_alu)
     begin
         con <= (others=>'0');
-        aluop <= (others=>'0');
+        alucode <= (others=>'0');
 
         case ps is
         when reset_state =>
@@ -324,19 +348,58 @@ begin
             con(Lir) <= '1';
             ns <= decode_instruction;
             
-        when memory_read_1 =>
+        when data_read_1 =>
             con(Epc) <= '1';
             con(Lmar) <= '1';
-            ns <= memory_read_2;
+            ns <= data_read_2;
             
-        when memory_read_2 =>
+        when data_read_2 =>
             con(Ipc) <= '1';
-            ns <= memory_read_3;
+            ns <= data_read_3;
             
-        when memory_read_3 =>
+        when data_read_3 =>
             con(Emdr) <= '1';
-            con(DDD(opcode(5 downto 3))) <= '1';
-            ns <= opcode_fetch_1;
+            
+            if opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110" then
+                alucode <= "0"&opcode(5 downto 3);
+                con(LaluA) <= '1';
+                con(LaluB) <= '1';
+                con(Lu) <= '1';
+            else
+                con(DDD(opcode(5 downto 3))) <= '1';
+            end if;
+            
+            ns <= cb;
+            
+        when addr_read_1 =>
+            con(Epc) <= '1';
+            con(Lmar) <= '1';
+            ns <= addr_read_2;
+            
+        when addr_read_2 =>
+            con(Ipc) <= '1';
+            ns <= addr_read_3;
+            
+        when addr_read_3 =>
+            con(Emdr) <= '1';
+            -- DATA DST -> AddrL
+            ns <= addr_read_4;
+            
+        when addr_read_4 =>
+            con(Epc) <= '1';
+            con(Lmar) <= '1';
+            ns <= addr_read_5;
+            
+        when addr_read_5 =>
+            con(Ipc) <= '1';
+            ns <= addr_read_6;
+            
+        when addr_read_6 =>
+            con(Emdr) <= '1';
+            -- DATA DST -> AddrH
+            -- ADDR SRC -> ADDR
+            -- ADDR DST -> PC
+            ns <= cb;
             
         when decode_instruction =>
             case opcode(7 downto 6) is
@@ -345,7 +408,13 @@ begin
                 when "010" =>
                     ns <= reset_state;
                 when "110" => -- MVI r,<b>
-                    ns <= memory_read_1;
+                    ns <= data_read_1;
+                    cb <= opcode_fetch_1;
+                when "111" => -- MISC ALU
+                    alucode <= "1"&opcode(5 downto 3);
+                    con(LaluA) <= '1';
+                    con(Lu) <= '1';
+                    ns <= opcode_fetch_1;
                 when others =>
                     ns <= reset_state;
                 end case;
@@ -357,13 +426,16 @@ begin
                     con(DDD(opcode(5 downto 3))) <= '1';
                 end if;
                 ns <= opcode_fetch_1;
-            when "10" => -- ALU stuff
-                aluop <= opcode(5 downto 3);
+            when "10" => -- ALU with register
+                alucode <= "0"&opcode(5 downto 3);
                 con(SSS(opcode(2 downto 0))) <= '1';
                 con(LaluA) <= '1';
                 con(LaluB) <= '1';
                 con(Lu) <= '1';
                 ns <= opcode_fetch_1;
+            when "11" => -- ALU with immediate
+                ns <= data_read_1;
+                cb <= opcode_fetch_1;
             when others =>
                 ns <= reset_state;
             end case;
@@ -371,6 +443,6 @@ begin
             ns <= reset_state;
         end case;
     end process;
-    save_alu <= '1' when opcode(7 downto 6) = "10" else '0';
+    save_alu <= '1' when opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") else '0';
 
 end architecture behv;

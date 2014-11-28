@@ -6,106 +6,139 @@ use work.jp80_pkg.all;
     
 entity JP80_ALU is
     port (
-        alucode     : in t_aluop;
-        bus_a       : in t_data;
-        bus_b       : in t_data;
-        flag_in     : in t_data;
+        alucode     : in t_alucode;
+        a           : in t_data;
+        b           : in t_data;
+        f_in        : in t_data;
         q           : out t_data;
-        flag_out    : out t_data
+        f_out       : out t_data
     );
 end JP80_ALU;
 
 architecture rtl of JP80_ALU is
-    signal cout_i   : t_data := (others=>'0');
-    signal c_i      : t_wire := '0';
-    signal c7_i     : t_wire := '0';
-    signal h_i      : t_wire := '0';
-    signal p_i      : t_wire := '0';
-    signal sub_i    : t_wire := '0';
-    signal q_i      : t_data := (others=>'0');
-	signal q_t      : t_data := (others=>'0');
-    signal cin_i    : t_wire := '0';
+    signal tmp_a        : t_data;
+    signal tmp_b        : t_data;
+    signal tmp_c        : std_logic;
+    signal tmp_z        : std_logic;
+    signal tmp_s        : std_logic;
+    signal tmp_q        : t_data;
     
-    procedure AddSub(
-        a_i         : in t_data;
-        b_i         : in t_data;
-        s_i         : in t_wire;
-        c_i         : in t_wire;
-        signal q_o  : out t_data; 
-        signal c_o  : out t_data
+    signal check_z      : std_logic;
+    signal check_s      : std_logic;
+    
+    procedure FullAdder(
+        signal a    : in t_data;
+        signal b    : in t_data;
+        signal cin  : in std_logic;
+        signal q    : out t_data;
+        signal cout : out std_logic
     ) is
-        variable b_t, c_t : t_data;
+        variable c1, c2, c3, c4, c5, c6, c7 : std_logic;
     begin
-        if s_i = '1' then
-            b_t := not b_i;
-        else
-            b_t := b_i;
-        end if;
-        c_t(0) := (a_i(0) and b_t(0)) or (a_i(0) and c_i) or (b_t(0) and c_i);
-        c_t(1) := (a_i(1) and b_t(1)) or (a_i(1) and c_t(0)) or (b_t(1) and c_t(0));
-        c_t(2) := (a_i(2) and b_t(2)) or (a_i(2) and c_t(1)) or (b_t(2) and c_t(1));
-        c_t(3) := (a_i(3) and b_t(3)) or (a_i(3) and c_t(2)) or (b_t(3) and c_t(2));
-        c_t(4) := (a_i(4) and b_t(4)) or (a_i(4) and c_t(3)) or (b_t(4) and c_t(3));
-        c_t(5) := (a_i(5) and b_t(5)) or (a_i(5) and c_t(4)) or (b_t(5) and c_t(4));
-        c_t(6) := (a_i(6) and b_t(6)) or (a_i(6) and c_t(5)) or (b_t(6) and c_t(5));
-        c_t(7) := (a_i(7) and b_t(7)) or (a_i(7) and c_t(6)) or (b_t(7) and c_t(6));
-        q_o(0) <= a_i(0) xor b_t(0) xor c_i;
-        q_o(1) <= a_i(1) xor b_t(1) xor c_t(0);
-        q_o(2) <= a_i(2) xor b_t(2) xor c_t(1);
-        q_o(3) <= a_i(3) xor b_t(3) xor c_t(2);
-        q_o(4) <= a_i(4) xor b_t(4) xor c_t(3);
-        q_o(5) <= a_i(5) xor b_t(5) xor c_t(5);
-        q_o(6) <= a_i(6) xor b_t(6) xor c_t(6);
-        q_o(7) <= a_i(7) xor b_t(7) xor c_t(7);
-        c_o <= c_t;
-    end;
+        c1 := (a(0) and b(0)) or (a(0) and cin) or (b(0) and cin);
+        c2 := (a(1) and b(1)) or (a(1) and c1) or (b(1) and c1);
+        c3 := (a(2) and b(2)) or (a(2) and c2) or (b(2) and c2);
+        c4 := (a(3) and b(3)) or (a(3) and c3) or (b(3) and c3);
+        c5 := (a(4) and b(4)) or (a(4) and c4) or (b(4) and c4);
+        c6 := (a(5) and b(5)) or (a(5) and c5) or (b(5) and c5);
+        c7 := (a(6) and b(6)) or (a(6) and c6) or (b(6) and c6);
+        cout <= (a(7) and b(7)) or (a(7) and c7) or (b(7) and c7);
+        q(0) <= a(0) xor b(0) xor cin;
+        q(1) <= a(1) xor b(1) xor c1;
+        q(2) <= a(2) xor b(2) xor c2;
+        q(3) <= a(3) xor b(3) xor c3;
+        q(4) <= a(4) xor b(4) xor c4;
+        q(5) <= a(5) xor b(5) xor c5;
+        q(6) <= a(6) xor b(6) xor c6;
+        q(7) <= a(7) xor b(7) xor c7;
+    end FullAdder;
 begin
-    sub_i <= alucode(1);
-    -- Use carry in for ADC and SBB
-    cin_i <= sub_i xor (not alucode(2) and alucode(0) and flag_in(FlagC));
-    AddSub(bus_a, bus_b, sub_i, cin_i, q_t, cout_i);
-    c_i  <= cout_i(7);
-    c7_i <= cout_i(6);
-    h_i  <= cout_i(3);
-	p_i  <= c_i xor c7_i;
-    
-    process (alucode, bus_a, bus_b)
+    process (alucode, a, b)
     begin
+        tmp_c <= f_in(FlagC);
+        tmp_s <= f_in(FlagS);
+        tmp_z <= f_in(FlagZ);
+        check_z <= '1';
+        check_s <= '1';
         case alucode is
-        when "000" | "001" => -- ADD or ADC
-            q_i <= q_t;
-            flag_out(FlagC) <= c_i;
-            flag_out(FlagH) <= h_i;
-            flag_out(FlagP) <= p_i;
-        when "010" | "011" | "111" => -- SUB or SBB or CMP
-            q_i <= q_t;
-            flag_out(FlagC) <= not c_i;
-            flag_out(FlagH) <= not h_i;
-            flag_out(FlagP) <= p_i;
-        when "100" => -- ANA
-            q_i <= bus_a and bus_b;
-            flag_out(FlagH) <= '1';
-        when "101" => -- XRA
-            q_i <= bus_a xor bus_b;
-            flag_out(FlagH) <= '0';
-        when "110" => -- ORA
-            q_i <= bus_a or bus_b;
-            flag_out(FlagH) <= '0';
+        when "0000" | "0001" => -- ADD or ADC
+            tmp_a <= a;
+            tmp_b <= b;
+            tmp_c <= '0';
+            if alucode = "001" then
+                tmp_c <= f_in(FlagC);
+            end if;
+            FullAdder(tmp_a, tmp_b, tmp_c, tmp_q, tmp_c);
+        when "0010" | "0011" | "0111" => -- SUB or SBB or CMP
+            tmp_a <= a;
+            tmp_b <= not b;
+            tmp_c <= '0';
+            if alucode = "011" then
+                tmp_c <= f_in(FlagC);
+            end if;
+            FullAdder(tmp_a, tmp_b, tmp_c, tmp_q, tmp_c);
+        when "0100" => -- ANA
+            tmp_q <= a and b;
+            tmp_c <= '0';
+        when "0101" => -- XRA
+            tmp_q <= a xor b;
+            tmp_c <= '0';
+        when "0110" => -- ORA
+            tmp_q <= a or b;
+            tmp_c <= '0';
+            
+        when "1000" => -- RLC
+            tmp_q <= to_stdlogicvector(to_bitvector(a) rol 1);
+            tmp_c <= tmp_q(0);
+            check_z <= '0';
+            check_s <= '0';
+        when "1001" => -- RRC
+            tmp_q <= to_stdlogicvector(to_bitvector(a) ror 1);
+            tmp_c <= tmp_q(7);
+            check_z <= '0';
+            check_s <= '0';
+        when "1010" => -- RAL
+            -- TODO
+            check_z <= '0';
+            check_s <= '0';
+        when "1011" => -- RAR
+            -- TODO
+            check_z <= '0';
+            check_s <= '0';
+        when "1100" => -- DAA
+            -- TODO
+            check_z <= '0';
+            check_s <= '0';
+        when "1101" => -- CMA
+            tmp_q <= not a;
+            check_z <= '0';
+            check_s <= '0';
+        when "1110" => -- STC
+            tmp_c <= '1';
+            check_z <= '0';
+            check_s <= '0';
+        when "1111" => -- CMC
+            tmp_c <= not f_in(FlagC);
+            check_z <= '0';
+            check_s <= '0';
         when others =>
             null;
         end case;
-        if q_i = "00000000" then
-            flag_out(FlagZ) <= '1';
-        else
-            flag_out(FlagZ) <= '0';
+        
+        if check_z = '1' then
+            if tmp_q = "00000000" then
+                tmp_z <= '1';
+            else
+                tmp_z <= '0';
+            end if;
         end if;
-        case alucode is
-        when "100" | "101" | "110" => -- ANA or XRA or ORA
-            flag_out(FlagP) <= not (q_i(0) xor q_i(1) xor q_i(2) xor 
-                q_i(3) xor q_i(4) xor q_i(5) xor q_i(6) xor q_i(7));
-        when others =>
-            null;
-        end case;
+        if check_s = '1' then
+            tmp_s <= tmp_q(7);
+        end if;
+        
     end process;
-    q <= q_i;
+    f_out(FlagC) <= tmp_c;
+    f_out(FlagZ) <= tmp_z;
+    f_out(FlagS) <= tmp_s;
+    q <= tmp_q;
 end architecture;

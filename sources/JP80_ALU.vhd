@@ -121,8 +121,6 @@ begin
             tmp_c <= not f_in(FlagC);
             check_z <= '0';
             check_s <= '0';
-        when others =>
-            null;
         end case;
         
         if check_z = '1' then

@@ -22,15 +22,15 @@ entity jp80_cpu is
         reqio_out   : out t_wire;
         
         -- BEGIN: SIMULATION ONLY
-        con_out     : out t_control;
+        con_out         : out t_control;
         addr_bus_out    : out t_address;
         data_bus_out    : out t_data;
-        pc_out      : out t_address;
-        acc_out     : out t_8bit;
-        bc_out      : out t_16bit;
-        alu_a_out   : out t_data;
-        alu_b_out   : out t_data;
-        alu_out     : out t_data
+        pc_out          : out t_address;
+        acc_out         : out t_8bit;
+        bc_out          : out t_16bit;
+        alu_a_out       : out t_data;
+        alu_b_out       : out t_data;
+        alu_out         : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_cpu;
@@ -55,9 +55,8 @@ architecture behv of jp80_cpu is
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
     signal ADDR_reg : t_address;
+    signal DATA_reg : t_data;
     signal SP_reg   : t_address;
-    signal MAR_reg  : t_address;
-    signal MDR_reg  : t_data;
     signal IR_reg   : t_data;
     
     -- Buses
@@ -76,10 +75,8 @@ architecture behv of jp80_cpu is
     signal con      : t_control := (others => '0');
     
     signal ns, ps, cb   : t_cpu_state;
-    signal save_alu     : t_flag := '0';
-    signal save_alu_p   : t_flag := '0';
-    
-    signal addr_read_low    : std_logic;
+    signal save_alu     : std_logic := '0';
+    signal save_data    : std_logic := '0';
     
     function SSS(src : std_logic_vector(2 downto 0))
         return integer is
@@ -92,6 +89,10 @@ architecture behv of jp80_cpu is
             return Ed;
         elsif src = "011" then
             return Ee;
+        elsif src = "100" then
+            return Eh;
+        elsif src = "101" then
+            return El;
         else
             return Eacc;
         end if;
@@ -108,26 +109,30 @@ architecture behv of jp80_cpu is
             return Ld;
         elsif dst = "011" then
             return Le;
+        elsif dst = "100" then
+            return Lh;
+        elsif dst = "101" then
+            return Ll;
         else
             return Lacc;
         end if;
     end DDD;
     
 begin
-    addr_out    <= MAR_reg;
-    data_inout  <= MDR_reg when con(Wr) = '1' else (others=>'Z');
+    addr_out    <= ADDR_reg;
+    data_inout  <= DATA_reg when con(Wr) = '1' else (others=>'Z');
     read_out    <= not con(Wr);
     write_out   <= con(Wr);
     reqmem_out  <= not con(IO);
     reqio_out   <= con(IO);
     
     -- BEGIN: SIMULATION ONLY
-    con_out     <= con;
+    con_out         <= con;
     addr_bus_out    <= addr_bus;
     data_bus_out    <= data_bus;
-    pc_out      <= PC_reg;
-    acc_out     <= ACC_reg;
-    bc_out       <= BC_reg;
+    pc_out          <= PC_reg;
+    acc_out         <= ACC_reg;
+    bc_out          <= BC_reg;
     alu_a_out       <= alu_a;
     alu_b_out       <= alu_b;
     alu_out         <= ALU_reg;
@@ -168,7 +173,9 @@ begin
         if reset = '1' then
             ADDR_reg <= (others => '0');
         elsif clk'event and clk = '1' then
-            if con(LaddrL) = '1' then
+            if con(Laddr) = '1' then
+                ADDR_reg <= addr_bus;
+            elsif con(LaddrL) = '1' then
                 ADDR_reg(7 downto 0) <= data_bus;
             elsif con(LaddrH) = '1' then
                 ADDR_reg(15 downto 8) <= data_bus;
@@ -176,33 +183,21 @@ begin
         end if;
     end process ADDR_register;
     addr_bus <= ADDR_reg when con(Eaddr) = '1' else (others => 'Z');
-
-    MAR_register:
-    process (clk, reset)
-    begin
-        if reset = '1' then
-            MAR_reg <= (others => '0');
-        elsif clk'event and clk = '0' then
-            if con(Lmar) = '1' then
-                MAR_reg <= addr_bus;
-            end if;
-        end if;
-    end process MAR_register;
     
-    MDR_register:
+    DATA_register:
     process (clk, reset)
     begin
         if reset = '1' then
-            MDR_reg <= (others => '0');
+            DATA_reg <= (others => '0');
         elsif clk'event and clk = '0' then
-            if con(Lmdr) = '1' then
-                MDR_reg <= data_bus;
+            if con(Ldata) = '1' then
+                DATA_reg <= data_bus;
             else
-                MDR_reg <= data_inout;
+                DATA_reg <= data_inout;
             end if;
         end if;
-    end process MDR_register;
-    data_bus <= MDR_reg when con(Emdr) = '1' else (others => 'Z');
+    end process DATA_register;
+    data_bus <= DATA_reg when con(Edata) = '1' else (others => 'Z');
 
     ACC_register:
     process (clk, reset)
@@ -253,27 +248,27 @@ begin
     data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
     addr_bus <= DE_reg when con(Ed) = '1' and con(Ee) = '1' else (others => 'Z');
     
---    HL_register:
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            HL_reg <= (others => '0');
---        elsif clk'event and clk = '1' then
---            if con(Lh) = '1' and con(Ll) = '1'  then
---                HL_reg <= addr_bus;
---            else
---                if con(Lh) = '1' then
---                    H_reg <= data_bus;
---                end if;
---                if con(Ll) = '1' then
---                    L_reg <= data_bus;
---                end if;
---            end if;
---        end if;
---    end process HL_register;
---    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
---    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
---    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
+    HL_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            HL_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lh) = '1' and con(Ll) = '1'  then
+                HL_reg <= addr_bus;
+            else
+                if con(Lh) = '1' then
+                    H_reg <= data_bus;
+                end if;
+                if con(Ll) = '1' then
+                    L_reg <= data_bus;
+                end if;
+            end if;
+        end if;
+    end process HL_register;
+    data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
+    data_bus <= L_reg when con(El) = '1' else (others => 'Z');
+    addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
 
     ALU_register:
     process (clk, reset)
@@ -323,10 +318,16 @@ begin
         end if;
     end process;
     
-    process (ps, opcode, save_alu)
+    process (ps, opcode, save_alu, save_data)
+        variable op76   : std_logic_vector(1 downto 0) := "00";
+        variable op53   : std_logic_vector(2 downto 0) := "000";
+        variable op20   : std_logic_vector(2 downto 0) := "000";
     begin
         con <= (others=>'0');
         alucode <= (others=>'0');
+        op76 := opcode(7 downto 6);
+        op53 := opcode(5 downto 3);
+        op20 := opcode(2 downto 0);
 
         case ps is
         when reset_state =>
@@ -334,9 +335,12 @@ begin
             
         when opcode_fetch_1 =>
             con(Epc) <= '1';
-            con(Lmar) <= '1';
+            con(Laddr) <= '1';
             if save_alu = '1' then
                 con(Eu) <= '1';
+                con(Lacc) <= '1';
+            elsif save_data = '1' then
+                con(Edata) <= '1';
                 con(Lacc) <= '1';
             end if;
             ns <= opcode_fetch_2;
@@ -346,13 +350,13 @@ begin
             ns <= opcode_fetch_3;
             
         when opcode_fetch_3 =>
-            con(Emdr) <= '1';
+            con(Edata) <= '1';
             con(Lir) <= '1';
             ns <= decode_instruction;
             
         when data_read_1 =>
             con(Epc) <= '1';
-            con(Lmar) <= '1';
+            con(Laddr) <= '1';
             ns <= data_read_2;
             
         when data_read_2 =>
@@ -360,22 +364,29 @@ begin
             ns <= data_read_3;
             
         when data_read_3 =>
-            con(Emdr) <= '1';
-            
-            if opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110" then
-                alucode <= "0"&opcode(5 downto 3);
+            con(Edata) <= '1';
+
+            if opcode = "11011011" then -- IN <b>
+                con(IO) <= '1';
+                con(LaddrL) <= '1';
+            elsif opcode = "11010011" then -- OUT <b>
+                con(IO) <= '1';
+                con(Wr) <= '1';
+                con(LaddrL) <= '1';
+            elsif op76 = "11" and op20 = "110" then
+                alucode <= "0" & op53;
                 con(LaluA) <= '1';
                 con(LaluB) <= '1';
                 con(Lu) <= '1';
             else
-                con(DDD(opcode(5 downto 3))) <= '1';
+                con(DDD(op53)) <= '1';
             end if;
             
             ns <= cb;
             
         when addr_read_1 =>
             con(Epc) <= '1';
-            con(Lmar) <= '1';
+            con(Laddr) <= '1';
             ns <= addr_read_2;
             
         when addr_read_2 =>
@@ -383,7 +394,7 @@ begin
             ns <= addr_read_3;
             
         when addr_read_3 =>
-            con(Emdr) <= '1';
+            con(Edata) <= '1';
 --            if addr_read_low = '1' then
 --                con(LaddrL) <= '1';
 --                addr_read_low <= '0';
@@ -399,7 +410,7 @@ begin
             
         when addr_read_4 =>
             con(Epc) <= '1';
-            con(Lmar) <= '1';
+            con(Laddr) <= '1';
             ns <= addr_read_5;
             
         when addr_read_5 =>
@@ -407,54 +418,156 @@ begin
             ns <= addr_read_6;
             
         when addr_read_6 =>
-            con(Emdr) <= '1';
+            con(Edata) <= '1';
             con(LaddrH) <= '1';
-            con(Eaddr) <= '1';
-            con(Lpc) <= '1';
+            
+            if op76 = "11" and op20 = "011" then
+                con(Eaddr) <= '1';
+                con(Lpc) <= '1';
+            end if;
+            
             ns <= cb;
             
+        when skip_addr_1 =>
+            con(Ipc) <= '1';
+            ns <= skip_addr_2;
+            
+        when skip_addr_2 =>
+            con(Ipc) <= '1';
+            ns <= opcode_fetch_1;
+            
         when decode_instruction =>
-            case opcode(7 downto 6) is
+            case op76 is
             when "00" =>
-                case opcode(2 downto 0) is
-                when "010" =>
-                    ns <= reset_state;
+                case op20 is
+                when "000" => -- NOP, RIM & SIM
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                when "001" => -- LXI & DAD
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                when "010" => -- STXX & LDXX
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                when "011" => -- INX & DCX
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                when "100" => -- INR
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                when "101" => -- DCR
+                    -- TODO
+                    ns <= opcode_fetch_1;
                 when "110" => -- MVI r,<b>
                     ns <= data_read_1;
                     cb <= opcode_fetch_1;
                 when "111" => -- MISC ALU
-                    alucode <= "1"&opcode(5 downto 3);
+                    alucode <= "1" & op53;
                     con(LaluA) <= '1';
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
-                when others =>
-                    ns <= reset_state;
                 end case;
             when "01" => -- MOV r,r or HLT
                 if opcode(5 downto 0) = "110110" then
                     con(HALT) <= '1'; -- HLT is the exception in the "01" range
                 else
-                    con(SSS(opcode(2 downto 0))) <= '1';
-                    con(DDD(opcode(5 downto 3))) <= '1';
+                    con(SSS(op20)) <= '1';
+                    con(DDD(op53)) <= '1';
                 end if;
                 ns <= opcode_fetch_1;
             when "10" => -- ALU with register
-                alucode <= "0"&opcode(5 downto 3);
-                con(SSS(opcode(2 downto 0))) <= '1';
+                alucode <= "0"&op53;
+                con(SSS(op20)) <= '1';
                 con(LaluA) <= '1';
                 con(LaluB) <= '1';
                 con(Lu) <= '1';
                 ns <= opcode_fetch_1;
             when "11" =>
-                if opcode(2 downto 0) = "011" then
---                    addr_read_low <= '1';
-                    ns <= addr_read_1;
+                case op20 is
+                when "000" => -- RXX (conditional return)
+                    -- TODO
+                    null;
+                when "001" => -- POP, RET & misc
+                    -- TODO
+                    null;
+                when "010" => -- JXX (conditional jump)
+                    ns <= skip_addr_1;
                     cb <= opcode_fetch_1;
-                else
-                    -- ALU with immediate
+                    case op53 is
+                    when "000" => -- JNZ
+                        if FLAG_reg(FlagZ) = '0' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "001" => -- JZ
+                        if FLAG_reg(FlagZ) = '1' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "010" => -- JNC
+                        if FLAG_reg(FlagC) = '0' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "011" => -- JC
+                        if FLAG_reg(FlagC) = '1' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "100" => -- JPO
+                        if FLAG_reg(FlagP) = '0' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "101" => -- JPE
+                        if FLAG_reg(FlagP) = '1' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "110" => -- JP
+                        if FLAG_reg(FlagS) = '0' then
+                            ns <= addr_read_1;
+                        end if;
+                    when "111" => -- JM
+                        if FLAG_reg(FlagS) = '1' then
+                            ns <= addr_read_1;
+                        end if;
+                    end case;
+                when "011" => -- JMP and misc
+                
+                    case op53 is
+                    when "000" => -- JMP
+                        ns <= addr_read_1;
+                    when "001" => -- No instruction
+                        ns <= opcode_fetch_1;
+                    when "010" => -- OUT <b>
+                        ns <= data_read_1;
+                        cb <= opcode_fetch_1;
+                    when "011" => -- IN <b>
+                        ns <= data_read_1;
+                        cb <= opcode_fetch_1;
+                    when "100" => -- XTHL
+                        -- TODO
+                        null;
+                    when "101" => -- XCHG
+                        -- TODO
+                        null;
+                    when "110" => -- DI
+                        -- TODO
+                        null;
+                    when "111" => -- EI
+                        -- TODO
+                        null;
+                    end case;
+
+                when "100" => -- CXX (conditional call)
+                    -- TODO
+                    null;
+                when "101" => -- PUSH & CALL
+                    -- TODO
+                    null;
+                when "110" => -- ALU with immediate
                     ns <= data_read_1;
                     cb <= opcode_fetch_1;
-                end if;
+                when "111" => -- RST X
+                    -- TODO
+                    ns <= opcode_fetch_1;
+                    null;
+                end case;
             when others =>
                 ns <= reset_state;
             end case;
@@ -463,5 +576,6 @@ begin
         end case;
     end process;
     save_alu <= '1' when opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") else '0';
+    save_data <= '1' when opcode = "11011011" else '0';
 
 end architecture behv;

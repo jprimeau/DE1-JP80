@@ -26,41 +26,38 @@ entity jp80_top is
         reqio_out   : out t_wire;
         
         -- BEGIN: SIMULATION ONLY
-        Lpc_out     : out t_wire;
-        Ipc_out     : out t_wire;
-        Epc_out     : out t_wire;
-        Lmar_out    : out t_wire;
-        Lmdr_out    : out t_wire;
-        Emdr_out    : out t_wire;
-        Lir_out     : out t_wire;
---        Esrc_out    : out t_wire;
---        Ldst_out    : out t_wire;
-        LaluA_out   : out t_wire;
-        LaluB_out   : out t_wire;
-        
---        src_out     : out t_regaddr;
---        dst_out     : out t_regaddr;
---        srcACC_out  : out t_wire;
---        srcB_out    : out t_wire;
---        srcPC_out   : out t_wire;
---        dstACC_out  : out t_wire;
---        dstB_out    : out t_wire;
-
---        EregA_out   : out t_wire;
---        EregB_out   : out t_wire;
---        LregI_out   : out t_wire;
---        RegA_out    : out t_regaddr;
---        RegB_out    : out t_regaddr;
---        RegI_out    : out t_regaddr;
-        
---        Lt_out      : out t_wire;
---        Et_out      : out t_wire;
---        Lu_out      : out t_wire;
---        Eu_out      : out t_wire;
---        Lsz_out     : out t_wire;
---        Wr_out      : out t_wire;
---        IO_out      : out t_wire;
-        halt_out    : out t_wire;
+        Lpc_out     : out std_logic;
+        Ipc_out     : out std_logic;
+        Epc_out     : out std_logic;
+        Laddr_out   : out std_logic;
+        LaddrL_out  : out std_logic;
+        LaddrH_out  : out std_logic;
+        Eaddr_out   : out std_logic;
+        Ldata_out   : out std_logic;
+        Edata_out   : out std_logic;
+        Lir_out     : out std_logic;
+        Lacc_out    : out std_logic;
+        Eacc_out    : out std_logic;
+        Lb_out      : out std_logic;
+        Eb_out      : out std_logic;
+        Lc_out      : out std_logic;
+        Ec_out      : out std_logic;
+        Ld_out      : out std_logic;
+        Ed_out      : out std_logic;
+        Le_out      : out std_logic;
+        Ee_out      : out std_logic;
+        Lh_out      : out std_logic;
+        Eh_out      : out std_logic;
+        Ll_out      : out std_logic;
+        El_out      : out std_logic;
+        Ehl_out     : out std_logic;
+        LaluA_out   : out std_logic;
+        LaluB_out   : out std_logic;
+        Eu_out      : out std_logic;
+        Lu_out      : out std_logic;
+        Wr_out      : out std_logic;
+        IO_out      : out std_logic;
+        HALT_out    : out std_logic;
         
         addr_bus_out    : out t_address;
         data_bus_out    : out t_data;
@@ -80,8 +77,8 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"C3",x"08",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
-        x"3E",x"10",x"76",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
+        x"DB",x"01",x"3E",x"BA",x"D3",x"02",x"76",x"FF", -- 00H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
@@ -112,39 +109,6 @@ architecture behv of jp80_top is
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
-        
---        x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"00", -- 10H
---        x"DB",x"00",x"6F",x"DB",x"01",x"67",x"E9",x"DB", -- 18H
---        x"00",x"D3",x"00",x"DB",x"01",x"D3",x"01",x"C3", -- 20H
---        x"1F",x"00",x"3E",x"00",x"D3",x"00",x"3C",x"C3", -- 28H
---        x"2C",x"00",x"2E",x"00",x"26",x"00",x"3E",x"10", -- 30H
---        x"3D",x"C2",x"38",x"00",x"23",x"7D",x"D3",x"00", -- 38H
---        x"7C",x"D3",x"01",x"C3",x"36",x"00",x"FF",x"FF", -- 40H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 48H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 50H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 58H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 60H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 68H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 70H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 78H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 80H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 88H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 90H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 98H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
     );
     
     signal cpu_data_inout   : t_data;
@@ -176,40 +140,35 @@ begin
     Lpc_out     <= cpu_con(Lpc);
     Ipc_out     <= cpu_con(Ipc);
     Epc_out     <= cpu_con(Epc);
-    Lmar_out    <= cpu_con(Lmar);
-    Lmdr_out    <= cpu_con(Lmdr);
-    Emdr_out    <= cpu_con(Emdr);
+    Laddr_out   <= cpu_con(Laddr);
+    LaddrL_out  <= cpu_con(LaddrL);
+    LaddrH_out  <= cpu_con(LaddrH);
+    Eaddr_out   <= cpu_con(Eaddr);
+    Ldata_out   <= cpu_con(Ldata);
+    Edata_out   <= cpu_con(Edata);
     Lir_out     <= cpu_con(Lir);
---    Esrc_out    <= cpu_con(Esrc);
---    Ldst_out    <= cpu_con(Ldst);
+    Lacc_out    <= cpu_con(Lacc);
+    Eacc_out    <= cpu_con(Eacc);
+    Lb_out      <= cpu_con(Lb);
+    Eb_out      <= cpu_con(Eb);
+    Lc_out      <= cpu_con(Lc);
+    Ec_out      <= cpu_con(Ec);
+    Ld_out      <= cpu_con(Ld);
+    Ed_out      <= cpu_con(Ed);
+    Le_out      <= cpu_con(Le);
+    Ee_out      <= cpu_con(Ee);
+    Lh_out      <= cpu_con(Lh);
+    Eh_out      <= cpu_con(Eh);
+    Ll_out      <= cpu_con(Ll);
+    El_out      <= cpu_con(El);
+    Ehl_out     <= cpu_con(Ehl);
     LaluA_out   <= cpu_con(LaluA);
     LaluB_out   <= cpu_con(LaluB);
-    
---    src_out     <= cpu_src;
---    dst_out     <= cpu_dst;
---    srcACC_out  <= cpu_src(sdACC);
---    srcB_out    <= cpu_src(sdB);
---    srcPC_out   <= cpu_src(sdPC);
---    dstACC_out  <= cpu_dst(sdACC);
---    dstB_out    <= cpu_dst(sdB);
-    
-    halt_out    <= cpu_con(HALT);
-
---    EregA_out   <= cpu_con(EregA);
---    EregB_out   <= cpu_con(EregB);
---    LregI_out   <= cpu_con(LregI);
---    RegA_out    <= cpu_con(RegA2 downto RegA0);
---    RegB_out    <= cpu_con(RegB2 downto RegB0);
---    RegI_out    <= cpu_con(RegI2 downto RegI0);
-    
---    Lt_out      <= cpu_con(Lt);
---    Et_out      <= cpu_con(Et);
---    Lu_out      <= cpu_con(Lu);
---    Eu_out      <= cpu_con(Eu);
---    Lsz_out     <= cpu_con(Lsz);
---    Wr_out      <= cpu_con(Wr);
---    IO_out      <= cpu_con(IO);
-    
+    Eu_out      <= cpu_con(Eu);
+    Lu_out      <= cpu_con(Lu);
+    Wr_out      <= cpu_con(Wr);
+    IO_out      <= cpu_con(IO);
+    HALT_out    <= cpu_con(HALT);
     
     addr_bus_out    <= cpu_addr_bus;
     data_bus_out    <= cpu_data_bus;
@@ -255,7 +214,7 @@ begin
         reqio_out   => cpu_reqio,
         
         -- BEGIN: SIMULATION ONLY
-        con_out     => cpu_con,
+        con_out         => cpu_con,
         addr_bus_out    => cpu_addr_bus,
         data_bus_out    => cpu_data_bus,
         pc_out          => cpu_pc,
@@ -263,7 +222,7 @@ begin
         bc_out          => cpu_bc,
         alu_a_out       => cpu_alu_a,
         alu_b_out       => cpu_alu_b,
-        alu_out     => cpu_alu
+        alu_out         => cpu_alu
         -- END: SIMULATION ONLY
     );
 

@@ -108,7 +108,7 @@ INR R                   1/1/4
 INR M                   1/2/7
         M1T4    ALU, SRC(hl), DST(alu), M2
 ***INX Rp                  1/1/6
-***JMP address(16b)        3/3/10
+***JMP address(16b)        3/3/10	C3 11000011
         X1      SRC(pc), DST(addrL), M2
         X2      SRC(pc), DST(addrH), M2
         X3      SRC(addr), DST(pc)
@@ -222,6 +222,7 @@ SP = 11
 
   COND
 --------
+-  = 000
 Z  = 001
 C  = 011
 PE = 101
@@ -270,6 +271,8 @@ PUSH = 11rr0101 (eg: C5 POP B)
 RST  = 11####11
 STAX = 
 LDAX = 
+
+      11000011
 
 R*  = 11fff000
 J*  = 11fff010

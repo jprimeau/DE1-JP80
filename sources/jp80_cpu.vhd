@@ -79,6 +79,8 @@ architecture behv of jp80_cpu is
     signal save_alu     : t_flag := '0';
     signal save_alu_p   : t_flag := '0';
     
+    signal addr_read_low    : std_logic;
+    
     function SSS(src : std_logic_vector(2 downto 0))
         return integer is
     begin
@@ -382,7 +384,17 @@ begin
             
         when addr_read_3 =>
             con(Emdr) <= '1';
-            -- DATA DST -> AddrL
+--            if addr_read_low = '1' then
+--                con(LaddrL) <= '1';
+--                addr_read_low <= '0';
+--                ns <= addr_read_1;
+--            else
+--                con(LaddrH) <= '1';
+--                con(Eaddr) <= '1';
+--                con(Lpc) <= '1';
+--                ns <= cb;
+--            end if;
+            con(LaddrL) <= '1';
             ns <= addr_read_4;
             
         when addr_read_4 =>
@@ -396,9 +408,9 @@ begin
             
         when addr_read_6 =>
             con(Emdr) <= '1';
-            -- DATA DST -> AddrH
-            -- ADDR SRC -> ADDR
-            -- ADDR DST -> PC
+            con(LaddrH) <= '1';
+            con(Eaddr) <= '1';
+            con(Lpc) <= '1';
             ns <= cb;
             
         when decode_instruction =>
@@ -433,9 +445,16 @@ begin
                 con(LaluB) <= '1';
                 con(Lu) <= '1';
                 ns <= opcode_fetch_1;
-            when "11" => -- ALU with immediate
-                ns <= data_read_1;
-                cb <= opcode_fetch_1;
+            when "11" =>
+                if opcode(2 downto 0) = "011" then
+--                    addr_read_low <= '1';
+                    ns <= addr_read_1;
+                    cb <= opcode_fetch_1;
+                else
+                    -- ALU with immediate
+                    ns <= data_read_1;
+                    cb <= opcode_fetch_1;
+                end if;
             when others =>
                 ns <= reset_state;
             end case;

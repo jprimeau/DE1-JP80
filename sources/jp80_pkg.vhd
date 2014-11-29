@@ -37,9 +37,9 @@ package jp80_pkg is
     constant Ee     : integer := 16;
     constant LaluA  : integer := 17;
     constant LaluB  : integer := 18;
-    constant LaddrL : integer := 18;
-    constant LaddrH : integer := 19;
-    constant Eaddr  : integer := 20;
+    constant LaddrL : integer := 19;
+    constant LaddrH : integer := 21;
+    constant Eaddr  : integer := 21;
 
 --    constant Lh     : integer := 18;
 --    constant Eh     : integer := 19;

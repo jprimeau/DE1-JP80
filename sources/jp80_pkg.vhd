@@ -65,6 +65,8 @@ package jp80_pkg is
         addr_read_1, addr_read_2, addr_read_3,
         addr_read_4, addr_read_5, addr_read_6,
         skip_addr_1, skip_addr_2,
+        memio_to_acc_1, memio_to_acc_2,
+        acc_to_memio_1, acc_to_memio_2,
         decode_instruction
     );
 end package jp80_pkg;

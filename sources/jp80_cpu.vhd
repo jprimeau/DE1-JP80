@@ -76,7 +76,6 @@ architecture behv of jp80_cpu is
     
     signal ns, ps, cb   : t_cpu_state;
     signal save_alu     : std_logic := '0';
-    signal save_data    : std_logic := '0';
     
     function SSS(src : std_logic_vector(2 downto 0))
         return integer is
@@ -318,7 +317,7 @@ begin
         end if;
     end process;
     
-    process (ps, opcode, save_alu, save_data)
+    process (ps, opcode, save_alu)
         variable op76   : std_logic_vector(1 downto 0) := "00";
         variable op53   : std_logic_vector(2 downto 0) := "000";
         variable op20   : std_logic_vector(2 downto 0) := "000";
@@ -338,9 +337,6 @@ begin
             con(Laddr) <= '1';
             if save_alu = '1' then
                 con(Eu) <= '1';
-                con(Lacc) <= '1';
-            elsif save_data = '1' then
-                con(Edata) <= '1';
                 con(Lacc) <= '1';
             end if;
             ns <= opcode_fetch_2;
@@ -364,14 +360,14 @@ begin
             ns <= data_read_3;
             
         when data_read_3 =>
+            ns <= cb;
             con(Edata) <= '1';
 
             if opcode = "11011011" then -- IN <b>
-                con(IO) <= '1';
+                ns <= memio_to_acc_1;
                 con(LaddrL) <= '1';
             elsif opcode = "11010011" then -- OUT <b>
-                con(IO) <= '1';
-                con(Wr) <= '1';
+                ns <= acc_to_memio_1;
                 con(LaddrL) <= '1';
             elsif op76 = "11" and op20 = "110" then
                 alucode <= "0" & op53;
@@ -382,6 +378,23 @@ begin
                 con(DDD(op53)) <= '1';
             end if;
             
+        when memio_to_acc_1 =>
+            con(IO) <= '1';
+            ns <= memio_to_acc_2;
+            
+        when memio_to_acc_2 =>
+            con(Edata) <= '1';
+            con(Lacc) <= '1';
+            ns <= cb;
+            
+        when acc_to_memio_1 =>
+            con(Eacc) <= '1';
+            con(Ldata) <= '1';
+            ns <= acc_to_memio_2;
+            
+        when acc_to_memio_2 =>
+            con(IO) <= '1';
+            con(Wr) <= '1';
             ns <= cb;
             
         when addr_read_1 =>
@@ -395,16 +408,6 @@ begin
             
         when addr_read_3 =>
             con(Edata) <= '1';
---            if addr_read_low = '1' then
---                con(LaddrL) <= '1';
---                addr_read_low <= '0';
---                ns <= addr_read_1;
---            else
---                con(LaddrH) <= '1';
---                con(Eaddr) <= '1';
---                con(Lpc) <= '1';
---                ns <= cb;
---            end if;
             con(LaddrL) <= '1';
             ns <= addr_read_4;
             
@@ -527,6 +530,7 @@ begin
                             ns <= addr_read_1;
                         end if;
                     end case;
+
                 when "011" => -- JMP and misc
                 
                     case op53 is
@@ -576,6 +580,5 @@ begin
         end case;
     end process;
     save_alu <= '1' when opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") else '0';
-    save_data <= '1' when opcode = "11011011" else '0';
 
 end architecture behv;

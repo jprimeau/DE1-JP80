@@ -75,7 +75,8 @@ architecture behv of jp80_cpu is
     signal con      : t_control := (others => '0');
     
     signal ns, ps, cb   : t_cpu_state;
-    signal save_alu     : std_logic := '0';
+--    signal save_alu     : std_logic := '0';
+    signal alu_to_reg   : std_logic_vector(3 downto 0) := (others => '0');
     
     function SSS(src : std_logic_vector(2 downto 0))
         return integer is
@@ -317,7 +318,8 @@ begin
         end if;
     end process;
     
-    process (ps, opcode, save_alu)
+    --process (ps, opcode, save_alu)
+    process (ps, opcode)
         variable op76   : std_logic_vector(1 downto 0) := "00";
         variable op53   : std_logic_vector(2 downto 0) := "000";
         variable op20   : std_logic_vector(2 downto 0) := "000";
@@ -335,9 +337,9 @@ begin
         when opcode_fetch_1 =>
             con(Epc) <= '1';
             con(Laddr) <= '1';
-            if save_alu = '1' then
+            if alu_to_reg(3) = '1' then
                 con(Eu) <= '1';
-                con(Lacc) <= '1';
+                con(DDD(alu_to_reg(2 downto 0))) <= '1';
             end if;
             ns <= opcode_fetch_2;
             
@@ -458,7 +460,7 @@ begin
                 when "100" => -- INR
                     -- TODO
                     alucode <= "0000"; -- ADD
-                    con(SSS(op20)) <= '1';
+                    con(SSS(op53)) <= '1';
                     con(LaluA) <= '1';
                     con(LaluB) <= '0'; -- Force B to 00000001
                     con(Lu) <= '1';
@@ -466,7 +468,7 @@ begin
                 when "101" => -- DCR
                     -- TODO
                     alucode <= "0010"; -- SUB
-                    con(SSS(op20)) <= '1';
+                    con(SSS(op53)) <= '1';
                     con(LaluA) <= '1';
                     con(LaluB) <= '0'; -- Force B to 00000001
                     con(Lu) <= '1';
@@ -589,21 +591,16 @@ begin
             ns <= reset_state;
         end case;
     end process;
-    save_alu <= '1' when opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") else '0';
     
---    process (clk, reset)
---    begin
---        if reset = '1' then
---            src <= '0';
---            dst <= '0';
---        elsif clk'event and clk = '1' then
---            if con(Ld) = '1' then
---                D_reg <= data_bus;
---            end if;
---            if con(Le) = '1' then
---                E_reg <= data_bus;
---            end if;
---        end if;
---    end process;
+    process (clk)
+    begin
+        if clk'event and clk = '0' then
+            if con(Lu) = '1' then
+                alu_to_reg <= "1" & opcode(5 downto 3);
+            else
+                alu_to_reg <= (others=>'0');
+            end if;
+        end if;
+    end process;
 
 end architecture behv;

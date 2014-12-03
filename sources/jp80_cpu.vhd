@@ -2,7 +2,10 @@
 -- AUTHOR: Jonathan Primeau
 
 -- TODO:
--- o Fix CALL and RET (16 bit)
+--  o Support op with M
+--  o Load and store (8 and 16-bit)
+--  o Pop and push
+--  o CALL and RET
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -295,6 +298,8 @@ begin
                 B_reg <= data_bus;
             elsif con(Lc) = '1' then
                 C_reg <= data_bus;
+            elsif con(Lbc) = '1' then
+                BC_reg <= addr_bus;
             elsif con(Ibc) = '1' then
                 BC_reg <= BC_reg + 1;
             elsif con(Dbc) = '1' then
@@ -304,7 +309,7 @@ begin
     end process BC_register;
     data_bus <= B_reg when con(Eb) = '1' else (others => 'Z');
     data_bus <= C_reg when con(Ec) = '1' else (others => 'Z');
-    addr_bus <= BC_reg when con(Eb) = '1' and con(Ec) = '1' else (others => 'Z');
+    addr_bus <= BC_reg when con(Ebc) = '1' else (others => 'Z');
     
     DE_register:
     process (clk, reset)
@@ -316,6 +321,8 @@ begin
                 D_reg <= data_bus;
             elsif con(Le) = '1' then
                 E_reg <= data_bus;
+            elsif con(Lde) = '1' then
+                DE_reg <= addr_bus;
             elsif con(Ide) = '1' then
                 DE_reg <= DE_reg + 1;
             elsif con(Dde) = '1' then
@@ -325,7 +332,7 @@ begin
     end process DE_register;
     data_bus <= D_reg when con(Ed) = '1' else (others => 'Z');
     data_bus <= E_reg when con(Ee) = '1' else (others => 'Z');
-    addr_bus <= DE_reg when con(Ed) = '1' and con(Ee) = '1' else (others => 'Z');
+    addr_bus <= DE_reg when con(Ede) = '1' else (others => 'Z');
     
     HL_register:
     process (clk, reset)
@@ -333,18 +340,16 @@ begin
         if reset = '1' then
             HL_reg <= (others => '0');
         elsif clk'event and clk = '1' then
-            if con(Lh) = '1' and con(Ll) = '1' then
+            if con(Lh) = '1' then
+                H_reg <= data_bus;
+            elsif con(Ll) = '1' then
+                L_reg <= data_bus;
+            elsif con(Lhl) = '1' then
                 HL_reg <= addr_bus;
             elsif con(Ihl) = '1' then
-                HL_reg <= HL_reg + 1;
+                HL_reg <= DE_reg + 1;
             elsif con(Dhl) = '1' then
-                HL_reg <= HL_reg - 1;
-            else
-                if con(Lh) = '1' then
-                    H_reg <= data_bus;
-                elsif con(Ll) = '1' then
-                    L_reg <= data_bus;
-                end if;
+                HL_reg <= DE_reg - 1;
             end if;
         end if;
     end process HL_register;

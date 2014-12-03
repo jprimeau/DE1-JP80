@@ -253,7 +253,7 @@ begin
         if reset = '1' then
             HL_reg <= (others => '0');
         elsif clk'event and clk = '1' then
-            if con(Lh) = '1' and con(Ll) = '1'  then
+            if con(Lh) = '1' and con(Ll) = '1' then
                 HL_reg <= addr_bus;
             else
                 if con(Lh) = '1' then
@@ -268,6 +268,23 @@ begin
     data_bus <= H_reg when con(Eh) = '1' else (others => 'Z');
     data_bus <= L_reg when con(El) = '1' else (others => 'Z');
     addr_bus <= HL_reg when con(Ehl) = '1' else (others => 'Z');
+    
+    SP_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            SP_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lsp) = '1' then
+                SP_reg <= addr_bus;
+            elsif con(Isp) = '1' then
+                SP_reg <= SP_reg + 1;
+            elsif con(Dsp) = '1' then
+                SP_reg <= SP_reg - 1;
+            end if;
+        end if;
+    end process SP_register;
+    addr_bus <= SP_reg when con(Esp) = '1' else (others => 'Z');
 
     ALU_register:
     process (clk, reset)
@@ -757,6 +774,26 @@ begin
                     --E9	11101001	PCHL
                     --F1	11110001	POP PSW
                     --F9	11111001	SPHL
+                    case op53 is
+                    when "000" => -- POP B
+                        null;
+                    when "001" => -- RET
+                        null;
+                    when "010" => -- POP D
+                        null;
+                    when "011" => -- XXX
+                        null;
+                    when "100" => -- POP H
+                        null;
+                    when "101" => -- PCHL
+                        con(Ehl) <= '1';
+                        con(Lpc) <= '1';
+                    when "110" => -- POP PSW
+                        null;
+                    when "111" => -- SPHL
+                        con(Ehl) <= '1';
+                        con(Lsp) <= '1';
+                    end case;
                     ns <= opcode_fetch_1;
                     
                 when "010" =>

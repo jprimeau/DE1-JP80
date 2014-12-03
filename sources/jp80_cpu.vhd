@@ -56,6 +56,7 @@ architecture behv of jp80_cpu is
     signal PC_reg   : t_address;
     signal ADDR_reg : t_address;
     signal DATA_reg : t_data;
+    signal TMP_reg  : t_address;
     signal SP_reg   : t_address;
     signal IR_reg   : t_data;
     
@@ -116,6 +117,62 @@ architecture behv of jp80_cpu is
             return Lacc;
         end if;
     end DDD;
+    
+    function SS(src : std_logic_vector(1 downto 0))
+        return integer is
+    begin
+        if src = "00" then
+            return Ebc;
+        elsif src = "01" then
+            return Ede;
+        elsif src = "10" then
+            return Ehl;
+        else
+            return Esp;
+        end if;
+    end SS;
+    
+    function DD(dst : std_logic_vector(1 downto 0))
+        return integer is
+    begin
+        if dst = "00" then
+            return Ebc;
+        elsif dst = "01" then
+            return Ede;
+        elsif dst = "10" then
+            return Ehl;
+        else
+            return Esp;
+        end if;
+    end DD;
+    
+    function INCDEC(code : std_logic_vector(2 downto 0))
+        return integer is
+        variable dst : std_logic_vector(1 downto 0);
+    begin
+        dst := code(2 downto 1);
+        if code(0) = '0' then
+            if dst = "00" then
+                return Ibc;
+            elsif dst = "01" then
+                return Ide;
+            elsif dst = "10" then
+                return Ihl;
+            else
+                return Isp;
+            end if;
+        else
+            if dst = "00" then
+                return Dbc;
+            elsif dst = "01" then
+                return Dde;
+            elsif dst = "10" then
+                return Dhl;
+            else
+                return Dsp;
+            end if;
+        end if;
+    end INCDEC;
     
 begin
     addr_out    <= ADDR_reg;
@@ -197,6 +254,23 @@ begin
         end if;
     end process DATA_register;
     data_bus <= DATA_reg when con(Edata) = '1' else (others => 'Z');
+    
+    TMP_register:
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            TMP_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
+            if con(Lt) = '1' then
+                TMP_reg <= addr_bus;
+            elsif con(LtL) = '1' then
+                TMP_reg(7 downto 0) <= data_bus;
+            elsif con(LtH) = '1' then
+                TMP_reg(15 downto 8) <= data_bus;
+            end if;
+        end if;
+    end process TMP_register;
+    addr_bus <= TMP_reg when con(Et) = '1' else (others => 'Z');
 
     ACC_register:
     process (clk, reset)
@@ -219,9 +293,12 @@ begin
         elsif clk'event and clk = '1' then
             if con(Lb) = '1' then
                 B_reg <= data_bus;
-            end if;
-            if con(Lc) = '1' then
+            elsif con(Lc) = '1' then
                 C_reg <= data_bus;
+            elsif con(Ibc) = '1' then
+                BC_reg <= BC_reg + 1;
+            elsif con(Dbc) = '1' then
+                BC_reg <= BC_reg - 1;
             end if;
         end if;
     end process BC_register;
@@ -237,9 +314,12 @@ begin
         elsif clk'event and clk = '1' then
             if con(Ld) = '1' then
                 D_reg <= data_bus;
-            end if;
-            if con(Le) = '1' then
+            elsif con(Le) = '1' then
                 E_reg <= data_bus;
+            elsif con(Ide) = '1' then
+                DE_reg <= DE_reg + 1;
+            elsif con(Dde) = '1' then
+                DE_reg <= DE_reg - 1;
             end if;
         end if;
     end process DE_register;
@@ -255,11 +335,14 @@ begin
         elsif clk'event and clk = '1' then
             if con(Lh) = '1' and con(Ll) = '1' then
                 HL_reg <= addr_bus;
+            elsif con(Ihl) = '1' then
+                HL_reg <= HL_reg + 1;
+            elsif con(Dhl) = '1' then
+                HL_reg <= HL_reg - 1;
             else
                 if con(Lh) = '1' then
                     H_reg <= data_bus;
-                end if;
-                if con(Ll) = '1' then
+                elsif con(Ll) = '1' then
                     L_reg <= data_bus;
                 end if;
             end if;
@@ -425,7 +508,7 @@ begin
             
         when addr_read_3 =>
             con(Edata) <= '1';
-            con(LaddrL) <= '1';
+            con(LtL) <= '1';
             ns <= addr_read_4;
             
         when addr_read_4 =>
@@ -439,10 +522,10 @@ begin
             
         when addr_read_6 =>
             con(Edata) <= '1';
-            con(LaddrH) <= '1';
+            con(LtH) <= '1';
             
             if op76 = "11" and op20 = "011" then
-                con(Eaddr) <= '1';
+                con(Et) <= '1';
                 con(Lpc) <= '1';
             end if;
             
@@ -501,7 +584,6 @@ begin
                     ns <= opcode_fetch_1;
                     
                 when "011" =>
-                    -- TODO
                     --00 PP X 011
                     --03	00000011	INX B
                     --0B	00001011	DCX B
@@ -511,6 +593,7 @@ begin
                     --2B	00101011	DCX H
                     --33	00110011	INX SP
                     --3B	00111011	DCX SP
+                    con(INCDEC(op53)) <= '1';
                     ns <= opcode_fetch_1;
                     
                 when "100" => -- INR
@@ -844,6 +927,8 @@ begin
                     end case;
 
                 when "011" =>
+                    ns <= opcode_fetch_1;
+                    cb <= opcode_fetch_1;
                     --11 XXX 011
                     --C3	11000011	JMP <a>
                     --CB	11001011	XXX
@@ -856,6 +941,7 @@ begin
                     case op53 is
                     when "000" => -- JMP
                         ns <= addr_read_1;
+                        cb <= opcode_fetch_1;
                     when "001" => -- No instruction
                         ns <= opcode_fetch_1;
                     when "010" => -- OUT <b>

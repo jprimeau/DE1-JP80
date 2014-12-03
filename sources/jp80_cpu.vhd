@@ -283,7 +283,7 @@ begin
     end process ALU_register;
     data_bus <= ALU_reg when con(Eu) = '1' else (others => 'Z');
 
-    alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
+    alu_a <= ACC_reg when con(LaluA) = '1' else data_bus;
     alu_b <= data_bus when con(LaluB) = '1' else "00000001";
     
     ALU : work.JP80_ALU
@@ -318,7 +318,6 @@ begin
         end if;
     end process;
     
-    --process (ps, opcode, save_alu)
     process (ps, opcode)
         variable op76   : std_logic_vector(1 downto 0) := "00";
         variable op53   : std_logic_vector(2 downto 0) := "000";
@@ -461,16 +460,16 @@ begin
                     -- TODO
                     alucode <= "0000"; -- ADD
                     con(SSS(op53)) <= '1';
-                    con(LaluA) <= '1';
-                    con(LaluB) <= '0'; -- Force B to 00000001
+                    con(LaluA) <= '0'; -- A = source
+                    con(LaluB) <= '0'; -- B = 00000001
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
                 when "101" => -- DCR
                     -- TODO
                     alucode <= "0010"; -- SUB
                     con(SSS(op53)) <= '1';
-                    con(LaluA) <= '1';
-                    con(LaluB) <= '0'; -- Force B to 00000001
+                    con(LaluA) <= '0'; -- A = source
+                    con(LaluB) <= '0'; -- B = 00000001
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
                 when "110" => -- MVI r,<b>

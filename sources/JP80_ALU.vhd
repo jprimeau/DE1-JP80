@@ -65,7 +65,7 @@ begin
             tmp_a <= a;
             tmp_b <= b;
             tmp_c <= '0';
-            if alucode = "001" then
+            if alucode = "0001" then
                 tmp_c <= f_in(FlagC);
             end if;
             FullAdder(tmp_a, tmp_b, tmp_c, tmp_q, tmp_c);
@@ -73,7 +73,7 @@ begin
             tmp_a <= a;
             tmp_b <= not b;
             tmp_c <= '0';
-            if alucode = "011" then
+            if alucode = "0011" then
                 tmp_c <= f_in(FlagC);
             end if;
             FullAdder(tmp_a, tmp_b, tmp_c, tmp_q, tmp_c);

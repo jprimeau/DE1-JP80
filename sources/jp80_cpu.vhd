@@ -283,7 +283,7 @@ begin
     data_bus <= ALU_reg when con(Eu) = '1' else (others => 'Z');
 
     alu_a <= ACC_reg when con(LaluA) = '1' else (others=>'Z');
-    alu_b <= data_bus when con(LaluB) = '1' else (others=>'Z');
+    alu_b <= data_bus when con(LaluB) = '1' else "00000001";
     
     ALU : work.JP80_ALU
     port map (
@@ -457,9 +457,19 @@ begin
                     ns <= opcode_fetch_1;
                 when "100" => -- INR
                     -- TODO
+                    alucode <= "0000"; -- ADD
+                    con(SSS(op20)) <= '1';
+                    con(LaluA) <= '1';
+                    con(LaluB) <= '0'; -- Force B to 00000001
+                    con(Lu) <= '1';
                     ns <= opcode_fetch_1;
                 when "101" => -- DCR
                     -- TODO
+                    alucode <= "0010"; -- SUB
+                    con(SSS(op20)) <= '1';
+                    con(LaluA) <= '1';
+                    con(LaluB) <= '0'; -- Force B to 00000001
+                    con(Lu) <= '1';
                     ns <= opcode_fetch_1;
                 when "110" => -- MVI r,<b>
                     ns <= data_read_1;
@@ -580,5 +590,20 @@ begin
         end case;
     end process;
     save_alu <= '1' when opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") else '0';
+    
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            src <= '0';
+--            dst <= '0';
+--        elsif clk'event and clk = '1' then
+--            if con(Ld) = '1' then
+--                D_reg <= data_bus;
+--            end if;
+--            if con(Le) = '1' then
+--                E_reg <= data_bus;
+--            end if;
+--        end if;
+--    end process;
 
 end architecture behv;

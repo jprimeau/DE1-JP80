@@ -77,7 +77,7 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"DB",x"01",x"3E",x"BA",x"D3",x"02",x"76",x"FF", -- 00H
+        x"3E",x"00",x"3C",x"3C",x"3C",x"3C",x"76",x"FF", -- 00H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H

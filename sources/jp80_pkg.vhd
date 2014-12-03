@@ -12,7 +12,7 @@ package jp80_pkg is
     subtype t_address is std_logic_vector(15 downto 0);
     subtype t_data is std_logic_vector(7 downto 0);
     subtype t_opcode is std_logic_vector(7 downto 0);
-    subtype t_control is std_logic_vector(31 downto 0);
+    subtype t_control is std_logic_vector(32 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
     subtype t_8bit is std_logic_vector(7 downto 0);
     subtype t_16bit is std_logic_vector(15 downto 0);

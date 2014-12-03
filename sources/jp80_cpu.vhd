@@ -75,7 +75,6 @@ architecture behv of jp80_cpu is
     signal con      : t_control := (others => '0');
     
     signal ns, ps, cb   : t_cpu_state;
---    signal save_alu     : std_logic := '0';
     signal alu_to_reg   : std_logic_vector(3 downto 0) := (others => '0');
     
     function SSS(src : std_logic_vector(2 downto 0))
@@ -444,44 +443,198 @@ begin
             case op76 is
             when "00" =>
                 case op20 is
-                when "000" => -- NOP, RIM & SIM
+                
+                when "000" =>
                     -- TODO
+                    --00 XXX 000
+                    --00    00000000    NOP
+                    --08    00001000    XXX
+                    --10    00010000    XXX
+                    --18    00011000    XXX
+                    --20    00100000    RIM
+                    --28    00101000    XXX
+                    --30    00110000    SIM
+                    --38    00111000    XXX
                     ns <= opcode_fetch_1;
-                when "001" => -- LXI & DAD
+                    
+                when "001" =>
                     -- TODO
+                    --00 XXX 001
+                    --01    00000001    LXI B,<b>
+                    --09    00001001    DAD B
+                    --11    00010001    LXI D,<b>
+                    --19    00011001    DAD D
+                    --21    00100001    LXI H,<b>
+                    --29    00101001    DAD H
+                    --31    00110001    LXI SP,<b>
+                    --39    00111001    DAD SP
                     ns <= opcode_fetch_1;
-                when "010" => -- STXX & LDXX
+                    
+                when "010" =>
                     -- TODO
+                    --00 PP X 010
+                    --02	00000010	STAX B
+                    --0A	00001010	LDAX B
+                    --12	00010010	STAX D
+                    --1A	00011010	LDAX D
+                    --22	00100010	SHLD <a>
+                    --2A	00101010	LHLD <a>
+                    --32	00110010	STA <a>
+                    --3A	00111010	LDA <a>
                     ns <= opcode_fetch_1;
-                when "011" => -- INX & DCX
+                    
+                when "011" =>
                     -- TODO
+                    --00 PP X 011
+                    --03	00000011	INX B
+                    --0B	00001011	DCX B
+                    --13	00010011	INX D
+                    --1B	00011011	DCX D
+                    --23	00100011	INX H
+                    --2B	00101011	DCX H
+                    --33	00110011	INX SP
+                    --3B	00111011	DCX SP
                     ns <= opcode_fetch_1;
+                    
                 when "100" => -- INR
                     -- TODO
+                    --00 XXX 100
+                    --04	00000100	INR B
+                    --0C	00001100	INR C
+                    --14	00010100	INR D
+                    --1C	00011100	INR E
+                    --24	00100100	INR H
+                    --2C	00101100	INR L
+                    --34	00110100	INR M
+                    --3C	00111100	INR A
                     alucode <= "0000"; -- ADD
                     con(SSS(op53)) <= '1';
                     con(LaluA) <= '0'; -- A = source
                     con(LaluB) <= '0'; -- B = 00000001
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
+
                 when "101" => -- DCR
                     -- TODO
+                    --00 XXX 101
+                    --05	00000101	DCR B
+                    --0D	00001101	DCR C
+                    --15	00010101	DCR D
+                    --1D	00011101	DCR E
+                    --25	00100101	DCR H
+                    --2D	00101101	DCR L
+                    --35	00110101	DCR M
+                    --3D	00111101	DCR A
                     alucode <= "0010"; -- SUB
                     con(SSS(op53)) <= '1';
                     con(LaluA) <= '0'; -- A = source
                     con(LaluB) <= '0'; -- B = 00000001
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
-                when "110" => -- MVI r,<b>
+                    
+                when "110" =>
+                    --00 XXX 110
+                    --06	00000110	MVI B
+                    --0E	00001110	MVI C
+                    --16	00010110	MVI D
+                    --1E	00011110	MVI E
+                    --26	00100110	MVI H
+                    --2E	00101110	MVI L
+                    --36	00110110	MVI M
+                    --3E	00111110	MVI A
                     ns <= data_read_1;
                     cb <= opcode_fetch_1;
-                when "111" => -- MISC ALU
+                    
+                when "111" =>
+                    --00 XXX 111
+                    --07	00000111	RLC
+                    --0F	00001111	RRC
+                    --17	00010111	RAL
+                    --1F	00011111	RAR
+                    --27	00100111	DAA
+                    --2F	00101111	CMA
+                    --37	00110111	STC
+                    --3F	00111111	CMC
                     alucode <= "1" & op53;
                     con(LaluA) <= '1';
                     con(Lu) <= '1';
                     ns <= opcode_fetch_1;
+                    
                 end case;
-            when "01" => -- MOV r,r or HLT
+                
+            when "01" =>
+                --01 DDD SSS
+                --40	01000000	MOV B,B
+                --41	01000001	MOV B,C
+                --42	01000010	MOV B,D
+                --43	01000011	MOV B,E
+                --44	01000100	MOV B,H
+                --45	01000101	MOV B,L
+                --46	01000110	MOV B,M
+                --47	01000111	MOV B,A
+                --
+                --48	01001000	MOV C,B
+                --49	01001001	MOV C,C
+                --4A	01001010	MOV C,D
+                --4B	01001011	MOV C,E
+                --4C	01001100	MOV C,H
+                --4D	01001101	MOV C,L
+                --4E	01001110	MOV C,M
+                --4F	01001111	MOV C,A
+                --
+                --50	01010000	MOV D,B
+                --51	01010001	MOV D,C
+                --52	01010010	MOV D,D
+                --53	01010011	MOV D,E
+                --54	01010100	MOV D,H
+                --55	01010101	MOV D,L
+                --56	01010110	MOV D,M
+                --57	01010111	MOV D,A
+                --
+                --58	01011000	MOV E,B
+                --59	01011001	MOV E,C
+                --5A	01011010	MOV E,D
+                --5B	01011011	MOV E,E
+                --5C	01011100	MOV E,H
+                --5D	01011101	MOV E,L
+                --5E	01011110	MOV E,M
+                --5F	01011111	MOV E,A
+                --
+                --60	01100000	MOV H,B
+                --61	01100001	MOV H,C
+                --62	01100010	MOV H,D
+                --63	01100011	MOV H,E
+                --64	01100100	MOV H,H
+                --65	01100101	MOV H,L
+                --66	01100110	MOV H,M
+                --67	01100111	MOV H,A
+                --
+                --68	01100000	MOV L,B
+                --69	01100001	MOV L,C
+                --6A	01100010	MOV L,D
+                --6B	01100011	MOV L,E
+                --6C	01100100	MOV L,H
+                --6D	01100101	MOV L,L
+                --6E	01100110	MOV L,M
+                --6F	01100111	MOV L,A
+                --
+                --70	01110000	MOV M,B
+                --71	01110001	MOV M,C
+                --72	01110010	MOV M,D
+                --73	01110011	MOV M,E
+                --74	01110100	MOV M,H
+                --75	01110101	MOV M,L
+                --76	01110110	HALT
+                --77	01110111	MOV M,A
+                --
+                --78	01111000	MOV A,B
+                --79	01111001	MOV A,C
+                --7A	01111010	MOV A,D
+                --7B	01111011	MOV A,E
+                --7C	01111100	MOV A,H
+                --7D	01111101	MOV A,L
+                --7E	01111110	MOV A,M
+                --7F	01111111	MOV A,A
                 if opcode(5 downto 0) = "110110" then
                     con(HALT) <= '1'; -- HLT is the exception in the "01" range
                 else
@@ -489,22 +642,133 @@ begin
                     con(DDD(op53)) <= '1';
                 end if;
                 ns <= opcode_fetch_1;
-            when "10" => -- ALU with register
+                
+            when "10" =>
+                --10 000 SSS
+                --80	10000000	ADD B
+                --81	10000001	ADD C
+                --82	10000010	ADD D
+                --83	10000011	ADD E
+                --84	10000100	ADD H
+                --85	10000101	ADD L
+                --86	10000110	ADD M
+                --87	10000111	ADD A
+                --
+                --10 001 SSS
+                --88	10001000	ADC B
+                --89	10001001	ADC C
+                --8A	10001010	ADC D
+                --8B	10001011	ADC E
+                --8C	10001100	ADC H
+                --8D	10001101	ADC L
+                --8E	10001110	ADC M
+                --8F	10001111	ADC A
+                --
+                --10 010 SSS
+                --90	10010000	SUB B
+                --91	10010001	SUB C
+                --92	10010010	SUB D
+                --93	10010011	SUB E
+                --94	10010100	SUB H
+                --95	10010101	SUB L
+                --96	10010110	SUB M
+                --97	10010111	SUB A
+                --
+                --10 011 SSS
+                --98	10011000	SBB B
+                --89	10011001	SBB C
+                --8A	10011010	SBB D
+                --8B	10011011	SBB E
+                --8C	10011100	SBB H
+                --8D	10011101	SBB L
+                --8E	10011110	SBB M
+                --9F	10011111	SBB A
+                --
+                --10 100 SSS
+                --A0	10100000	ANA B
+                --A1	10100001	ANA C
+                --A2	10100010	ANA D
+                --A3	10100011	ANA E
+                --A4	10100100	ANA H
+                --A5	10100101	ANA L
+                --A6	10100110	ANA M
+                --A7	10100111	ANA A
+                --
+                --10 101 SSS
+                --A8	10101000	XRA B
+                --A9	10101001	XRA C
+                --AA	10101010	XRA D
+                --AB	10101011	XRA E
+                --AC	10101100	XRA H
+                --AD	10101101	XRA L
+                --AE	10101110	XRA M
+                --AF	10101111	XRA A
+                --
+                --10 110 SSS
+                --B0	10110000	ORA B
+                --B1	10110001	ORA C
+                --B2	10110010	ORA D
+                --B3	10110011	ORA E
+                --B4	10110100	ORA H
+                --B5	10110101	ORA L
+                --B6	10110110	ORA M
+                --B7	10110111	ORA A
+                --
+                --10 111 SSS
+                --B8	10111000	CMP B
+                --B9	10111001	CMP C
+                --BA	10111010	CMP D
+                --BB	10111011	CMP E
+                --BC	10111100	CMP H
+                --BD	10110101	CMP L
+                --BE	10111110	CMP M
+                --BF	10111111	CMP A
                 alucode <= "0"&op53;
                 con(SSS(op20)) <= '1';
                 con(LaluA) <= '1';
                 con(LaluB) <= '1';
                 con(Lu) <= '1';
                 ns <= opcode_fetch_1;
+                
             when "11" =>
                 case op20 is
-                when "000" => -- RXX (conditional return)
+                
+                when "000" =>
                     -- TODO
-                    null;
-                when "001" => -- POP, RET & misc
+                    --11 XXX 000
+                    --C8	11001000	RZ
+                    --D8	11011000	RC
+                    --E8	11101000	RPE
+                    --F8	11111000	RM
+                    --C0	11000000	RNZ
+                    --D0	11010000	RNC
+                    --E0	11100000	RPO
+                    --F0	11110000	RP
+                    ns <= opcode_fetch_1;
+                    
+                when "001" =>
                     -- TODO
-                    null;
-                when "010" => -- JXX (conditional jump)
+                    --11 XXX 001
+                    --C1	11000001	POP B
+                    --C9	11001001	RET
+                    --D1	11010001	POP D
+                    --D9	11011001	XXX
+                    --E1	11100001	POP H
+                    --E9	11101001	PCHL
+                    --F1	11110001	POP PSW
+                    --F9	11111001	SPHL
+                    ns <= opcode_fetch_1;
+                    
+                when "010" =>
+                    --11 XXX 010
+                    --C2	11000010	JNZ
+                    --CA	11001010	JZ
+                    --D2	11010010	JNC
+                    --DA	11011010	JC
+                    --EA	11101010	JPE
+                    --E2	11100010	JPO
+                    --F2	11110010	JP
+                    --FA	11111010	JM
                     ns <= skip_addr_1;
                     cb <= opcode_fetch_1;
                     case op53 is
@@ -542,8 +806,16 @@ begin
                         end if;
                     end case;
 
-                when "011" => -- JMP and misc
-                
+                when "011" =>
+                    --11 XXX 011
+                    --C3	11000011	JMP <a>
+                    --CB	11001011	XXX
+                    --D3	11010011	OUT <b>
+                    --DB	11011011	IN <b>
+                    --E3	11100011	XTHL
+                    --EB	11101011	XCHG
+                    --F3	11110011	DI
+                    --FB	11111011	EI
                     case op53 is
                     when "000" => -- JMP
                         ns <= addr_read_1;
@@ -557,31 +829,70 @@ begin
                         cb <= opcode_fetch_1;
                     when "100" => -- XTHL
                         -- TODO
-                        null;
+                        ns <= opcode_fetch_1;
                     when "101" => -- XCHG
                         -- TODO
-                        null;
+                        ns <= opcode_fetch_1;
                     when "110" => -- DI
                         -- TODO
-                        null;
+                        ns <= opcode_fetch_1;
                     when "111" => -- EI
                         -- TODO
-                        null;
+                        ns <= opcode_fetch_1;
                     end case;
 
-                when "100" => -- CXX (conditional call)
+                when "100" =>
                     -- TODO
-                    null;
-                when "101" => -- PUSH & CALL
+                    --11 XXX 100
+                    --C4	11000100	CNZ
+                    --CC	11001100	CZ
+                    --D4	11010100	CNC
+                    --DC	11011100	CC
+                    --E4	11100100	CPO
+                    --EC	11101100	CPE
+                    --F4	11110100	CP
+                    --FC	11111100	CM
+                    ns <= opcode_fetch_1;
+                    
+                when "101" =>
                     -- TODO
-                    null;
-                when "110" => -- ALU with immediate
+                    --11 XXX 101
+                    --C5	11000101	PUSH B
+                    --CD	11001101	CALL
+                    --D5	11010101	PUSH D
+                    --DD	11011101	XXX
+                    --E5	11100101	PUSH H
+                    --ED	11011101	XXX
+                    --F5	11110101	PUSH PSW
+                    --FD	11011101	XXX
+                    ns <= opcode_fetch_1;
+                    
+                when "110" =>
+                    --11 XXX 110
+                    --C6	11000110	ADI <b>
+                    --CE	11001110	ACI <b>
+                    --D6	11010110	SUI <b>
+                    --DE	11011110	SBI <b>
+                    --E6	11100110	ANI <b>
+                    --EE	11101110	XRI <b>
+                    --F6	11110110	ORI <b>
+                    --FE	11111110	CPI <b>
                     ns <= data_read_1;
                     cb <= opcode_fetch_1;
-                when "111" => -- RST X
+                    
+                when "111" =>
                     -- TODO
+                    --11 XXX 111
+                    --C7	11000111	RST 0
+                    --CF	11001111	RST 1
+                    --D7	11010111	RST 2
+                    --DF	11011111	RST 3
+                    --E7	11100111	RST 4
+                    --EF	11101111	RST 5
+                    --F7	11110111	RST 6
+                    --FF	11111111	RST 7
                     ns <= opcode_fetch_1;
-                    null;
+                    
                 end case;
             when others =>
                 ns <= reset_state;

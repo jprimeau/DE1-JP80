@@ -239,12 +239,27 @@ begin
         when addr_read_6 =>
             con(Edata) <= '1';
             con(LtH) <= '1';
-            
             if op76 = "11" and op20 = "011" then
                 con(Et) <= '1';
                 con(Lpc) <= '1';
             end if;
+            ns <= cb;
             
+        when data_from_addr_1 =>
+            con(Et) <= '1';
+            con(Laddr) <= '1';
+            ns <= data_from_addr_2;
+        
+        when data_from_addr_2 =>
+            con(Edata) <= '1';
+            if op76 = "11" and op20 = "110" then
+                alucode <= "0" & op53;
+                con(LaluA) <= '1';
+                con(LaluB) <= '1';
+                con(Lu) <= '1';
+            elsif op76 = "01" then
+                con(DDD(op53)) <= '1';
+            end if;
             ns <= cb;
             
         when skip_addr_1 =>
@@ -451,13 +466,19 @@ begin
                 --7D	01111101	MOV A,L
                 --7E	01111110	MOV A,M
                 --7F	01111111	MOV A,A
+                ns <= opcode_fetch_1;
+                cb <= opcode_fetch_1;
                 if opcode(5 downto 0) = "110110" then
                     con(HALT) <= '1'; -- HLT is the exception in the "01" range
                 else
                     con(SSS(op20)) <= '1';
-                    con(DDD(op53)) <= '1';
+                    if op20 = "110" then
+                        con(Lt) <= '1';
+                        ns <= data_from_addr_1;
+                    else
+                        con(DDD(op53)) <= '1';
+                    end if;
                 end if;
-                ns <= opcode_fetch_1;
                 
             when "10" =>
                 --10 000 SSS
@@ -539,12 +560,18 @@ begin
                 --BD	10110101	CMP L
                 --BE	10111110	CMP M
                 --BF	10111111	CMP A
-                alucode <= "0"&op53;
-                con(SSS(op20)) <= '1';
-                con(LaluA) <= '1';
-                con(LaluB) <= '1';
-                con(Lu) <= '1';
                 ns <= opcode_fetch_1;
+                cb <= opcode_fetch_1;
+                con(SSS(op20)) <= '1';
+                if op20 = "110" then
+                    con(Lt) <= '1';
+                    ns <= data_from_addr_1;
+                else
+                    alucode <= "0"&op53;
+                    con(LaluA) <= '1';
+                    con(LaluB) <= '1';
+                    con(Lu) <= '1';
+                end if;
                 
             when "11" =>
                 case op20 is

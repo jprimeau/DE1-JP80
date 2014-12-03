@@ -92,6 +92,7 @@ package jp80_pkg is
         skip_addr_1, skip_addr_2,
         memio_to_acc_1, memio_to_acc_2,
         acc_to_memio_1, acc_to_memio_2,
+        data_from_addr_1, data_from_addr_2,
         decode_instruction
     );
 end package jp80_pkg;

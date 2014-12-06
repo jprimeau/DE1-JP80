@@ -26,7 +26,7 @@ entity JP80_MCODE is
 end JP80_MCODE;
 
 architecture rtl of JP80_MCODE is
-    signal ns, ps, cb   : t_cpu_state;
+    signal ns, ps   : t_cpu_state;
     
     function SSS(src : std_logic_vector(2 downto 0))
         return integer is
@@ -176,7 +176,7 @@ begin
             ns <= data_read_3;
             
         when data_read_3 =>
-            ns <= cb;
+            ns <= opcode_fetch_1;
             con(Edata) <= '1';
 
             if opcode = "11011011" then -- IN <b>
@@ -201,7 +201,7 @@ begin
         when memio_to_acc_2 =>
             con(Edata) <= '1';
             con(Lacc) <= '1';
-            ns <= cb;
+            ns <= opcode_fetch_1;
             
         when acc_to_memio_1 =>
             con(Eacc) <= '1';
@@ -211,7 +211,7 @@ begin
         when acc_to_memio_2 =>
             con(IO) <= '1';
             con(Wr) <= '1';
-            ns <= cb;
+            ns <= opcode_fetch_1;
             
         when addr_read_1 =>
             con(Epc) <= '1';
@@ -243,7 +243,7 @@ begin
                 con(Et) <= '1';
                 con(Lpc) <= '1';
             end if;
-            ns <= cb;
+            ns <= opcode_fetch_1;
             
         when data_from_addr_1 =>
             con(Et) <= '1';
@@ -260,7 +260,7 @@ begin
             elsif op76 = "01" then
                 con(DDD(op53)) <= '1';
             end if;
-            ns <= cb;
+            ns <= opcode_fetch_1;
             
         when skip_addr_1 =>
             con(Ipc) <= '1';
@@ -276,7 +276,6 @@ begin
                 case op20 is
                 
                 when "000" =>
-                    -- TODO
                     --00 XXX 000
                     --00    00000000    NOP
                     --08    00001000    XXX
@@ -286,10 +285,9 @@ begin
                     --28    00101000    XXX
                     --30    00110000    SIM
                     --38    00111000    XXX
-                    ns <= opcode_fetch_1;
+                    ns <= opcode_fetch_1;       -- TODO
                     
                 when "001" =>
-                    -- TODO
                     --00 XXX 001
                     --01    00000001    LXI B,<b>
                     --09    00001001    DAD B
@@ -299,10 +297,9 @@ begin
                     --29    00101001    DAD H
                     --31    00110001    LXI SP,<b>
                     --39    00111001    DAD SP
-                    ns <= opcode_fetch_1;
+                    ns <= opcode_fetch_1;       -- TODO
                     
                 when "010" =>
-                    -- TODO
                     --00 PP X 010
                     --02	00000010	STAX B
                     --0A	00001010	LDAX B
@@ -312,7 +309,7 @@ begin
                     --2A	00101010	LHLD <a>
                     --32	00110010	STA <a>
                     --3A	00111010	LDA <a>
-                    ns <= opcode_fetch_1;
+                    ns <= opcode_fetch_1;       -- TODO
                     
                 when "011" =>
                     --00 PP X 011
@@ -324,8 +321,8 @@ begin
                     --2B	00101011	DCX H
                     --33	00110011	INX SP
                     --3B	00111011	DCX SP
-                    con(INCDEC(op53)) <= '1';
-                    ns <= opcode_fetch_1;
+                    con(INCDEC(op53)) <= '1';   -- Increment/decrement destination register
+                    ns <= opcode_fetch_1;       -- Done
                     
                 when "100" => -- INR
                     -- TODO
@@ -338,12 +335,12 @@ begin
                     --2C	00101100	INR L
                     --34	00110100	INR M
                     --3C	00111100	INR A
-                    alucode <= "0000"; -- ADD
-                    con(SSS(op53)) <= '1';
-                    con(LaluA) <= '0'; -- A = source
-                    con(LaluB) <= '0'; -- B = 00000001
-                    con(Lu) <= '1';
-                    ns <= opcode_fetch_1;
+                    alucode <= "0000";      -- ADD
+                    con(SSS(op53)) <= '1';  -- Source register
+                    con(LaluA) <= '0';      -- A = source
+                    con(LaluB) <= '0';      -- B = 00000001
+                    con(Lu) <= '1';         -- Load ALU register with result
+                    ns <= opcode_fetch_1;   -- Done
 
                 when "101" => -- DCR
                     -- TODO
@@ -356,12 +353,12 @@ begin
                     --2D	00101101	DCR L
                     --35	00110101	DCR M
                     --3D	00111101	DCR A
-                    alucode <= "0010"; -- SUB
-                    con(SSS(op53)) <= '1';
-                    con(LaluA) <= '0'; -- A = source
-                    con(LaluB) <= '0'; -- B = 00000001
-                    con(Lu) <= '1';
-                    ns <= opcode_fetch_1;
+                    alucode <= "0010";      -- SUB
+                    con(SSS(op53)) <= '1';  -- Source register
+                    con(LaluA) <= '0';      -- A = source
+                    con(LaluB) <= '0';      -- B = 00000001
+                    con(Lu) <= '1';         -- Load ALU register with result
+                    ns <= opcode_fetch_1;   -- Done
                     
                 when "110" =>
                     --00 XXX 110
@@ -373,8 +370,7 @@ begin
                     --2E	00101110	MVI L
                     --36	00110110	MVI M
                     --3E	00111110	MVI A
-                    ns <= data_read_1;
-                    cb <= opcode_fetch_1;
+                    ns <= data_read_1;      -- Requires 8-bit memory read
                     
                 when "111" =>
                     --00 XXX 111
@@ -386,10 +382,10 @@ begin
                     --2F	00101111	CMA
                     --37	00110111	STC
                     --3F	00111111	CMC
-                    alucode <= "1" & op53;
-                    con(LaluA) <= '1';
-                    con(Lu) <= '1';
-                    ns <= opcode_fetch_1;
+                    alucode <= "1" & op53;  -- ALU operation
+                    con(LaluA) <= '1';      -- A = accumulator
+                    con(Lu) <= '1';         -- Load ALU register with result
+                    ns <= opcode_fetch_1;   -- Done
                     
                 end case;
                 
@@ -466,17 +462,18 @@ begin
                 --7D	01111101	MOV A,L
                 --7E	01111110	MOV A,M
                 --7F	01111111	MOV A,A
-                ns <= opcode_fetch_1;
-                cb <= opcode_fetch_1;
+                ns <= opcode_fetch_1;       -- Done (default)
                 if opcode(5 downto 0) = "110110" then
-                    con(HALT) <= '1'; -- HLT is the exception in the "01" range
+                    con(HALT) <= '1';       -- HLT is the exception in the "01" range
                 else
-                    con(SSS(op20)) <= '1';
-                    if op20 = "110" then
-                        con(Lt) <= '1';
-                        ns <= data_from_addr_1;
-                    else
-                        con(DDD(op53)) <= '1';
+                    con(SSS(op20)) <= '1';  -- Source register
+                    if op20 = "110" then    -- M (HL) is the source
+                        con(Lt) <= '1';     -- HL -> TEMP via addr bus
+                        ns <= data_from_addr_1; -- Requires 8-bit memory read
+                    elsif op53 = "110" then -- M (HL) is the destination
+                                            -- TODO: Requires 8-bit memory write
+                    else                    -- Regular move from register to register
+                        con(DDD(op53)) <= '1';  -- Destination register
                     end if;
                 end if;
                 
@@ -560,24 +557,22 @@ begin
                 --BD	10110101	CMP L
                 --BE	10111110	CMP M
                 --BF	10111111	CMP A
-                ns <= opcode_fetch_1;
-                cb <= opcode_fetch_1;
-                con(SSS(op20)) <= '1';
-                if op20 = "110" then
-                    con(Lt) <= '1';
-                    ns <= data_from_addr_1;
+                ns <= opcode_fetch_1;       -- Done (default)
+                con(SSS(op20)) <= '1';      -- Source register
+                if op20 = "110" then        -- M (HL) is the source
+                    con(Lt) <= '1';         -- HL -> TEMP via addr bus
+                    ns <= data_from_addr_1; -- Requires 8-bit memory read
                 else
-                    alucode <= "0"&op53;
-                    con(LaluA) <= '1';
-                    con(LaluB) <= '1';
-                    con(Lu) <= '1';
+                    alucode <= "0"&op53;    -- ALU operation from opcode
+                    con(LaluA) <= '1';      -- A = accumulator
+                    con(LaluB) <= '1';      -- B = data bus
+                    con(Lu) <= '1';         -- Load ALU register with result
                 end if;
                 
             when "11" =>
                 case op20 is
                 
                 when "000" =>
-                    -- TODO
                     --11 XXX 000
                     --C8	11001000	RZ
                     --D8	11011000	RC
@@ -587,10 +582,9 @@ begin
                     --D0	11010000	RNC
                     --E0	11100000	RPO
                     --F0	11110000	RP
-                    ns <= opcode_fetch_1;
+                    ns <= opcode_fetch_1;   -- TODO
                     
                 when "001" =>
-                    -- TODO
                     --11 XXX 001
                     --C1	11000001	POP B
                     --C9	11001001	RET
@@ -600,17 +594,18 @@ begin
                     --E9	11101001	PCHL
                     --F1	11110001	POP PSW
                     --F9	11111001	SPHL
+                    ns <= opcode_fetch_1;   -- Done (default)
                     case op53 is
                     when "000" => -- POP B
-                        null;
+                        null;               -- TODO
                     when "001" => -- RET
-                        null;
+                        null;               -- TODO
                     when "010" => -- POP D
-                        null;
+                        null;               -- TODO
                     when "011" => -- XXX
-                        null;
+                        null;               -- TODO
                     when "100" => -- POP H
-                        null;
+                        null;               -- TODO
                     when "101" => -- PCHL
                         con(Ehl) <= '1';
                         con(Lpc) <= '1';
@@ -620,7 +615,6 @@ begin
                         con(Ehl) <= '1';
                         con(Lsp) <= '1';
                     end case;
-                    ns <= opcode_fetch_1;
                     
                 when "010" =>
                     --11 XXX 010
@@ -633,7 +627,6 @@ begin
                     --F2	11110010	JP
                     --FA	11111010	JM
                     ns <= skip_addr_1;
-                    cb <= opcode_fetch_1;
                     case op53 is
                     when "000" => -- JNZ
                         if aluflag(FlagZ) = '0' then
@@ -671,7 +664,6 @@ begin
 
                 when "011" =>
                     ns <= opcode_fetch_1;
-                    cb <= opcode_fetch_1;
                     --11 XXX 011
                     --C3	11000011	JMP <a>
                     --CB	11001011	XXX
@@ -684,15 +676,12 @@ begin
                     case op53 is
                     when "000" => -- JMP
                         ns <= addr_read_1;
-                        cb <= opcode_fetch_1;
                     when "001" => -- No instruction
                         ns <= opcode_fetch_1;
                     when "010" => -- OUT <b>
                         ns <= data_read_1;
-                        cb <= opcode_fetch_1;
                     when "011" => -- IN <b>
                         ns <= data_read_1;
-                        cb <= opcode_fetch_1;
                     when "100" => -- XTHL
                         -- TODO
                         ns <= opcode_fetch_1;
@@ -744,7 +733,6 @@ begin
                     --F6	11110110	ORI <b>
                     --FE	11111110	CPI <b>
                     ns <= data_read_1;
-                    cb <= opcode_fetch_1;
                     
                 when "111" =>
                     -- TODO

@@ -2,9 +2,7 @@
 -- AUTHOR: Jonathan Primeau
 
 -- TODO:
---  o Support op with M
---  o Load and store (8 and 16-bit)
---  o Pop and push
+--  o POP and PUSH for PSW
 --  o CALL and RET
 
 library ieee;
@@ -86,13 +84,13 @@ architecture rtl of JP80_MCODE is
         return integer is
     begin
         if dst = "00" then
-            return Ebc;
+            return Lbc;
         elsif dst = "01" then
-            return Ede;
+            return Lde;
         elsif dst = "10" then
-            return Ehl;
+            return Lhl;
         else
-            return Esp;
+            return Lsp;
         end if;
     end DD;
     
@@ -135,12 +133,14 @@ begin
     
     process (ps, opcode)
         variable op76   : std_logic_vector(1 downto 0) := "00";
+        variable op54   : std_logic_vector(1 downto 0) := "00";
         variable op53   : std_logic_vector(2 downto 0) := "000";
         variable op20   : std_logic_vector(2 downto 0) := "000";
     begin
         con <= (others=>'0');
         alucode <= (others=>'0');
         op76 := opcode(7 downto 6);
+        op54 := opcode(5 downto 4);
         op53 := opcode(5 downto 3);
         op20 := opcode(2 downto 0);
 
@@ -166,108 +166,216 @@ begin
             con(Lir) <= '1';
             ns <= decode_instruction;
             
-        when data_read_1 =>
-            con(Epc) <= '1';
+        when read_data8b_reg =>
+--            con(Epc) <= '1';                -- PC -> Addr
+            con(Et) <= '1';
             con(Laddr) <= '1';
-            ns <= data_read_2;
+            ns <= read_data8b;
             
-        when data_read_2 =>
-            con(Ipc) <= '1';
-            ns <= data_read_3;
+        when read_data8b_pc =>
+            con(Ipc) <= '1';                -- Increment PC
+            ns <= read_data8b;
             
-        when data_read_3 =>
-            ns <= opcode_fetch_1;
-            con(Edata) <= '1';
+        when read_data8b =>
+            ns <= opcode_fetch_1;           -- Default (done)
+            con(Edata) <= '1';              -- Enable data on bus
 
             if opcode = "11011011" then -- IN <b>
                 ns <= memio_to_acc_1;
-                con(LaddrL) <= '1';
+                con(LaddrL) <= '1';         -- Load I/O port from bus into address LO
             elsif opcode = "11010011" then -- OUT <b>
                 ns <= acc_to_memio_1;
-                con(LaddrL) <= '1';
-            elsif op76 = "11" and op20 = "110" then
-                alucode <= "0" & op53;
-                con(LaluA) <= '1';
-                con(LaluB) <= '1';
-                con(Lu) <= '1';
-            else
-                con(DDD(op53)) <= '1';
+                con(LaddrL) <= '1';         -- Load I/O port from bus into address LO
+            elsif op76 = "11" and op20 = "110" then -- ALU operation with immediate
+                alucode <= "0" & op53;      -- ALU operation from opcode
+                con(LaluA) <= '1';          -- A = accumulator
+                con(LaluB) <= '1';          -- B = data bus
+                con(Lu) <= '1';             -- Load ALU register with result
+            else                            -- Move with immediate
+                con(DDD(op53)) <= '1';      -- Destination register
             end if;
             
+--        when data_from_addr_1 =>
+--            con(Et) <= '1';
+--            con(Laddr) <= '1';
+--            ns <= data_from_addr_2;
+--        
+--        when data_from_addr_2 =>
+--            con(Edata) <= '1';
+--            if op76 = "11" and op20 = "110" then
+--                alucode <= "0" & op53;
+--                con(LaluA) <= '1';
+--                con(LaluB) <= '1';
+--                con(Lu) <= '1';
+--            elsif op76 = "01" then
+--                con(DDD(op53)) <= '1';
+--            end if;
+--            ns <= opcode_fetch_1;
+            
         when memio_to_acc_1 =>
-            con(IO) <= '1';
+            if opcode = "11011011" or opcode = "11010011" then
+                con(IO) <= '1';             -- I/O request
+            end if;
             ns <= memio_to_acc_2;
             
         when memio_to_acc_2 =>
-            con(Edata) <= '1';
-            con(Lacc) <= '1';
-            ns <= opcode_fetch_1;
+            con(Edata) <= '1';              -- Enable data on bus
+            con(Lacc) <= '1';               -- Load the accumulator
+            ns <= opcode_fetch_1;           -- Done
             
         when acc_to_memio_1 =>
-            con(Eacc) <= '1';
-            con(Ldata) <= '1';
+            con(Eacc) <= '1';               -- Enable accumulator
+            con(Ldata) <= '1';              -- Load data from bus
             ns <= acc_to_memio_2;
             
         when acc_to_memio_2 =>
-            con(IO) <= '1';
+            if opcode = "11011011" or opcode = "11010011" then
+                con(IO) <= '1';             -- I/O request
+            end if;
+            con(Wr) <= '1';                 -- Write request
+            ns <= opcode_fetch_1;           -- Done
+            
+        when read_addr16b_1 =>
+            con(Epc) <= '1';
+            con(Laddr) <= '1';
+            ns <= read_addr16b_2;
+            
+        when read_addr16b_2 =>
+            con(Ipc) <= '1';
+            con(Edata) <= '1';
+            con(LtL) <= '1';
+            ns <= read_addr16b_3;
+            
+        when read_addr16b_3 =>
+            con(Epc) <= '1';
+            con(Laddr) <= '1';
+            ns <= read_addr16b_4;
+            
+        when read_addr16b_4 =>
+            con(Ipc) <= '1';
+            con(Edata) <= '1';
+            con(LtH) <= '1';
+            ns <= read_addr16b_5;
+            
+        when read_addr16b_5 =>
+            ns <= opcode_fetch_1;
+            con(Et) <= '1';
+            if op76 = "11" and op20 = "011" then -- JMP address(16b)
+                con(Lpc) <= '1';
+            elsif op76 = "00" and op20 = "001" then -- LXI Rp,data(16b)
+                con(DD(op54)) <= '1';
+            elsif opcode = "00110010" then  -- STA address(16b)
+                con(Laddr) <= '1';
+                ns <= acc_to_memio_1;
+            elsif opcode = "00111010" then  -- LDA address(16b)
+                con(Laddr) <= '1';
+                ns <= memio_to_acc_1;
+            elsif opcode = "00100010" then  -- SHLD address(16b)
+                con(Laddr) <= '1';
+                con(El) <= '1';
+                con(Ldata) <= '1';
+                ns <= y1;
+            elsif opcode = "00101010" then  -- LHLD address(16b)
+                con(Laddr) <= '1';
+                ns <= x1;
+            end if;
+            
+        when x1 =>
+            con(Edata) <= '1';
+            con(Ll) <= '1';
+            ns <= x2;
+            
+        when x2 =>
+            con(Iaddr) <= '1';
+            ns <= x3;
+            
+        when x3 =>
+            con(Edata) <= '1';
+            con(Lh) <= '1';
+            ns <= opcode_fetch_1;
+            
+        when y1 =>
+            con(Wr) <= '1';
+            ns <= y2;
+            
+        when y2 =>
+            con(Iaddr) <= '1';
+            ns <= y3;
+            
+        when y3 =>
+            con(Eh) <= '1';
+            con(Ldata) <= '1';
+            ns <= y4;
+            
+        when y4 =>
             con(Wr) <= '1';
             ns <= opcode_fetch_1;
             
-        when addr_read_1 =>
-            con(Epc) <= '1';
+        when push_1 =>
+            con(Dsp) <= '1';
+            ns <= push_2;
+            
+        when push_2 =>
+            con(Esp) <= '1';
             con(Laddr) <= '1';
-            ns <= addr_read_2;
-            
-        when addr_read_2 =>
-            con(Ipc) <= '1';
-            ns <= addr_read_3;
-            
-        when addr_read_3 =>
-            con(Edata) <= '1';
-            con(LtL) <= '1';
-            ns <= addr_read_4;
-            
-        when addr_read_4 =>
-            con(Epc) <= '1';
+--            if op54 = "11" then
+--                con(Eflg) <= '1';
+--            else
+                con(SSS(op54&"1")) <= '1';
+--            end if;
+            con(Ldata) <= '1';
+            ns <= push_3;
+                    
+        when push_3 =>
+            con(Dsp) <= '1';
+            con(Wr) <= '1';
+            ns <= push_4;
+                    
+        when push_4 =>
+            con(Esp) <= '1';
             con(Laddr) <= '1';
-            ns <= addr_read_5;
+            con(SSS(op54&"0")) <= '1';
+            con(Ldata) <= '1';
+            ns <= push_5;
             
-        when addr_read_5 =>
-            con(Ipc) <= '1';
-            ns <= addr_read_6;
-            
-        when addr_read_6 =>
-            con(Edata) <= '1';
-            con(LtH) <= '1';
-            if op76 = "11" and op20 = "011" then
-                con(Et) <= '1';
-                con(Lpc) <= '1';
-            end if;
+        when push_5 =>
+            con(Wr) <= '1';
+            -- TODO: CALL
             ns <= opcode_fetch_1;
             
-        when data_from_addr_1 =>
-            con(Et) <= '1';
+        when pop_1 =>
+            con(Esp) <= '1';
             con(Laddr) <= '1';
-            ns <= data_from_addr_2;
-        
-        when data_from_addr_2 =>
+            ns <= pop_2;
+
+        when pop_2 =>
             con(Edata) <= '1';
-            if op76 = "11" and op20 = "110" then
-                alucode <= "0" & op53;
-                con(LaluA) <= '1';
-                con(LaluB) <= '1';
-                con(Lu) <= '1';
-            elsif op76 = "01" then
-                con(DDD(op53)) <= '1';
-            end if;
+--            if op54 = "11" then
+--                con(Lflg) <= '1';
+--            else
+                con(DDD(op54&"0")) <= '1';
+--            end if;
+            con(Isp) <= '1';
+            ns <= pop_3;
+                    
+        when pop_3 =>
+            con(Esp) <= '1';
+            con(Laddr) <= '1';
+            ns <= pop_4;
+            
+        when pop_4 =>
+            con(Edata) <= '1';
+            con(DDD(op54&"1")) <= '1';
+            -- TODO: RET
             ns <= opcode_fetch_1;
+
+--        when wr_addr16b_1 =>
+--            con(Epc) <= '1';
+--            con(Laddr) <= '1';
+--            ns <= read_addr16b_2;
             
-        when skip_addr_1 =>
-            con(Ipc) <= '1';
-            ns <= skip_addr_2;
-            
-        when skip_addr_2 =>
-            con(Ipc) <= '1';
+        when skip_addr16b_1 =>
+            con(I2pc) <= '1';
             ns <= opcode_fetch_1;
             
         when decode_instruction =>
@@ -289,15 +397,19 @@ begin
                     
                 when "001" =>
                     --00 XXX 001
-                    --01    00000001    LXI B,<b>
+                    --01    00000001    LXI B,data(16b)
                     --09    00001001    DAD B
-                    --11    00010001    LXI D,<b>
+                    --11    00010001    LXI D,data(16b)
                     --19    00011001    DAD D
-                    --21    00100001    LXI H,<b>
+                    --21    00100001    LXI H,data(16b)
                     --29    00101001    DAD H
-                    --31    00110001    LXI SP,<b>
+                    --31    00110001    LXI SP,data(16b)
                     --39    00111001    DAD SP
-                    ns <= opcode_fetch_1;       -- TODO
+                    if opcode(3) = '0' then     -- LXI Rp,data(16b)
+                        ns <= read_addr16b_1;
+                    else
+                        ns <= opcode_fetch_1;   -- TODO: DAD Rp
+                    end if;
                     
                 when "010" =>
                     --00 PP X 010
@@ -305,11 +417,23 @@ begin
                     --0A	00001010	LDAX B
                     --12	00010010	STAX D
                     --1A	00011010	LDAX D
-                    --22	00100010	SHLD <a>
-                    --2A	00101010	LHLD <a>
-                    --32	00110010	STA <a>
-                    --3A	00111010	LDA <a>
-                    ns <= opcode_fetch_1;       -- TODO
+                    --22	00100010	SHLD address(16b)
+                    --2A	00101010	LHLD address(16b)
+                    --32	00110010	STA address(16b)
+                    --3A	00111010	LDA address(16b)
+                    
+                    ns <= opcode_fetch_1;
+                    if opcode(5) = '0' then
+                        con(SS(op54)) <= '1';
+                        con(Laddr) <= '1';
+                        if opcode(3) = '0' then -- STAX Rp
+                            ns <= acc_to_memio_1;
+                        else                    -- LDAX Rp
+                            ns <= memio_to_acc_1;
+                        end if;
+                    else
+                        ns <= read_addr16b_1;
+                    end if;
                     
                 when "011" =>
                     --00 PP X 011
@@ -370,7 +494,9 @@ begin
                     --2E	00101110	MVI L
                     --36	00110110	MVI M
                     --3E	00111110	MVI A
-                    ns <= data_read_1;      -- Requires 8-bit memory read
+                    con(Epc) <= '1';
+                    con(Laddr) <= '1';
+                    ns <= read_data8b_pc;      -- Requires 8-bit memory read
                     
                 when "111" =>
                     --00 XXX 111
@@ -469,7 +595,7 @@ begin
                     con(SSS(op20)) <= '1';  -- Source register
                     if op20 = "110" then    -- M (HL) is the source
                         con(Lt) <= '1';     -- HL -> TEMP via addr bus
-                        ns <= data_from_addr_1; -- Requires 8-bit memory read
+                        ns <= read_data8b_reg;  -- Requires 8-bit memory read
                     elsif op53 = "110" then -- M (HL) is the destination
                                             -- TODO: Requires 8-bit memory write
                     else                    -- Regular move from register to register
@@ -561,7 +687,7 @@ begin
                 con(SSS(op20)) <= '1';      -- Source register
                 if op20 = "110" then        -- M (HL) is the source
                     con(Lt) <= '1';         -- HL -> TEMP via addr bus
-                    ns <= data_from_addr_1; -- Requires 8-bit memory read
+                    ns <= read_data8b_reg;  -- Requires 8-bit memory read
                 else
                     alucode <= "0"&op53;    -- ALU operation from opcode
                     con(LaluA) <= '1';      -- A = accumulator
@@ -597,22 +723,22 @@ begin
                     ns <= opcode_fetch_1;   -- Done (default)
                     case op53 is
                     when "000" => -- POP B
-                        null;               -- TODO
+                        ns <= pop_1;
                     when "001" => -- RET
-                        null;               -- TODO
+                        ns <= pop_1;        -- TODO
                     when "010" => -- POP D
-                        null;               -- TODO
+                        ns <= pop_1;
                     when "011" => -- XXX
-                        null;               -- TODO
+                        null;
                     when "100" => -- POP H
-                        null;               -- TODO
+                        ns <= pop_1;
                     when "101" => -- PCHL
-                        con(Ehl) <= '1';
+                        con(Ehl) <= '1';    -- HL -> PC
                         con(Lpc) <= '1';
                     when "110" => -- POP PSW
-                        null;
+                        null;               -- TODO
                     when "111" => -- SPHL
-                        con(Ehl) <= '1';
+                        con(Ehl) <= '1';    -- HL -> SP
                         con(Lsp) <= '1';
                     end case;
                     
@@ -626,46 +752,46 @@ begin
                     --E2	11100010	JPO
                     --F2	11110010	JP
                     --FA	11111010	JM
-                    ns <= skip_addr_1;
+                    ns <= skip_addr16b_1;
                     case op53 is
                     when "000" => -- JNZ
                         if aluflag(FlagZ) = '0' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "001" => -- JZ
                         if aluflag(FlagZ) = '1' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "010" => -- JNC
                         if aluflag(FlagC) = '0' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "011" => -- JC
                         if aluflag(FlagC) = '1' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "100" => -- JPO
                         if aluflag(FlagP) = '0' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "101" => -- JPE
                         if aluflag(FlagP) = '1' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "110" => -- JP
                         if aluflag(FlagS) = '0' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     when "111" => -- JM
                         if aluflag(FlagS) = '1' then
-                            ns <= addr_read_1;
+                            ns <= read_addr16b_1;
                         end if;
                     end case;
 
                 when "011" =>
                     ns <= opcode_fetch_1;
                     --11 XXX 011
-                    --C3	11000011	JMP <a>
+                    --C3	11000011	JMP address(16b)
                     --CB	11001011	XXX
                     --D3	11010011	OUT <b>
                     --DB	11011011	IN <b>
@@ -674,14 +800,18 @@ begin
                     --F3	11110011	DI
                     --FB	11111011	EI
                     case op53 is
-                    when "000" => -- JMP
-                        ns <= addr_read_1;
+                    when "000" => -- JMP address(16b)
+                        ns <= read_addr16b_1;
                     when "001" => -- No instruction
                         ns <= opcode_fetch_1;
                     when "010" => -- OUT <b>
-                        ns <= data_read_1;
+                        con(Epc) <= '1';
+                        con(Laddr) <= '1';
+                        ns <= read_data8b_pc;
                     when "011" => -- IN <b>
-                        ns <= data_read_1;
+                        con(Epc) <= '1';
+                        con(Laddr) <= '1';
+                        ns <= read_data8b_pc;
                     when "100" => -- XTHL
                         -- TODO
                         ns <= opcode_fetch_1;
@@ -720,7 +850,7 @@ begin
                     --ED	11011101	XXX
                     --F5	11110101	PUSH PSW
                     --FD	11011101	XXX
-                    ns <= opcode_fetch_1;
+                    ns <= push_1;
                     
                 when "110" =>
                     --11 XXX 110
@@ -732,7 +862,9 @@ begin
                     --EE	11101110	XRI <b>
                     --F6	11110110	ORI <b>
                     --FE	11111110	CPI <b>
-                    ns <= data_read_1;
+                    con(Epc) <= '1';
+                    con(Laddr) <= '1';
+                    ns <= read_data8b_pc;
                     
                 when "111" =>
                     -- TODO

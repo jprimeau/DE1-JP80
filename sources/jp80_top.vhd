@@ -63,6 +63,12 @@ entity jp80_top is
         data_bus_out    : out t_data;
         pc_out          : out t_address;
         acc_out         : out t_8bit;
+        de_out          : out t_16bit;
+        hl_out          : out t_16bit;
+        sp_out          : out t_16bit;
+        flag_out        : out t_8bit;
+        ir_out          : out t_8bit;
+        tmp_out         : out t_16bit;
         alu_a_out       : out t_data;
         alu_b_out       : out t_data;
         alu_out         : out t_data;
@@ -77,8 +83,8 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"2E",x"08",x"26",x"00",x"7E",x"76",x"FF",x"FF", -- 00H
-        x"AB",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
+        x"31",x"00",x"01",x"06",x"AA",x"0E",x"BB",x"C5", -- 00H
+        x"06",x"00",x"48",x"C1",x"76",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
@@ -157,6 +163,12 @@ architecture behv of jp80_top is
     signal cpu_pc           : t_address;
     signal cpu_acc          : t_data;
     signal cpu_bc           : t_16bit;
+    signal cpu_de           : t_16bit;
+    signal cpu_hl           : t_16bit;
+    signal cpu_sp           : t_16bit;
+    signal cpu_flag         : t_8bit;
+    signal cpu_ir           : t_8bit;
+    signal cpu_tmp          : t_16bit;
     signal cpu_alu_a        : t_data;
     signal cpu_alu_b        : t_data;
     signal cpu_alu          : t_data;
@@ -208,16 +220,33 @@ begin
     pc_out          <= cpu_pc;
     acc_out         <= cpu_acc;
     bc_out          <= cpu_bc;
+    de_out          <= cpu_de;
+    hl_out          <= cpu_hl;
+    sp_out          <= cpu_sp;
+    flag_out        <= cpu_flag;
+    ir_out          <= cpu_ir;
+    tmp_out         <= cpu_tmp;
     alu_a_out       <= cpu_alu_a;
     alu_b_out       <= cpu_alu_b;
     alu_out         <= cpu_alu;
     -- END: SIMULATION ONLY
 
+--    memory:
+--    process (cpu_reqmem, cpu_write)
+--    begin
+--        if cpu_reqmem = '1' then
+--            if cpu_write'event and cpu_write = '1' then
+--                ram(conv_integer(cpu_addr)) <= cpu_data_inout;
+--            end if;
+--        end if;
+--    end process memory;
+--    cpu_data_inout <= ram(conv_integer(cpu_addr)) when cpu_read = '1' and cpu_reqmem = '1' else (others=>'Z');
+    
     memory:
-    process (cpu_reqmem, cpu_write)
+    process (clock)
     begin
-        if cpu_reqmem = '1' then
-            if cpu_write'event and cpu_write = '1' then
+        if clock'event and clock = '1' then
+            if cpu_reqmem = '1' and cpu_write = '1' then
                 ram(conv_integer(cpu_addr)) <= cpu_data_inout;
             end if;
         end if;
@@ -253,6 +282,12 @@ begin
         pc_out          => cpu_pc,
         acc_out         => cpu_acc,
         bc_out          => cpu_bc,
+        de_out          => cpu_de,
+        hl_out          => cpu_hl,
+        sp_out          => cpu_sp,
+        flag_out        => cpu_flag,
+        ir_out          => cpu_ir,
+        tmp_out         => cpu_tmp,
         alu_a_out       => cpu_alu_a,
         alu_b_out       => cpu_alu_b,
         alu_out         => cpu_alu

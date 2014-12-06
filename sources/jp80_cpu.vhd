@@ -27,6 +27,12 @@ entity jp80_cpu is
         pc_out          : out t_address;
         acc_out         : out t_8bit;
         bc_out          : out t_16bit;
+        de_out          : out t_16bit;
+        hl_out          : out t_16bit;
+        sp_out          : out t_16bit;
+        flag_out        : out t_8bit;
+        ir_out          : out t_8bit;
+        tmp_out         : out t_16bit;
         alu_a_out       : out t_data;
         alu_b_out       : out t_data;
         alu_out         : out t_data
@@ -90,6 +96,12 @@ begin
     pc_out          <= PC_reg;
     acc_out         <= ACC_reg;
     bc_out          <= BC_reg;
+    de_out          <= DE_reg;
+    hl_out          <= HL_reg;
+    sp_out          <= SP_reg;
+    flag_out        <= FLAG_reg;
+    ir_out          <= IR_reg;
+    tmp_out         <= TMP_reg;
     alu_a_out       <= alu_a;
     alu_b_out       <= alu_b;
     alu_out         <= ALU_reg;
@@ -117,6 +129,8 @@ begin
         elsif clk'event and clk = '1' then
             if con(Ipc) = '1' then
                 PC_reg <= PC_reg + 1;
+            elsif con(I2pc) = '1' then
+                PC_reg <= PC_reg + 2;
             elsif con(Lpc) = '1' then
                 PC_reg <= addr_bus;
             end if;
@@ -136,6 +150,8 @@ begin
                 ADDR_reg(7 downto 0) <= data_bus;
             elsif con(LaddrH) = '1' then
                 ADDR_reg(15 downto 8) <= data_bus;
+            elsif con(Iaddr) = '1' then
+                ADDR_reg <= ADDR_reg + 1;
             end if;
         end if;
     end process ADDR_register;
@@ -185,6 +201,19 @@ begin
         end if;
     end process ACC_register;
     data_bus <= ACC_reg when con(Eacc) = '1' else (others => 'Z');
+    
+--    FLAG_register:
+--    process (clk, reset)
+--    begin
+--        if reset = '1' then
+--            FLAG_reg <= (others => '0');
+--        elsif clk'event and clk = '1' then
+--            if con(Lflg) = '1' then
+--                FLAG_reg <= data_bus;
+--            end if;
+--        end if;
+--    end process FLAG_register;
+--    data_bus <= FLAG_reg when con(Eflg) = '1' else (others => 'Z');
 
     BC_register:
     process (clk, reset)

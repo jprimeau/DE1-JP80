@@ -12,7 +12,7 @@ package jp80_pkg is
     subtype t_address is std_logic_vector(15 downto 0);
     subtype t_data is std_logic_vector(7 downto 0);
     subtype t_opcode is std_logic_vector(7 downto 0);
-    subtype t_control is std_logic_vector(50 downto 0);
+    subtype t_control is std_logic_vector(54 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
     subtype t_8bit is std_logic_vector(7 downto 0);
     subtype t_16bit is std_logic_vector(15 downto 0);
@@ -76,6 +76,11 @@ package jp80_pkg is
     
     constant Lhl    : integer := 50;
     
+    constant I2pc   : integer := 51;
+    constant Iaddr  : integer := 52;
+    constant Lflg   : integer := 53;
+    constant Eflg   : integer := 54;
+    
     constant FlagC  : integer := 00;
     constant FlagP  : integer := 02;
     constant FlagH  : integer := 04;
@@ -86,13 +91,15 @@ package jp80_pkg is
     type t_cpu_state is (
         reset_state,
         opcode_fetch_1, opcode_fetch_2, opcode_fetch_3,
-        data_read_1, data_read_2, data_read_3,
-        addr_read_1, addr_read_2, addr_read_3,
-        addr_read_4, addr_read_5, addr_read_6,
-        skip_addr_1, skip_addr_2,
+        read_data8b_reg, read_data8b_pc, read_data8b,
+        read_addr16b_1, read_addr16b_2, read_addr16b_3, read_addr16b_4, read_addr16b_5,
+        skip_addr16b_1,
         memio_to_acc_1, memio_to_acc_2,
         acc_to_memio_1, acc_to_memio_2,
-        data_from_addr_1, data_from_addr_2,
+--        data_from_addr_1, data_from_addr_2,
+        x1, x2, x3, y1, y2, y3, y4,
+        push_1, push_2, push_3, push_4, push_5,
+        pop_1, pop_2, pop_3, pop_4,
         decode_instruction
     );
 end package jp80_pkg;

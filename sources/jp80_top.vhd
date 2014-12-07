@@ -83,11 +83,11 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"31",x"00",x"01",x"06",x"AA",x"0E",x"BB",x"C5", -- 00H
-        x"06",x"00",x"48",x"C1",x"76",x"FF",x"FF",x"FF", -- 08H
+        x"CD",x"20",x"00",x"76",x"FF",x"FF",x"FF",x"FF", -- 00H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
+        x"3E",x"AA",x"C9",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 28H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 30H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 38H

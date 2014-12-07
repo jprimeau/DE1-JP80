@@ -133,10 +133,16 @@ begin
                 PC_reg <= PC_reg + 2;
             elsif con(Lpc) = '1' then
                 PC_reg <= addr_bus;
+            elsif con(LpcL) = '1' then
+                PC_reg(7 downto 0) <= data_bus;
+            elsif con(LpcH) = '1' then
+                PC_reg(15 downto 8) <= data_bus;
             end if;
         end if;
     end process PC_register;
     addr_bus <= PC_reg when con(Epc) = '1' else (others => 'Z');
+    data_bus <= PC_reg(15 downto 8) when con(EpcH) = '1' else (others => 'Z');
+    data_bus <= PC_reg(7 downto 0) when con(EpcL) = '1' else (others => 'Z');
     
     ADDR_register:
     process (clk, reset)

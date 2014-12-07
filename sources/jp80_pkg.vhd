@@ -12,7 +12,7 @@ package jp80_pkg is
     subtype t_address is std_logic_vector(15 downto 0);
     subtype t_data is std_logic_vector(7 downto 0);
     subtype t_opcode is std_logic_vector(7 downto 0);
-    subtype t_control is std_logic_vector(54 downto 0);
+    subtype t_control is std_logic_vector(58 downto 0);
     subtype t_alucode is std_logic_vector(3 downto 0);
     subtype t_8bit is std_logic_vector(7 downto 0);
     subtype t_16bit is std_logic_vector(15 downto 0);
@@ -80,6 +80,11 @@ package jp80_pkg is
     constant Iaddr  : integer := 52;
     constant Lflg   : integer := 53;
     constant Eflg   : integer := 54;
+    
+    constant EpcL   : integer := 55;
+    constant EpcH   : integer := 56;
+    constant LpcL   : integer := 57;
+    constant LpcH   : integer := 58;
     
     constant FlagC  : integer := 00;
     constant FlagP  : integer := 02;

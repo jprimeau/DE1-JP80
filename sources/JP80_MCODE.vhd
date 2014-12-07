@@ -255,7 +255,11 @@ begin
             con(Ipc) <= '1';
             con(Edata) <= '1';
             con(LtH) <= '1';
-            ns <= read_addr16b_5;
+            if opcode = "11001101" then  -- CALL address(16b)
+                ns <= push_1;
+            else
+                ns <= read_addr16b_5;
+            end if;
             
         when read_addr16b_5 =>
             ns <= opcode_fetch_1;
@@ -312,7 +316,7 @@ begin
             ns <= opcode_fetch_1;
             
         when push_1 =>
-            con(Dsp) <= '1';
+            con(Dsp) <= '1';        -- Decrement Stack Pointer
             ns <= push_2;
             
         when push_2 =>
@@ -321,26 +325,36 @@ begin
 --            if op54 = "11" then
 --                con(Eflg) <= '1';
 --            else
-                con(SSS(op54&"1")) <= '1';
---            end if;
+            if opcode = "11001101" then
+                con(EpcH) <= '1';
+            else
+                con(SSS(op54&"0")) <= '1';
+            end if;
             con(Ldata) <= '1';
             ns <= push_3;
                     
         when push_3 =>
-            con(Dsp) <= '1';
-            con(Wr) <= '1';
+            con(Dsp) <= '1';        -- Decrement Stack Pointer
+            con(Wr) <= '1';         -- Write enable
             ns <= push_4;
                     
         when push_4 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
-            con(SSS(op54&"0")) <= '1';
+            if opcode = "11001101" then  -- CALL address(16b)
+                con(EpcL) <= '1';
+            else
+                con(SSS(op54&"1")) <= '1';
+            end if;
             con(Ldata) <= '1';
             ns <= push_5;
             
         when push_5 =>
             con(Wr) <= '1';
-            -- TODO: CALL
+            if opcode = "11001101" then  -- CALL address(16b)
+                con(Et) <= '1';
+                con(Lpc) <= '1';
+            end if;
             ns <= opcode_fetch_1;
             
         when pop_1 =>
@@ -353,8 +367,11 @@ begin
 --            if op54 = "11" then
 --                con(Lflg) <= '1';
 --            else
-                con(DDD(op54&"0")) <= '1';
---            end if;
+            if opcode = "11001001" then -- RET
+                con(LpcL) <= '1';
+            else
+                con(DDD(op54&"1")) <= '1';
+            end if;
             con(Isp) <= '1';
             ns <= pop_3;
                     
@@ -365,8 +382,11 @@ begin
             
         when pop_4 =>
             con(Edata) <= '1';
-            con(DDD(op54&"1")) <= '1';
-            -- TODO: RET
+            if opcode = "11001001" then -- RET
+                con(LpcH) <= '1';
+            else
+                con(DDD(op54&"0")) <= '1';
+            end if;
             ns <= opcode_fetch_1;
 
 --        when wr_addr16b_1 =>
@@ -840,17 +860,20 @@ begin
                     ns <= opcode_fetch_1;
                     
                 when "101" =>
-                    -- TODO
                     --11 XXX 101
                     --C5	11000101	PUSH B
-                    --CD	11001101	CALL
+                    --CD	11001101	CALL address(16b)
                     --D5	11010101	PUSH D
                     --DD	11011101	XXX
                     --E5	11100101	PUSH H
                     --ED	11011101	XXX
                     --F5	11110101	PUSH PSW
                     --FD	11011101	XXX
-                    ns <= push_1;
+                    if opcode = "11001101" then -- CALL address(16b)
+                        ns <= read_addr16b_1;
+                    else                        -- PUSH
+                        ns <= push_1;
+                    end if;
                     
                 when "110" =>
                     --11 XXX 110

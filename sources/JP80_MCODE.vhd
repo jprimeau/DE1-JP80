@@ -2,7 +2,7 @@
 -- AUTHOR: Jonathan Primeau
 
 -- TODO:
---  o POP and PUSH for PSW
+--  o POP and PUSH of PSW
 --  o MOV M,R
 
 library ieee;
@@ -167,7 +167,6 @@ begin
             ns <= decode_instruction;
             
         when read_data8b_reg =>
---            con(Epc) <= '1';                -- PC -> Addr
             con(Et) <= '1';
             con(Laddr) <= '1';
             ns <= read_data8b;
@@ -194,24 +193,7 @@ begin
             else                            -- Move with immediate
                 con(DDD(op53)) <= '1';      -- Destination register
             end if;
-            
---        when data_from_addr_1 =>
---            con(Et) <= '1';
---            con(Laddr) <= '1';
---            ns <= data_from_addr_2;
---        
---        when data_from_addr_2 =>
---            con(Edata) <= '1';
---            if op76 = "11" and op20 = "110" then
---                alucode <= "0" & op53;
---                con(LaluA) <= '1';
---                con(LaluB) <= '1';
---                con(Lu) <= '1';
---            elsif op76 = "01" then
---                con(DDD(op53)) <= '1';
---            end if;
---            ns <= opcode_fetch_1;
-            
+
         when memio_to_acc_1 =>
             if opcode = "11011011" or opcode = "11010011" then
                 con(IO) <= '1';             -- I/O request
@@ -388,11 +370,6 @@ begin
                 con(DDD(op54&"0")) <= '1';
             end if;
             ns <= opcode_fetch_1;
-
---        when wr_addr16b_1 =>
---            con(Epc) <= '1';
---            con(Laddr) <= '1';
---            ns <= read_addr16b_2;
             
         when skip_addr16b_1 =>
             con(I2pc) <= '1';
@@ -409,26 +386,26 @@ begin
                     --08    00001000    XXX
                     --10    00010000    XXX
                     --18    00011000    XXX
-                    --20    00100000    RIM
+                    --20    00100000    RIM         TODO
                     --28    00101000    XXX
-                    --30    00110000    SIM
+                    --30    00110000    SIM         TODO
                     --38    00111000    XXX
-                    ns <= opcode_fetch_1;       -- TODO
+                    ns <= opcode_fetch_1;
                     
                 when "001" =>
                     --00 XXX 001
                     --01    00000001    LXI B,data(16b)
                     --09    00001001    DAD B
                     --11    00010001    LXI D,data(16b)
-                    --19    00011001    DAD D
+                    --19    00011001    DAD D       TODO
                     --21    00100001    LXI H,data(16b)
-                    --29    00101001    DAD H
+                    --29    00101001    DAD H       TODO
                     --31    00110001    LXI SP,data(16b)
-                    --39    00111001    DAD SP
-                    if opcode(3) = '0' then     -- LXI Rp,data(16b)
+                    --39    00111001    DAD SP      TODO
+                    if opcode(3) = '0' then         -- LXI Rp,data(16b)
                         ns <= read_addr16b_1;
                     else
-                        ns <= opcode_fetch_1;   -- TODO: DAD Rp
+                        ns <= opcode_fetch_1;
                     end if;
                     
                 when "010" =>
@@ -441,17 +418,15 @@ begin
                     --2A	00101010	LHLD address(16b)
                     --32	00110010	STA address(16b)
                     --3A	00111010	LDA address(16b)
-                    
-                    ns <= opcode_fetch_1;
                     if opcode(5) = '0' then
                         con(SS(op54)) <= '1';
                         con(Laddr) <= '1';
-                        if opcode(3) = '0' then -- STAX Rp
+                        if opcode(3) = '0' then     -- STAX Rp
                             ns <= acc_to_memio_1;
-                        else                    -- LDAX Rp
+                        else                        -- LDAX Rp
                             ns <= memio_to_acc_1;
                         end if;
-                    else
+                    else                            -- SHLD, LHLD, STA, LDA address(16b)
                         ns <= read_addr16b_1;
                     end if;
                     
@@ -465,11 +440,10 @@ begin
                     --2B	00101011	DCX H
                     --33	00110011	INX SP
                     --3B	00111011	DCX SP
-                    con(INCDEC(op53)) <= '1';   -- Increment/decrement destination register
-                    ns <= opcode_fetch_1;       -- Done
+                    con(INCDEC(op53)) <= '1';       -- Increment/decrement destination register
+                    ns <= opcode_fetch_1;           -- Done
                     
                 when "100" => -- INR
-                    -- TODO
                     --00 XXX 100
                     --04	00000100	INR B
                     --0C	00001100	INR C
@@ -477,17 +451,16 @@ begin
                     --1C	00011100	INR E
                     --24	00100100	INR H
                     --2C	00101100	INR L
-                    --34	00110100	INR M
+                    --34	00110100	INR M       TODO
                     --3C	00111100	INR A
-                    alucode <= "0000";      -- ADD
-                    con(SSS(op53)) <= '1';  -- Source register
-                    con(LaluA) <= '0';      -- A = source
-                    con(LaluB) <= '0';      -- B = 00000001
-                    con(Lu) <= '1';         -- Load ALU register with result
-                    ns <= opcode_fetch_1;   -- Done
+                    alucode <= "0000";              -- ADD
+                    con(SSS(op53)) <= '1';          -- Source register
+                    con(LaluA) <= '0';              -- A = source
+                    con(LaluB) <= '0';              -- B = 00000001
+                    con(Lu) <= '1';                 -- Load ALU register with result
+                    ns <= opcode_fetch_1;           -- Done
 
                 when "101" => -- DCR
-                    -- TODO
                     --00 XXX 101
                     --05	00000101	DCR B
                     --0D	00001101	DCR C
@@ -495,7 +468,7 @@ begin
                     --1D	00011101	DCR E
                     --25	00100101	DCR H
                     --2D	00101101	DCR L
-                    --35	00110101	DCR M
+                    --35	00110101	DCR M       TODO
                     --3D	00111101	DCR A
                     alucode <= "0010";      -- SUB
                     con(SSS(op53)) <= '1';  -- Source register
@@ -512,7 +485,7 @@ begin
                     --1E	00011110	MVI E
                     --26	00100110	MVI H
                     --2E	00101110	MVI L
-                    --36	00110110	MVI M
+                    --36	00110110	MVI M       TODO
                     --3E	00111110	MVI A
                     con(Epc) <= '1';
                     con(Laddr) <= '1';
@@ -522,9 +495,9 @@ begin
                     --00 XXX 111
                     --07	00000111	RLC
                     --0F	00001111	RRC
-                    --17	00010111	RAL
-                    --1F	00011111	RAR
-                    --27	00100111	DAA
+                    --17	00010111	RAL         TODO
+                    --1F	00011111	RAR         TODO
+                    --27	00100111	DAA         TODO
                     --2F	00101111	CMA
                     --37	00110111	STC
                     --3F	00111111	CMC
@@ -591,14 +564,14 @@ begin
                 --6E	01100110	MOV L,M
                 --6F	01100111	MOV L,A
                 --
-                --70	01110000	MOV M,B
-                --71	01110001	MOV M,C
-                --72	01110010	MOV M,D
-                --73	01110011	MOV M,E
-                --74	01110100	MOV M,H
-                --75	01110101	MOV M,L
+                --70	01110000	MOV M,B     TODO
+                --71	01110001	MOV M,C     TODO
+                --72	01110010	MOV M,D     TODO
+                --73	01110011	MOV M,E     TODO
+                --74	01110100	MOV M,H     TODO
+                --75	01110101	MOV M,L     TODO
                 --76	01110110	HALT
-                --77	01110111	MOV M,A
+                --77	01110111	MOV M,A     TODO
                 --
                 --78	01111000	MOV A,B
                 --79	01111001	MOV A,C
@@ -772,14 +745,14 @@ begin
                     --D9	11011001	XXX
                     --E1	11100001	POP H
                     --E9	11101001	PCHL
-                    --F1	11110001	POP PSW
+                    --F1	11110001	POP PSW     TODO
                     --F9	11111001	SPHL
                     ns <= opcode_fetch_1;   -- Done (default)
                     case op53 is
                     when "000" => -- POP B
                         ns <= pop_1;
                     when "001" => -- RET
-                        ns <= pop_1;        -- TODO
+                        ns <= pop_1;
                     when "010" => -- POP D
                         ns <= pop_1;
                     when "011" => -- XXX
@@ -790,7 +763,7 @@ begin
                         con(Ehl) <= '1';    -- HL -> PC
                         con(Lpc) <= '1';
                     when "110" => -- POP PSW
-                        null;               -- TODO
+                        ns <= opcode_fetch_1;
                     when "111" => -- SPHL
                         con(Ehl) <= '1';    -- HL -> SP
                         con(Lsp) <= '1';
@@ -849,10 +822,10 @@ begin
                     --CB	11001011	XXX
                     --D3	11010011	OUT <b>
                     --DB	11011011	IN <b>
-                    --E3	11100011	XTHL
-                    --EB	11101011	XCHG
-                    --F3	11110011	DI
-                    --FB	11111011	EI
+                    --E3	11100011	XTHL        TODO
+                    --EB	11101011	XCHG        TODO
+                    --F3	11110011	DI          TODO
+                    --FB	11111011	EI          TODO
                     case op53 is
                     when "000" => -- JMP address(16b)
                         ns <= read_addr16b_1;
@@ -867,16 +840,12 @@ begin
                         con(Laddr) <= '1';
                         ns <= read_data8b_pc;
                     when "100" => -- XTHL
-                        -- TODO
                         ns <= opcode_fetch_1;
                     when "101" => -- XCHG
-                        -- TODO
                         ns <= opcode_fetch_1;
                     when "110" => -- DI
-                        -- TODO
                         ns <= opcode_fetch_1;
                     when "111" => -- EI
-                        -- TODO
                         ns <= opcode_fetch_1;
                     end case;
 
@@ -934,7 +903,7 @@ begin
                     --DD	11011101	XXX
                     --E5	11100101	PUSH H
                     --ED	11011101	XXX
-                    --F5	11110101	PUSH PSW
+                    --F5	11110101	PUSH PSW    TODO
                     --FD	11011101	XXX
                     if opcode = "11001101" then -- CALL address(16b)
                         ns <= read_addr16b_1;
@@ -957,16 +926,15 @@ begin
                     ns <= read_data8b_pc;
                     
                 when "111" =>
-                    -- TODO
                     --11 XXX 111
-                    --C7	11000111	RST 0
-                    --CF	11001111	RST 1
-                    --D7	11010111	RST 2
-                    --DF	11011111	RST 3
-                    --E7	11100111	RST 4
-                    --EF	11101111	RST 5
-                    --F7	11110111	RST 6
-                    --FF	11111111	RST 7
+                    --C7	11000111	RST 0       TODO
+                    --CF	11001111	RST 1       TODO
+                    --D7	11010111	RST 2       TODO
+                    --DF	11011111	RST 3       TODO
+                    --E7	11100111	RST 4       TODO
+                    --EF	11101111	RST 5       TODO
+                    --F7	11110111	RST 6       TODO
+                    --FF	11111111	RST 7       TODO
                     ns <= opcode_fetch_1;
                     
                 end case;

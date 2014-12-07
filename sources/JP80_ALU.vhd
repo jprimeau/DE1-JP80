@@ -23,9 +23,6 @@ architecture rtl of JP80_ALU is
     signal tmp_s        : std_logic;
     signal tmp_q        : t_data;
     
-    signal check_z      : std_logic;
-    signal check_s      : std_logic;
-    
     procedure FullAdder(
         signal a    : in t_data;
         signal b    : in t_data;
@@ -52,14 +49,17 @@ architecture rtl of JP80_ALU is
         q(6) <= a(6) xor b(6) xor c6;
         q(7) <= a(7) xor b(7) xor c7;
     end FullAdder;
+    
 begin
     process (alucode, a, b)
+        variable check_z    : std_logic;
+        variable check_s    : std_logic;
     begin
         tmp_c <= f_in(FlagC);
         tmp_s <= f_in(FlagS);
         tmp_z <= f_in(FlagZ);
-        check_z <= '1';
-        check_s <= '1';
+        check_z := '1';
+        check_s := '1';
         case alucode is
         when "0000" | "0001" => -- ADD or ADC
             tmp_a <= a;
@@ -90,37 +90,37 @@ begin
         when "1000" => -- RLC
             tmp_q <= to_stdlogicvector(to_bitvector(a) rol 1);
             tmp_c <= tmp_q(0);
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1001" => -- RRC
             tmp_q <= to_stdlogicvector(to_bitvector(a) ror 1);
             tmp_c <= tmp_q(7);
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1010" => -- RAL
             -- TODO
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1011" => -- RAR
             -- TODO
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1100" => -- DAA
             -- TODO
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1101" => -- CMA
             tmp_q <= not a;
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1110" => -- STC
             tmp_c <= '1';
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         when "1111" => -- CMC
             tmp_c <= not f_in(FlagC);
-            check_z <= '0';
-            check_s <= '0';
+            check_z := '0';
+            check_s := '0';
         end case;
         
         if check_z = '1' then

@@ -3,7 +3,7 @@
 
 -- TODO:
 --  o POP and PUSH for PSW
---  o CALL and RET
+--  o MOV M,R
 
 library ieee;
     use ieee.std_logic_1164.all;
@@ -255,7 +255,7 @@ begin
             con(Ipc) <= '1';
             con(Edata) <= '1';
             con(LtH) <= '1';
-            if opcode = "11001101" then  -- CALL address(16b)
+            if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 ns <= push_1;
             else
                 ns <= read_addr16b_5;
@@ -325,7 +325,7 @@ begin
 --            if op54 = "11" then
 --                con(Eflg) <= '1';
 --            else
-            if opcode = "11001101" then
+            if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 con(EpcH) <= '1';
             else
                 con(SSS(op54&"0")) <= '1';
@@ -341,7 +341,7 @@ begin
         when push_4 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
-            if opcode = "11001101" then  -- CALL address(16b)
+            if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 con(EpcL) <= '1';
             else
                 con(SSS(op54&"1")) <= '1';
@@ -351,7 +351,7 @@ begin
             
         when push_5 =>
             con(Wr) <= '1';
-            if opcode = "11001101" then  -- CALL address(16b)
+            if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 con(Et) <= '1';
                 con(Lpc) <= '1';
             end if;
@@ -367,7 +367,7 @@ begin
 --            if op54 = "11" then
 --                con(Lflg) <= '1';
 --            else
-            if opcode = "11001001" then -- RET
+            if opcode = "11001001" or (op76 = "11" and op20 = "000") then -- RXX
                 con(LpcL) <= '1';
             else
                 con(DDD(op54&"1")) <= '1';
@@ -382,7 +382,7 @@ begin
             
         when pop_4 =>
             con(Edata) <= '1';
-            if opcode = "11001001" then -- RET
+            if opcode = "11001001" or (op76 = "11" and op20 = "000") then -- RXX
                 con(LpcH) <= '1';
             else
                 con(DDD(op54&"0")) <= '1';
@@ -720,15 +720,49 @@ begin
                 
                 when "000" =>
                     --11 XXX 000
-                    --C8	11001000	RZ
-                    --D8	11011000	RC
-                    --E8	11101000	RPE
-                    --F8	11111000	RM
                     --C0	11000000	RNZ
+                    --C8	11001000	RZ
                     --D0	11010000	RNC
+                    --D8	11011000	RC
                     --E0	11100000	RPO
+                    --E8	11101000	RPE
                     --F0	11110000	RP
-                    ns <= opcode_fetch_1;   -- TODO
+                    --F8	11111000	RM
+                    ns <= opcode_fetch_1;
+                    case op53 is
+                    when "000" => -- RNZ
+                        if aluflag(FlagZ) = '0' then
+                            ns <= pop_1;
+                        end if;
+                    when "001" => -- RZ
+                        if aluflag(FlagZ) = '1' then
+                            ns <= pop_1;
+                        end if;
+                    when "010" => -- RNC
+                        if aluflag(FlagC) = '0' then
+                            ns <= pop_1;
+                        end if;
+                    when "011" => -- RC
+                        if aluflag(FlagC) = '1' then
+                            ns <= pop_1;
+                        end if;
+                    when "100" => -- RPO
+                        if aluflag(FlagP) = '0' then
+                            ns <= pop_1;
+                        end if;
+                    when "101" => -- RPE
+                        if aluflag(FlagP) = '1' then
+                            ns <= pop_1;
+                        end if;
+                    when "110" => -- RP
+                        if aluflag(FlagS) = '0' then
+                            ns <= pop_1;
+                        end if;
+                    when "111" => -- RM
+                        if aluflag(FlagS) = '1' then
+                            ns <= pop_1;
+                        end if;
+                    end case;
                     
                 when "001" =>
                     --11 XXX 001
@@ -847,7 +881,6 @@ begin
                     end case;
 
                 when "100" =>
-                    -- TODO
                     --11 XXX 100
                     --C4	11000100	CNZ
                     --CC	11001100	CZ
@@ -857,7 +890,41 @@ begin
                     --EC	11101100	CPE
                     --F4	11110100	CP
                     --FC	11111100	CM
-                    ns <= opcode_fetch_1;
+                    ns <= skip_addr16b_1;
+                    case op53 is
+                    when "000" => -- CNZ
+                        if aluflag(FlagZ) = '0' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "001" => -- CZ
+                        if aluflag(FlagZ) = '1' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "010" => -- CNC
+                        if aluflag(FlagC) = '0' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "011" => -- CC
+                        if aluflag(FlagC) = '1' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "100" => -- CPO
+                        if aluflag(FlagP) = '0' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "101" => -- CPE
+                        if aluflag(FlagP) = '1' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "110" => -- CP
+                        if aluflag(FlagS) = '0' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    when "111" => -- CM
+                        if aluflag(FlagS) = '1' then
+                            ns <= read_addr16b_1;
+                        end if;
+                    end case;
                     
                 when "101" =>
                     --11 XXX 101

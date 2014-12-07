@@ -246,7 +246,7 @@ begin
         when read_addr16b_5 =>
             ns <= opcode_fetch_1;
             con(Et) <= '1';
-            if op76 = "11" and op20 = "011" then -- JMP address(16b)
+            if opcode = "11000011" or (op76 = "11" and op20 = "010") then -- JXX address(16b)
                 con(Lpc) <= '1';
             elsif op76 = "00" and op20 = "001" then -- LXI Rp,data(16b)
                 con(DD(op54)) <= '1';

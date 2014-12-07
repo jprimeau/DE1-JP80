@@ -18,24 +18,24 @@ entity jp80_cpu is
         read_out    : out t_wire;
         write_out   : out t_wire;
         reqmem_out  : out t_wire;
-        reqio_out   : out t_wire;
+        reqio_out   : out t_wire
         
         -- BEGIN: SIMULATION ONLY
-        con_out         : out t_control;
-        addr_bus_out    : out t_address;
-        data_bus_out    : out t_data;
-        pc_out          : out t_address;
-        acc_out         : out t_8bit;
-        bc_out          : out t_16bit;
-        de_out          : out t_16bit;
-        hl_out          : out t_16bit;
-        sp_out          : out t_16bit;
-        flag_out        : out t_8bit;
-        ir_out          : out t_8bit;
-        tmp_out         : out t_16bit;
-        alu_a_out       : out t_data;
-        alu_b_out       : out t_data;
-        alu_out         : out t_data
+--        con_out         : out t_control;
+--        addr_bus_out    : out t_address;
+--        data_bus_out    : out t_data;
+--        pc_out          : out t_address;
+--        acc_out         : out t_8bit;
+--        bc_out          : out t_16bit;
+--        de_out          : out t_16bit;
+--        hl_out          : out t_16bit;
+--        sp_out          : out t_16bit;
+--        flag_out        : out t_8bit;
+--        ir_out          : out t_8bit;
+--        tmp_out         : out t_16bit;
+--        alu_a_out       : out t_data;
+--        alu_b_out       : out t_data;
+--        alu_out         : out t_data
         -- END: SIMULATION ONLY
     );
 end entity jp80_cpu;
@@ -55,7 +55,8 @@ architecture behv of jp80_cpu is
     alias  L_reg    is HL_reg(7 downto 0);
 
     signal ACC_reg  : t_8bit;
-    signal FLAG_Reg : t_data;
+    signal FLAG_reg : t_data;
+    signal FLAG_q   : t_data;
     signal ALU_reg  : t_data;
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
@@ -90,21 +91,21 @@ begin
     reqio_out   <= con(IO);
     
     -- BEGIN: SIMULATION ONLY
-    con_out         <= con;
-    addr_bus_out    <= addr_bus;
-    data_bus_out    <= data_bus;
-    pc_out          <= PC_reg;
-    acc_out         <= ACC_reg;
-    bc_out          <= BC_reg;
-    de_out          <= DE_reg;
-    hl_out          <= HL_reg;
-    sp_out          <= SP_reg;
-    flag_out        <= FLAG_reg;
-    ir_out          <= IR_reg;
-    tmp_out         <= TMP_reg;
-    alu_a_out       <= alu_a;
-    alu_b_out       <= alu_b;
-    alu_out         <= ALU_reg;
+--    con_out         <= con;
+--    addr_bus_out    <= addr_bus;
+--    data_bus_out    <= data_bus;
+--    pc_out          <= PC_reg;
+--    acc_out         <= ACC_reg;
+--    bc_out          <= BC_reg;
+--    de_out          <= DE_reg;
+--    hl_out          <= HL_reg;
+--    sp_out          <= SP_reg;
+--    flag_out        <= FLAG_reg;
+--    ir_out          <= IR_reg;
+--    tmp_out         <= TMP_reg;
+--    alu_a_out       <= alu_a;
+--    alu_b_out       <= alu_b;
+--    alu_out         <= ALU_reg;
     -- END: SIMULATION ONLY
 
     run:
@@ -280,9 +281,9 @@ begin
             elsif con(Lhl) = '1' then
                 HL_reg <= addr_bus;
             elsif con(Ihl) = '1' then
-                HL_reg <= DE_reg + 1;
+                HL_reg <= HL_reg + 1;
             elsif con(Dhl) = '1' then
-                HL_reg <= DE_reg - 1;
+                HL_reg <= HL_reg - 1;
             end if;
         end if;
     end process HL_register;
@@ -311,10 +312,11 @@ begin
     process (clk, reset)
     begin
         if reset = '1' then
-            ALU_reg <= (others => '1');
+            ALU_reg <= (others => '0');
         elsif clk'event and clk = '1' then
             if con(Lu) = '1' then
                 ALU_reg <= ALU_q;
+                FLAG_reg <= FLAG_q;
             end if;
         end if;
     end process ALU_register;
@@ -330,7 +332,7 @@ begin
         b           => alu_b,
         f_in        => FLAG_Reg,
         q           => ALU_q,
-        f_out       => FLAG_Reg
+        f_out       => FLAG_q
     );
     
     IR_register:

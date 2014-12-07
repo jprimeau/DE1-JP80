@@ -50,6 +50,8 @@ architecture rtl of de1_jp80 is
     signal counter_10hz     : std_logic_vector(25 downto 0);
     signal clk_100hz        : std_logic;
     signal counter_100hz    : std_logic_vector(25 downto 0);
+    signal clk_1khz         : std_logic;
+    signal counter_1khz     : std_logic_vector(25 downto 0);
 
     signal reset            : std_logic;
     signal cpu_clk          : std_logic;
@@ -84,7 +86,7 @@ begin
     LEDG(5) <= in_port_store and not in_port_0_en;
     LEDG(4) <= in_port_store and in_port_0_en;
     
-    cpu_clk <= clk_1hz when SW(8) = '0' else clk_10hz;
+    cpu_clk <= clk_10hz when SW(8) = '0' else clk_1khz;
     
     process (KEY(3))
     begin
@@ -160,12 +162,32 @@ begin
         end if;
     end process;
     
+    -- Generate a 1KHz clock.
+    process(CLOCK_50)
+    begin
+        if CLOCK_50'event and CLOCK_50 = '1' then
+            if reset = '1' then
+                clk_1khz <= '0';
+                counter_1khz <= (others => '0');
+            else
+                if conv_integer(counter_1khz) = 25000 then
+                    counter_1khz <= (others => '0');
+                    clk_1khz <= not clk_1khz;
+                else
+                    counter_1khz <= counter_1khz + 1;
+                end if;
+            end if;
+        end if;
+    end process;
+    
     process (out_port_wr, addr_out)
     begin
         if out_port_wr'event and out_port_wr = '1' then
-            if addr_out(0) = '0' and in_port_0_en = '1' then
+--            if addr_out(0) = '0' and in_port_0_en = '1' then
+            if addr_out(0) = '0' then
                 out_port_0 <= data_out;
-            elsif addr_out(0) = '1' and in_port_0_en = '0' then
+--            elsif addr_out(0) = '1' and in_port_0_en = '0' then
+            elsif addr_out(0) = '1' then
                 out_port_1 <= data_out;
             end if;
         end if;

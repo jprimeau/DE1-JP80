@@ -23,56 +23,56 @@ entity jp80_top is
         read_out    : out t_wire;
         write_out   : out t_wire;
         reqmem_out  : out t_wire;
-        reqio_out   : out t_wire;
+        reqio_out   : out t_wire
         
         -- BEGIN: SIMULATION ONLY
-        Lpc_out     : out std_logic;
-        Ipc_out     : out std_logic;
-        Epc_out     : out std_logic;
-        Laddr_out   : out std_logic;
-        LaddrL_out  : out std_logic;
-        LaddrH_out  : out std_logic;
-        Eaddr_out   : out std_logic;
-        Ldata_out   : out std_logic;
-        Edata_out   : out std_logic;
-        Lir_out     : out std_logic;
-        Lacc_out    : out std_logic;
-        Eacc_out    : out std_logic;
-        Lb_out      : out std_logic;
-        Eb_out      : out std_logic;
-        Lc_out      : out std_logic;
-        Ec_out      : out std_logic;
-        Ld_out      : out std_logic;
-        Ed_out      : out std_logic;
-        Le_out      : out std_logic;
-        Ee_out      : out std_logic;
-        Lh_out      : out std_logic;
-        Eh_out      : out std_logic;
-        Ll_out      : out std_logic;
-        El_out      : out std_logic;
-        Ehl_out     : out std_logic;
-        LaluA_out   : out std_logic;
-        LaluB_out   : out std_logic;
-        Eu_out      : out std_logic;
-        Lu_out      : out std_logic;
-        Wr_out      : out std_logic;
-        IO_out      : out std_logic;
-        HALT_out    : out std_logic;
-        
-        addr_bus_out    : out t_address;
-        data_bus_out    : out t_data;
-        pc_out          : out t_address;
-        acc_out         : out t_8bit;
-        de_out          : out t_16bit;
-        hl_out          : out t_16bit;
-        sp_out          : out t_16bit;
-        flag_out        : out t_8bit;
-        ir_out          : out t_8bit;
-        tmp_out         : out t_16bit;
-        alu_a_out       : out t_data;
-        alu_b_out       : out t_data;
-        alu_out         : out t_data;
-        bc_out          : out t_16bit
+--        Lpc_out     : out std_logic;
+--        Ipc_out     : out std_logic;
+--        Epc_out     : out std_logic;
+--        Laddr_out   : out std_logic;
+--        LaddrL_out  : out std_logic;
+--        LaddrH_out  : out std_logic;
+--        Eaddr_out   : out std_logic;
+--        Ldata_out   : out std_logic;
+--        Edata_out   : out std_logic;
+--        Lir_out     : out std_logic;
+--        Lacc_out    : out std_logic;
+--        Eacc_out    : out std_logic;
+--        Lb_out      : out std_logic;
+--        Eb_out      : out std_logic;
+--        Lc_out      : out std_logic;
+--        Ec_out      : out std_logic;
+--        Ld_out      : out std_logic;
+--        Ed_out      : out std_logic;
+--        Le_out      : out std_logic;
+--        Ee_out      : out std_logic;
+--        Lh_out      : out std_logic;
+--        Eh_out      : out std_logic;
+--        Ll_out      : out std_logic;
+--        El_out      : out std_logic;
+--        Ehl_out     : out std_logic;
+--        LaluA_out   : out std_logic;
+--        LaluB_out   : out std_logic;
+--        Eu_out      : out std_logic;
+--        Lu_out      : out std_logic;
+--        Wr_out      : out std_logic;
+--        IO_out      : out std_logic;
+--        HALT_out    : out std_logic;
+--        
+--        addr_bus_out    : out t_address;
+--        data_bus_out    : out t_data;
+--        pc_out          : out t_address;
+--        acc_out         : out t_8bit;
+--        de_out          : out t_16bit;
+--        hl_out          : out t_16bit;
+--        sp_out          : out t_16bit;
+--        flag_out        : out t_8bit;
+--        ir_out          : out t_8bit;
+--        tmp_out         : out t_16bit;
+--        alu_a_out       : out t_data;
+--        alu_b_out       : out t_data;
+--        alu_out         : out t_data;
+--        bc_out          : out t_16bit
         -- END: SIMULATION ONLY
     );
 end entity jp80_top;
@@ -157,78 +157,80 @@ architecture behv of jp80_top is
     signal cpu_reqmem       : t_wire;
     signal cpu_reqio        : t_wire;
     
-    signal cpu_con          : t_control := (others => '0');
-    signal cpu_addr_bus     : t_address;
-    signal cpu_data_bus     : t_data;
-    signal cpu_pc           : t_address;
-    signal cpu_acc          : t_data;
-    signal cpu_bc           : t_16bit;
-    signal cpu_de           : t_16bit;
-    signal cpu_hl           : t_16bit;
-    signal cpu_sp           : t_16bit;
-    signal cpu_flag         : t_8bit;
-    signal cpu_ir           : t_8bit;
-    signal cpu_tmp          : t_16bit;
-    signal cpu_alu_a        : t_data;
-    signal cpu_alu_b        : t_data;
-    signal cpu_alu          : t_data;
+    -- BEGIN: SIMULATION ONLY
+--    signal cpu_con          : t_control := (others => '0');
+--    signal cpu_addr_bus     : t_address;
+--    signal cpu_data_bus     : t_data;
+--    signal cpu_pc           : t_address;
+--    signal cpu_acc          : t_data;
+--    signal cpu_bc           : t_16bit;
+--    signal cpu_de           : t_16bit;
+--    signal cpu_hl           : t_16bit;
+--    signal cpu_sp           : t_16bit;
+--    signal cpu_flag         : t_8bit;
+--    signal cpu_ir           : t_8bit;
+--    signal cpu_tmp          : t_16bit;
+--    signal cpu_alu_a        : t_data;
+--    signal cpu_alu_b        : t_data;
+--    signal cpu_alu          : t_data;
+    -- END: SIMULATION ONLY
     
 begin
     addr_out        <= cpu_addr;
---    data_out        <= cpu_data_inout when cpu_write = '1' else (others=>'Z');
+    data_out        <= cpu_data_inout when cpu_write = '1' else (others=>'Z');
     read_out        <= cpu_read;
     write_out       <= cpu_write;
     reqmem_out      <= cpu_reqmem;
     reqio_out       <= cpu_reqio;
     
     -- BEGIN: SIMULATION ONLY
-    Lpc_out     <= cpu_con(Lpc);
-    Ipc_out     <= cpu_con(Ipc);
-    Epc_out     <= cpu_con(Epc);
-    Laddr_out   <= cpu_con(Laddr);
-    LaddrL_out  <= cpu_con(LaddrL);
-    LaddrH_out  <= cpu_con(LaddrH);
-    Eaddr_out   <= cpu_con(Eaddr);
-    Ldata_out   <= cpu_con(Ldata);
-    Edata_out   <= cpu_con(Edata);
-    Lir_out     <= cpu_con(Lir);
-    Lacc_out    <= cpu_con(Lacc);
-    Eacc_out    <= cpu_con(Eacc);
-    Lb_out      <= cpu_con(Lb);
-    Eb_out      <= cpu_con(Eb);
-    Lc_out      <= cpu_con(Lc);
-    Ec_out      <= cpu_con(Ec);
-    Ld_out      <= cpu_con(Ld);
-    Ed_out      <= cpu_con(Ed);
-    Le_out      <= cpu_con(Le);
-    Ee_out      <= cpu_con(Ee);
-    Lh_out      <= cpu_con(Lh);
-    Eh_out      <= cpu_con(Eh);
-    Ll_out      <= cpu_con(Ll);
-    El_out      <= cpu_con(El);
-    Ehl_out     <= cpu_con(Ehl);
-    LaluA_out   <= cpu_con(LaluA);
-    LaluB_out   <= cpu_con(LaluB);
-    Eu_out      <= cpu_con(Eu);
-    Lu_out      <= cpu_con(Lu);
-    Wr_out      <= cpu_con(Wr);
-    IO_out      <= cpu_con(IO);
-    HALT_out    <= cpu_con(HALT);
-    
-    addr_bus_out    <= cpu_addr_bus;
-    data_bus_out    <= cpu_data_bus;
-    pc_out          <= cpu_pc;
-    acc_out         <= cpu_acc;
-    bc_out          <= cpu_bc;
-    de_out          <= cpu_de;
-    hl_out          <= cpu_hl;
-    sp_out          <= cpu_sp;
-    flag_out        <= cpu_flag;
-    ir_out          <= cpu_ir;
-    tmp_out         <= cpu_tmp;
-    alu_a_out       <= cpu_alu_a;
-    alu_b_out       <= cpu_alu_b;
-    alu_out         <= cpu_alu;
+--    Lpc_out     <= cpu_con(Lpc);
+--    Ipc_out     <= cpu_con(Ipc);
+--    Epc_out     <= cpu_con(Epc);
+--    Laddr_out   <= cpu_con(Laddr);
+--    LaddrL_out  <= cpu_con(LaddrL);
+--    LaddrH_out  <= cpu_con(LaddrH);
+--    Eaddr_out   <= cpu_con(Eaddr);
+--    Ldata_out   <= cpu_con(Ldata);
+--    Edata_out   <= cpu_con(Edata);
+--    Lir_out     <= cpu_con(Lir);
+--    Lacc_out    <= cpu_con(Lacc);
+--    Eacc_out    <= cpu_con(Eacc);
+--    Lb_out      <= cpu_con(Lb);
+--    Eb_out      <= cpu_con(Eb);
+--    Lc_out      <= cpu_con(Lc);
+--    Ec_out      <= cpu_con(Ec);
+--    Ld_out      <= cpu_con(Ld);
+--    Ed_out      <= cpu_con(Ed);
+--    Le_out      <= cpu_con(Le);
+--    Ee_out      <= cpu_con(Ee);
+--    Lh_out      <= cpu_con(Lh);
+--    Eh_out      <= cpu_con(Eh);
+--    Ll_out      <= cpu_con(Ll);
+--    El_out      <= cpu_con(El);
+--    Ehl_out     <= cpu_con(Ehl);
+--    LaluA_out   <= cpu_con(LaluA);
+--    LaluB_out   <= cpu_con(LaluB);
+--    Eu_out      <= cpu_con(Eu);
+--    Lu_out      <= cpu_con(Lu);
+--    Wr_out      <= cpu_con(Wr);
+--    IO_out      <= cpu_con(IO);
+--    HALT_out    <= cpu_con(HALT);
+--    
+--    addr_bus_out    <= cpu_addr_bus;
+--    data_bus_out    <= cpu_data_bus;
+--    pc_out          <= cpu_pc;
+--    acc_out         <= cpu_acc;
+--    bc_out          <= cpu_bc;
+--    de_out          <= cpu_de;
+--    hl_out          <= cpu_hl;
+--    sp_out          <= cpu_sp;
+--    flag_out        <= cpu_flag;
+--    ir_out          <= cpu_ir;
+--    tmp_out         <= cpu_tmp;
+--    alu_a_out       <= cpu_alu_a;
+--    alu_b_out       <= cpu_alu_b;
+--    alu_out         <= cpu_alu;
     -- END: SIMULATION ONLY
 
     memory:
@@ -242,27 +244,27 @@ begin
     end process memory;
     cpu_data_inout <= ram(conv_integer(cpu_addr)) when cpu_read = '1' and cpu_reqmem = '1' else (others=>'Z');
     
-    input_output:
-    process (clock)
-    begin
-        if clock'event and clock = '0' then
-            if cpu_reqio = '1' and cpu_write = '1' then
-                data_out <= cpu_data_inout;
-            end if;
-        end if;
-    end process input_output;
-    cpu_data_inout <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
-    
 --    input_output:
---    process (cpu_reqio, cpu_write)
+--    process (clock)
 --    begin
---        if cpu_reqio = '1' then
---            if cpu_write'event and cpu_write = '1' then
+--        if clock'event and clock = '0' then
+--            if cpu_reqio = '1' and cpu_write = '1' then
 --                data_out <= cpu_data_inout;
 --            end if;
 --        end if;
 --    end process input_output;
 --    cpu_data_inout <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
+    
+--    input_output:
+--    process (cpu_reqio)
+--    begin
+--        if cpu_reqio'event and cpu_reqio = '1' then
+--            if cpu_write = '1' then
+--                data_out <= cpu_data_inout;
+--            end if;
+--        end if;
+--    end process input_output;
+    cpu_data_inout <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
 
     cpu : entity work.jp80_cpu
     port map (
@@ -273,24 +275,24 @@ begin
         read_out    => cpu_read,
         write_out   => cpu_write,
         reqmem_out  => cpu_reqmem,
-        reqio_out   => cpu_reqio,
+        reqio_out   => cpu_reqio
         
         -- BEGIN: SIMULATION ONLY
-        con_out         => cpu_con,
-        addr_bus_out    => cpu_addr_bus,
-        data_bus_out    => cpu_data_bus,
-        pc_out          => cpu_pc,
-        acc_out         => cpu_acc,
-        bc_out          => cpu_bc,
-        de_out          => cpu_de,
-        hl_out          => cpu_hl,
-        sp_out          => cpu_sp,
-        flag_out        => cpu_flag,
-        ir_out          => cpu_ir,
-        tmp_out         => cpu_tmp,
-        alu_a_out       => cpu_alu_a,
-        alu_b_out       => cpu_alu_b,
-        alu_out         => cpu_alu
+--        con_out         => cpu_con,
+--        addr_bus_out    => cpu_addr_bus,
+--        data_bus_out    => cpu_data_bus,
+--        pc_out          => cpu_pc,
+--        acc_out         => cpu_acc,
+--        bc_out          => cpu_bc,
+--        de_out          => cpu_de,
+--        hl_out          => cpu_hl,
+--        sp_out          => cpu_sp,
+--        flag_out        => cpu_flag,
+--        ir_out          => cpu_ir,
+--        tmp_out         => cpu_tmp,
+--        alu_a_out       => cpu_alu_a,
+--        alu_b_out       => cpu_alu_b,
+--        alu_out         => cpu_alu
         -- END: SIMULATION ONLY
     );
 

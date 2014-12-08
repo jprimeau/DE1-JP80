@@ -41,6 +41,8 @@ architecture rtl of JP80_MCODE is
             return Eh;
         elsif src = "101" then
             return El;
+        elsif src = "110" then
+            return Ehl;
         else
             return Eacc;
         end if;
@@ -61,6 +63,8 @@ architecture rtl of JP80_MCODE is
             return Lh;
         elsif dst = "101" then
             return Ll;
+        elsif dst = "110" then
+            return Lhl;
         else
             return Lacc;
         end if;
@@ -166,11 +170,6 @@ begin
             con(Lir) <= '1';
             ns <= decode_instruction;
             
-        when read_data8b_reg =>
-            con(Et) <= '1';
-            con(Laddr) <= '1';
-            ns <= read_data8b;
-            
         when read_data8b_pc =>
             con(Ipc) <= '1';                -- Increment PC
             ns <= read_data8b;
@@ -190,9 +189,14 @@ begin
                 con(LaluA) <= '1';          -- A = accumulator
                 con(LaluB) <= '1';          -- B = data bus
                 con(Lu) <= '1';             -- Load ALU register with result
-            else                            -- Move with immediate
-                con(DDD(op53)) <= '1';      -- Destination register
+--            else                            -- Move with immediate
+--                con(DDD(op53)) <= '1';      -- Destination register
             end if;
+            
+        when data_to_reg =>
+            con(Edata) <= '1';
+            con(DDD(op53)) <= '1';
+            ns <= opcode_fetch_1;
 
         when memio_to_acc_1 =>
             if opcode = "11011011" or opcode = "11010011" then
@@ -374,6 +378,9 @@ begin
         when skip_addr16b_1 =>
             con(I2pc) <= '1';
             ns <= opcode_fetch_1;
+        
+        when mem_write =>
+            con(Wr) <= '1';
             
         when decode_instruction =>
             case op76 is
@@ -564,14 +571,14 @@ begin
                 --6E	01100110	MOV L,M
                 --6F	01100111	MOV L,A
                 --
-                --70	01110000	MOV M,B     TODO
-                --71	01110001	MOV M,C     TODO
-                --72	01110010	MOV M,D     TODO
-                --73	01110011	MOV M,E     TODO
-                --74	01110100	MOV M,H     TODO
-                --75	01110101	MOV M,L     TODO
+                --70	01110000	MOV M,B
+                --71	01110001	MOV M,C
+                --72	01110010	MOV M,D
+                --73	01110011	MOV M,E
+                --74	01110100	MOV M,H
+                --75	01110101	MOV M,L
                 --76	01110110	HALT
-                --77	01110111	MOV M,A     TODO
+                --77	01110111	MOV M,A
                 --
                 --78	01111000	MOV A,B
                 --79	01111001	MOV A,C
@@ -587,10 +594,13 @@ begin
                 else
                     con(SSS(op20)) <= '1';  -- Source register
                     if op20 = "110" then    -- M (HL) is the source
-                        con(Lt) <= '1';     -- HL -> TEMP via addr bus
-                        ns <= read_data8b_reg;  -- Requires 8-bit memory read
+                        con(Laddr) <= '1';
+                        ns <= data_to_reg;
                     elsif op53 = "110" then -- M (HL) is the destination
-                                            -- TODO: Requires 8-bit memory write
+                        con(Ldata) <= '1';
+                        con(Ehl) <= '1';
+                        con(Laddr) <= '1';
+                        ns <= mem_write;
                     else                    -- Regular move from register to register
                         con(DDD(op53)) <= '1';  -- Destination register
                     end if;
@@ -679,8 +689,8 @@ begin
                 ns <= opcode_fetch_1;       -- Done (default)
                 con(SSS(op20)) <= '1';      -- Source register
                 if op20 = "110" then        -- M (HL) is the source
-                    con(Lt) <= '1';         -- HL -> TEMP via addr bus
-                    ns <= read_data8b_reg;  -- Requires 8-bit memory read
+                    con(Laddr) <= '1';
+                    ns <= data_to_reg;
                 else
                     alucode <= "0"&op53;    -- ALU operation from opcode
                     con(LaluA) <= '1';      -- A = accumulator

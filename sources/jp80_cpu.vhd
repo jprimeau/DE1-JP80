@@ -13,8 +13,9 @@ entity jp80_cpu is
     port (
         clock       : in t_wire;
         reset       : in t_wire;
-        data_inout  : inout t_data;
+        data_in     : in t_data;
         addr_out    : out t_address;
+        data_out    : out t_data;
         read_out    : out t_wire;
         write_out   : out t_wire;
         reqmem_out  : out t_wire;
@@ -61,7 +62,9 @@ architecture behv of jp80_cpu is
     signal ALU_q    : t_data;
     signal PC_reg   : t_address;
     signal ADDR_reg : t_address;
-    signal DATA_reg : t_data;
+--    signal DATA_reg : t_data;
+    signal DIN_reg  : t_data;
+    signal DOUT_reg : t_data;
     signal TMP_reg  : t_address;
     signal SP_reg   : t_address;
     signal IR_reg   : t_data;
@@ -84,11 +87,12 @@ architecture behv of jp80_cpu is
     
 begin
     addr_out    <= ADDR_reg;
-    data_inout  <= DATA_reg when con(Wr) = '1' else (others=>'Z');
+    data_out    <= DOUT_reg;
     read_out    <= not con(Wr);
     write_out   <= con(Wr);
     reqmem_out  <= not con(IO);
     reqio_out   <= con(IO);
+    DIN_reg     <= data_in;
     
     -- BEGIN: SIMULATION ONLY
 --    con_out         <= con;
@@ -168,16 +172,14 @@ begin
     process (clk, reset)
     begin
         if reset = '1' then
-            DATA_reg <= (others => '0');
-        elsif clk'event and clk = '0' then
+            DOUT_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
             if con(Ldata) = '1' then
-                DATA_reg <= data_bus;
-            else
-                DATA_reg <= data_inout;
+                DOUT_reg <= data_bus;
             end if;
         end if;
     end process DATA_register;
-    data_bus <= DATA_reg when con(Edata) = '1' else (others => 'Z');
+    data_bus <= DIN_reg when con(Edata) = '1' else (others => 'Z');
     
     TMP_register:
     process (clk, reset)
@@ -363,7 +365,11 @@ begin
     begin
         if clk'event and clk = '0' then
             if con(Lu) = '1' then
-                alu_to_reg <= "1" & opcode(5 downto 3);
+                if opcode(7 downto 6) = "10" then
+                    alu_to_reg <= (others=>'1');    -- Accumulator
+                else
+                    alu_to_reg <= "1" & opcode(5 downto 3);
+                end if;
             else
                 alu_to_reg <= (others=>'0');
             end if;

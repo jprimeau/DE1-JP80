@@ -51,6 +51,10 @@ entity jp80_top is
 --        Ll_out      : out std_logic;
 --        El_out      : out std_logic;
 --        Ehl_out     : out std_logic;
+--        Lt_out      : out std_logic;
+--        LtL_out     : out std_logic;
+--        LtH_out     : out std_logic;
+--        Et_out      : out std_logic;
 --        LaluA_out   : out std_logic;
 --        LaluB_out   : out std_logic;
 --        Eu_out      : out std_logic;
@@ -83,9 +87,9 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"2E",x"F0",x"26",x"00",x"3E",x"AA",x"77",x"3E", -- 00H
-        x"00",x"7E",x"D3",x"00",x"76",x"FF",x"FF",x"FF", -- 08H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
+        x"3E",x"99",x"06",x"F0",x"A0",x"D3",x"00",x"3E", -- 00H
+        x"99",x"B0",x"D3",x"01",x"3E",x"00",x"D3",x"00", -- 08H
+        x"D3",x"01",x"76",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 28H
@@ -113,7 +117,7 @@ architecture behv of jp80_top is
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
-        x"00",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
         
 --        x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
@@ -150,8 +154,9 @@ architecture behv of jp80_top is
 --        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
     );
     
-    signal cpu_data_inout   : t_data;
+    signal cpu_data_in      : t_data;
     signal cpu_addr         : t_address;
+    signal cpu_data_out     : t_data;
     signal cpu_read         : t_wire;
     signal cpu_write        : t_wire;
     signal cpu_reqmem       : t_wire;
@@ -177,7 +182,7 @@ architecture behv of jp80_top is
     
 begin
     addr_out        <= cpu_addr;
-    data_out        <= cpu_data_inout when cpu_write = '1' else (others=>'Z');
+    data_out        <= cpu_data_out;
     read_out        <= cpu_read;
     write_out       <= cpu_write;
     reqmem_out      <= cpu_reqmem;
@@ -209,6 +214,10 @@ begin
 --    Ll_out      <= cpu_con(Ll);
 --    El_out      <= cpu_con(El);
 --    Ehl_out     <= cpu_con(Ehl);
+--    Lt_out      <= cpu_con(Lt);
+--    LtL_out     <= cpu_con(LtL);
+--    LtH_out     <= cpu_con(LtH);
+--    Et_out      <= cpu_con(Et);
 --    LaluA_out   <= cpu_con(LaluA);
 --    LaluB_out   <= cpu_con(LaluB);
 --    Eu_out      <= cpu_con(Eu);
@@ -238,40 +247,21 @@ begin
     begin
         if clock'event and clock = '0' then
             if cpu_reqmem = '1' and cpu_write = '1' then
-                ram(conv_integer(cpu_addr)) <= cpu_data_inout;
+                ram(conv_integer(cpu_addr)) <= cpu_data_out;
             end if;
         end if;
     end process memory;
-    cpu_data_inout <= ram(conv_integer(cpu_addr)) when cpu_read = '1' and cpu_reqmem = '1' else (others=>'Z');
     
---    input_output:
---    process (clock)
---    begin
---        if clock'event and clock = '0' then
---            if cpu_reqio = '1' and cpu_write = '1' then
---                data_out <= cpu_data_inout;
---            end if;
---        end if;
---    end process input_output;
---    cpu_data_inout <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
+    cpu_data_in <= ram(conv_integer(cpu_addr)) when cpu_reqmem = '1' and cpu_read = '1' else (others=>'Z');
+    cpu_data_in <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
     
---    input_output:
---    process (cpu_reqio)
---    begin
---        if cpu_reqio'event and cpu_reqio = '1' then
---            if cpu_write = '1' then
---                data_out <= cpu_data_inout;
---            end if;
---        end if;
---    end process input_output;
-    cpu_data_inout <= data_in when cpu_reqio = '1' and cpu_read = '1' else (others=>'Z');
-
     cpu : entity work.jp80_cpu
     port map (
         clock       => clock,
         reset       => reset,
-        data_inout  => cpu_data_inout,
+        data_in     => cpu_data_in,
         addr_out    => cpu_addr,
+        data_out    => cpu_data_out,
         read_out    => cpu_read,
         write_out   => cpu_write,
         reqmem_out  => cpu_reqmem,

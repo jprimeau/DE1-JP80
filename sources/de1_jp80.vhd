@@ -70,6 +70,7 @@ architecture rtl of de1_jp80 is
     
     signal in_port_store    : std_logic := '0';
     signal out_port_wr      : std_logic := '0';
+    signal out_port_en      : std_logic := '0';
 
 begin
 
@@ -180,15 +181,15 @@ begin
         end if;
     end process;
     
-    process (out_port_wr, addr_out)
+    process (cpu_clk)
     begin
-        if out_port_wr'event and out_port_wr = '1' then
---            if addr_out(0) = '0' and in_port_0_en = '1' then
-            if addr_out(0) = '0' then
-                out_port_0 <= data_out;
---            elsif addr_out(0) = '1' and in_port_0_en = '0' then
-            elsif addr_out(0) = '1' then
-                out_port_1 <= data_out;
+        if cpu_clk'event and cpu_clk = '1' then
+            if out_port_en = '1' and out_port_wr = '1' then
+                if addr_out(7 downto 0) = x"00" then
+                    out_port_0 <= data_out;
+                elsif addr_out(7 downto 0) = x"01" then
+                    out_port_1 <= data_out;
+                end if;
             end if;
         end if;
     end process;
@@ -231,7 +232,7 @@ begin
         read_out    => open,
         write_out   => out_port_wr,
         reqmem_out  => open,
-        reqio_out   => open
+        reqio_out   => out_port_en
     );
 
 end architecture rtl;

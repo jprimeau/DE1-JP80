@@ -2,13 +2,13 @@
 0002	26 00		MVI H,00H
 0004	3E AA		MVI A,AAH
 0006	77		MOV M,A
-0007	3E 00		MVI A,00H
+0007	3E 11		MVI A,11H
 0009	7E		MOV A,M
 000A	D3 00		OUT 0H
 000C	76		HALT
 
         x"2E",x"F0",x"26",x"00",x"3E",x"AA",x"77",x"3E", -- 00H
-        x"00",x"7E",x"D3",x"00",x"76",x"FF",x"FF",x"FF", -- 08H
+        x"11",x"7E",x"D3",x"00",x"76",x"FF",x"FF",x"FF", -- 08H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
@@ -37,5 +37,5 @@
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
-        x"00",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H

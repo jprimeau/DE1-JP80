@@ -189,8 +189,8 @@ begin
                 con(LaluA) <= '1';          -- A = accumulator
                 con(LaluB) <= '1';          -- B = data bus
                 con(Lu) <= '1';             -- Load ALU register with result
---            else                            -- Move with immediate
---                con(DDD(op53)) <= '1';      -- Destination register
+            else                            -- Move with immediate
+                con(DDD(op53)) <= '1';      -- Destination register
             end if;
             
         when data_to_reg =>
@@ -228,26 +228,32 @@ begin
             
         when read_addr16b_2 =>
             con(Ipc) <= '1';
-            con(Edata) <= '1';
-            con(LtL) <= '1';
             ns <= read_addr16b_3;
             
         when read_addr16b_3 =>
-            con(Epc) <= '1';
-            con(Laddr) <= '1';
+            con(Edata) <= '1';
+            con(LtL) <= '1';
             ns <= read_addr16b_4;
             
         when read_addr16b_4 =>
+            con(Epc) <= '1';
+            con(Laddr) <= '1';
+            ns <= read_addr16b_5;
+            
+        when read_addr16b_5 =>
             con(Ipc) <= '1';
+            ns <= read_addr16b_6;
+            
+        when read_addr16b_6 =>
             con(Edata) <= '1';
             con(LtH) <= '1';
             if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 ns <= push_1;
             else
-                ns <= read_addr16b_5;
+                ns <= read_addr16b_7;
             end if;
             
-        when read_addr16b_5 =>
+        when read_addr16b_7 =>
             ns <= opcode_fetch_1;
             con(Et) <= '1';
             if opcode = "11000011" or (op76 = "11" and op20 = "010") then -- JXX address(16b)
@@ -381,6 +387,7 @@ begin
         
         when mem_write =>
             con(Wr) <= '1';
+            ns <= opcode_fetch_1;
             
         when decode_instruction =>
             case op76 is

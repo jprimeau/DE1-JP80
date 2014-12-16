@@ -2,19 +2,25 @@
 0002	2E BB		MVI L,BBH	;L=BB
 0004	22 F0 00	SHLD 00F0H	;00F0=BBAA
 0007	3A F0 00	LDA 00F0H	;A=BB
-000A	3A F1 00	LDA 00F1H	;A=AA
-000D	3E CC		MVI A,CCH	;A=CC
-000F	32 F0 00	STA 00F0H	;00F0=CCAA
-0012	3E DD		MVI A,DDH	;A=DD
-0014	32 F1 00	STA 00F1H	;00F0=CCDD
-0017	2A F0 00	LHLD 00F0H	;HL=DDCC
-001A	76		HALT
+000A	D3 01		OUT 1H		;Port1=BB
+000C	3A F1 00	LDA 00F1H	;A=AA
+000F	D3 00		OUT 0H		;Port0=AA
+0011	3E CC		MVI A,CCH	;A=CC
+0013	32 F0 00	STA 00F0H	;00F0=CCAA
+0016	3E DD		MVI A,DDH	;A=DD
+0018	32 F1 00	STA 00F1H	;00F0=CCDD
+001B	2A F0 00	LHLD 00F0H	;HL=DDCC
+001E	7C      	MOV A,H		;A=DD
+001F	D3 01   	OUT 1H		;Port1=DD
+0021	7D      	MOV A,L		;A=CC
+0022	D3 00   	OUT 0H		;Port0=CC
+0024	76		HALT
 
         x"26",x"AA",x"2E",x"BB",x"22",x"F0",x"00",x"3A", -- 00H
-        x"F0",x"00",x"3A",x"F1",x"00",x"3E",x"CC",x"32", -- 08H
-        x"F0",x"00",x"3E",x"DD",x"32",x"F1",x"00",x"2A", -- 10H
-        x"F0",x"00",x"76",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
+        x"F0",x"00",x"D3",x"01",x"3A",x"F1",x"00",x"D3", -- 08H
+        x"00",x"3E",x"CC",x"32",x"F0",x"00",x"3E",x"DD", -- 10H
+        x"32",x"F1",x"00",x"2A",x"F0",x"00",x"7C",x"D3", -- 18H
+        x"01",x"7D",x"D3",x"00",x"76",x"FF",x"FF",x"FF", -- 20H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 28H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 30H
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 38H

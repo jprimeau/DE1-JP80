@@ -1,5 +1,5 @@
-			.org	00000h
-Start_of_RAM:		.eq	0x0800
+			org	0000h
+Start_of_RAM:		eq	0800h
 			JMP 	Get_address		;Skip over message
 			defm	"JP-80 ROM v1.0",0
 Get_address:		IN	0			;Get address from input ports

@@ -15,7 +15,7 @@ address = 0
 labels = {}
 dlines = []
 
-f = open('test.asm', 'r')
+f = open('cpu_self_test.asm', 'r')
 
 def ExtractLabel(line):
     sc = re.split(';', line)
@@ -87,12 +87,13 @@ def ExtractOperandLabel(operand):
             return label
     return ''
 
-def ExtractOperandRegister(operand, mcode):
-    regs = mcode.keys()
+def ExtractOperandRegister(operand, codes):
+    regs = codes.keys()
+    comma = ''
     for reg in regs:
-        m = re.search(reg+',?', operand)
+        m = re.search(reg, operand)
         if m:
-            mcode = mcode[reg]
+            mcode = codes[reg]
             return (reg,mcode)
     return ('','')
 
@@ -103,9 +104,13 @@ def ExtractOperandValue(operand, vtype):
     if m:
         if operand[-1:] == 'h' or operand[-1:] == 'H':
             operand = operand[:-1]
-        if vtype == 'D' or vtype == 'P':
+        if vtype == 'D' or vtype == 'P' or vtype == 'R,D':
             tmp = "%02X" % int(operand, 16)
-            lo = tmp[0:2]    
+            lo = tmp[0:2]
+        elif vtype == 'Rp,DD':
+            tmp = "%04X" % int(operand, 16)
+            lo = tmp[0:2]
+            hi = tmp[2:4]     
         else:
             tmp = "%04X" % int(operand, 16)
             lo = tmp[2:4]
@@ -134,7 +139,6 @@ for line in f:
     (mnemonic,line) = ExtractMnemonicCleanLine(line, mnemonics)
     if mnemonic != '':
         (mcode,mtype,msize) = MnemonicInfo(mnemonic, grammar)
-        address += msize
         operand = re.sub('\s*', '', line)
         if mtype == 'R,R' or mtype == 'Rp' or mtype == 'R':
             (reg,mcode) = ExtractOperandRegister(operand, mcode)
@@ -143,7 +147,8 @@ for line in f:
             if lbl == '':
                 (byte_lo,byte_hi) = ExtractOperandValue(operand, mtype)
         elif mtype == "R,D" or mtype == 'Rp,DD':
-            (reg,mcode) = ExtractOperandRegister(operand, mcode)
+            t_operand = re.split(',', operand)[0]
+            (reg,mcode) = ExtractOperandRegister(t_operand, mcode)
             t_operand = re.sub(reg+',', '', operand)
             lbl = ExtractOperandLabel(t_operand)
             if lbl == '':
@@ -158,12 +163,13 @@ for line in f:
     dline['byte_lo'] = byte_lo
     dline['byte_hi'] = byte_hi
     dline['comment'] = comment
-    
-    num += 1
+    dlines.append(dline)
 
     if label != '':
         labels[label] = "%04X"%address
-    dlines.append(dline)
+    
+    num += 1
+    address += msize
 
 #sys.exit(0)
 
@@ -189,18 +195,30 @@ for dline in dlines:
     print "%2s"%dline['code'],
     print "%2s"%dline['byte_lo'],
     print "%2s"%dline['byte_hi'],
-    print "%20s"%dline['label'],
+    label = ''
+    if dline['label'] != '':
+        label = dline['label']+':'
+    print "%20s"%label,
     print "%-4s"%dline['mnemonic'],
     print "%-24s"%dline['operand'],
     print dline['comment']
-print labels
+
 # x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
-#num = 0
-#for byte in byte_array:
-#    if num == 7:
-#        print 'x"'+byte+'",'
-#        num = 0
-#    else:
-#        print 'x"'+byte+'",',
-#        num += 1
+num = 0
+idx = 0
+address = 0
+line = ''
+for byte in byte_array:
+    idx += 1
+    comma = ','
+    if idx == 256:
+        comma = ' '
+    line += 'x"'+byte+'"'+comma
+    if num == 7:
+        print ' '*8+line,'--',"%04X"%address
+        address += 8
+        line = ''
+        num = 0
+    else:
+        num += 1
 

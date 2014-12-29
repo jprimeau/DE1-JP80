@@ -254,12 +254,13 @@ begin
             end if;
             
         when read_addr16b_7 =>
-            ns <= opcode_fetch_1;
             con(Et) <= '1';
             if opcode = "11000011" or (op76 = "11" and op20 = "010") then -- JXX address(16b)
                 con(Lpc) <= '1';
+                ns <= opcode_fetch_1;
             elsif op76 = "00" and op20 = "001" then -- LXI Rp,data(16b)
                 con(DD(op54)) <= '1';
+                ns <= opcode_fetch_1;
             elsif opcode = "00110010" then  -- STA address(16b)
                 con(Laddr) <= '1';
                 ns <= acc_to_memio_1;

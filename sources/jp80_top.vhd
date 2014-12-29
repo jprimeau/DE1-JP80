@@ -87,71 +87,38 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"3E",x"99",x"06",x"F0",x"A0",x"D3",x"00",x"3E", -- 00H
-        x"99",x"B0",x"D3",x"01",x"3E",x"00",x"D3",x"00", -- 08H
-        x"D3",x"01",x"76",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 18H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 20H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 28H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 30H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 38H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 40H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 48H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 50H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 58H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 60H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 68H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 70H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 78H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 80H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 88H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 90H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 98H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A8H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B8H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C8H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
-        
---        x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 08H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 10H
---        x"DB",x"00",x"6F",x"DB",x"01",x"67",x"E9",x"DB", -- 18H
---        x"00",x"D3",x"00",x"DB",x"01",x"D3",x"01",x"C3", -- 20H
---        x"1F",x"00",x"3E",x"00",x"D3",x"00",x"3C",x"C3", -- 28H
---        x"2C",x"00",x"2E",x"00",x"26",x"00",x"3E",x"10", -- 30H
---        x"3D",x"C2",x"38",x"00",x"23",x"7D",x"D3",x"00", -- 38H
---        x"7C",x"D3",x"01",x"C3",x"36",x"00",x"FF",x"FF", -- 40H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 48H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 50H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 58H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 60H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 68H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 70H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 78H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 80H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 88H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 90H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 98H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- A8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- B8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- C8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- D8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- E8H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- F0H
---        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- F8H
+        x"C3",x"41",x"00",x"3E",x"01",x"FE",x"01",x"CD", -- 0000
+        x"3B",x"00",x"06",x"02",x"78",x"FE",x"02",x"CD", -- 0008
+        x"3B",x"00",x"0E",x"04",x"79",x"FE",x"04",x"CD", -- 0010
+        x"3B",x"00",x"16",x"08",x"7A",x"FE",x"08",x"CD", -- 0018
+        x"3B",x"00",x"1E",x"10",x"7B",x"FE",x"10",x"CD", -- 0020
+        x"3B",x"00",x"26",x"20",x"7C",x"FE",x"20",x"CD", -- 0028
+        x"3B",x"00",x"2E",x"40",x"7D",x"FE",x"40",x"CD", -- 0030
+        x"3B",x"00",x"76",x"C2",x"41",x"00",x"D3",x"00", -- 0038
+        x"C9",x"3E",x"00",x"D3",x"00",x"3E",x"E0",x"D3", -- 0040
+        x"01",x"76",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0048
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0050
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0058
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0060
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0068
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0070
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0078
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0080
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0088
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0090
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0098
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00A0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00A8
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00B0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00B8
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00C0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00C8
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00D0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00D8
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00E0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00E8
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00F0
+        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF"  -- 00F8
     );
     
     signal cpu_data_in      : t_data;
@@ -163,21 +130,21 @@ architecture behv of jp80_top is
     signal cpu_reqio        : t_wire;
     
     -- BEGIN: SIMULATION ONLY
---    signal cpu_con          : t_control := (others => '0');
---    signal cpu_addr_bus     : t_address;
---    signal cpu_data_bus     : t_data;
---    signal cpu_pc           : t_address;
---    signal cpu_acc          : t_data;
---    signal cpu_bc           : t_16bit;
---    signal cpu_de           : t_16bit;
---    signal cpu_hl           : t_16bit;
---    signal cpu_sp           : t_16bit;
---    signal cpu_flag         : t_8bit;
---    signal cpu_ir           : t_8bit;
---    signal cpu_tmp          : t_16bit;
---    signal cpu_alu_a        : t_data;
---    signal cpu_alu_b        : t_data;
---    signal cpu_alu          : t_data;
+    signal cpu_con          : t_control := (others => '0');
+    signal cpu_addr_bus     : t_address;
+    signal cpu_data_bus     : t_data;
+    signal cpu_pc           : t_address;
+    signal cpu_acc          : t_data;
+    signal cpu_bc           : t_16bit;
+    signal cpu_de           : t_16bit;
+    signal cpu_hl           : t_16bit;
+    signal cpu_sp           : t_16bit;
+    signal cpu_flag         : t_8bit;
+    signal cpu_ir           : t_8bit;
+    signal cpu_tmp          : t_16bit;
+    signal cpu_alu_a        : t_data;
+    signal cpu_alu_b        : t_data;
+    signal cpu_alu          : t_data;
     -- END: SIMULATION ONLY
     
 begin

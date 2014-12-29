@@ -62,4 +62,60 @@ Exit_1:			MOV 	A,H			;display the address
 			MOV 	A,L			;should be 4K (cycled around to ROM)
 			OUT 	0			;any other value means bad RAM
 			JMP 	Memory_test		;do it again (use a different bit pattern)
-
+Peek:			IN 	0			;Get low byte
+			MOV 	L,A			;Put in reg L
+			IN 	1			;Get hi byte
+			MOV 	H,A			;Put in reg H
+			MOV 	A,M			;Get byte from memory
+			OUT 	0			;Display on port 0 LEDs
+			JMP 	Peek			;Do it again
+Poke:			MVI 	A,000h			;Clear output port LEDs
+			OUT 	0
+			OUT 	1
+Loop_9:			IN 	1			;Look for switch closure
+			ANI 	001h
+			JZ 	Loop_9
+			CALL 	debounce
+			MVI 	A,0ffh			;Light port 1 LEDs
+			OUT 	1
+			IN 	0			;Get hi byte
+			MOV 	H,A			;Put in reg H
+Loop_11:		IN 	1			;Look for switch open
+			ANI 	001h
+			JNZ 	Loop_11
+			CALL 	debounce
+			MOV 	A,H			;Show hi byte on port 1
+			OUT 	1
+Loop_13:		IN 	1			;Look for switch closure
+			ANI 	001h
+			JZ 	Loop_13
+			CALL 	debounce
+			MVI 	A,0ffh			;Light port 0 LEDs
+			OUT 	0
+			IN 	0			;Get lo byte
+			MOV 	L,A			;Put in reg L
+Loop_15:		IN 	1			;Look for switch open
+			ANI 	001h
+			JNZ 	Loop_15
+			CALL 	debounce
+			MOV 	A,L			;Show lo byte on port 0
+			OUT 	0
+Loop_17:		IN 	1			;Look for switch closure
+			ANI 	001h
+			JZ 	Loop_17
+			CALL 	debounce
+			IN 	0			;Get byte to load
+			MOV 	M,A			;Store in memory
+Loop_19:		IN 	1			;Look for switch open
+			ANI 	001h
+			JNZ 	Loop_19
+			CALL 	debounce
+			JMP 	Poke			;Start over
+;
+;Subroutine for a switch debounce delay
+debounce:		MVI 	A,010h			;Outer loop
+debounce_loop:		MVI	B,0ffh			;Inner loop
+			NOP;djnz 	$+0			;Loop here until B reg is zero
+			DCR 	A
+			JNZ 	debounce_loop
+			RET

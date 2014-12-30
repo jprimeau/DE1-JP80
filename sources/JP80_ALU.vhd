@@ -1,3 +1,9 @@
+-- DESCRIPTION: JP-80 - ALU
+-- AUTHOR: Jonathan Primeau
+
+-- TODO:
+--  o RLC, RRC, RAL, RAR, DAA
+
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;

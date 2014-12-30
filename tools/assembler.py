@@ -87,13 +87,13 @@ def ExtractOperandLabel(operand):
             return label
     return ''
 
-def ExtractOperandRegister(operand, codes):
-    regs = codes.keys()
+def ExtractOperandRegister(operand, regs_dict):
+    regs = regs_dict.keys()
     comma = ''
     for reg in regs:
         m = re.search(reg, operand)
         if m:
-            mcode = codes[reg]
+            mcode = regs_dict[reg]
             return (reg,mcode)
     return ('','')
 
@@ -107,7 +107,7 @@ def ExtractOperandValue(operand, vtype):
         if vtype == 'D' or vtype == 'P' or vtype == 'R,D':
             tmp = "%02X" % int(operand, 16)
             lo = tmp[0:2]
-        elif vtype == 'Rp,DD':
+        elif vtype == 'Rp,DD' or vtype == 'X':
             tmp = "%04X" % int(operand, 16)
             lo = tmp[0:2]
             hi = tmp[2:4]     
@@ -123,6 +123,7 @@ labels = ExtractLabels(f)
 f.seek(0)
 
 for line in f:
+    org = 0
     label = ''
     comment = ''
     mnemonic = ''
@@ -132,6 +133,7 @@ for line in f:
     operand = ''
     byte_lo = ''
     byte_hi = ''
+    bytes = []
     dline = {}
 
     (label,line) = ExtractLabelCleanLine(line)
@@ -139,7 +141,8 @@ for line in f:
     (mnemonic,line) = ExtractMnemonicCleanLine(line, mnemonics)
     if mnemonic != '':
         (mcode,mtype,msize) = MnemonicInfo(mnemonic, grammar)
-        operand = re.sub('\s*', '', line)
+        if mtype != "AD":
+            operand = re.sub('\s*', '', line)
         if mtype == 'R,R' or mtype == 'Rp' or mtype == 'R':
             (reg,mcode) = ExtractOperandRegister(operand, mcode)
         elif mtype == 'A' or mtype == 'D' or mtype == 'P':
@@ -153,15 +156,30 @@ for line in f:
             lbl = ExtractOperandLabel(t_operand)
             if lbl == '':
                 (byte_lo,byte_hi) = ExtractOperandValue(t_operand, mtype)
+        elif mtype == "AD":
+            operand = re.sub('^\s*', '', line)
+            operand = re.sub('\s*$', '', operand)
+            if mnemonic == 'org':
+                lo = hi = 0
+                (lo,hi) = ExtractOperandValue(operand, 'X')
+                org = int(lo+hi, 16)
+            pass
 
-    dline['line'] = "%05d"%num
+    if mcode:
+        bytes.append(mcode)
+    if byte_lo:
+        bytes.append(byte_lo)
+    if byte_hi:
+        bytes.append(byte_hi)
+
+    dline['line'] = "%04d"%num
     dline['address'] = "%04X"%address
     dline['label'] = label
     dline['mnemonic'] = mnemonic
+    dline['type'] = mtype
+    dline['size'] = msize
     dline['operand'] = operand
-    dline['code'] = mcode
-    dline['byte_lo'] = byte_lo
-    dline['byte_hi'] = byte_hi
+    dline['bytes'] = bytes
     dline['comment'] = comment
     dlines.append(dline)
 
@@ -169,7 +187,10 @@ for line in f:
         labels[label] = "%04X"%address
     
     num += 1
-    address += msize
+    if org == 0:
+        address += msize
+    else:
+        address = org
 
 #sys.exit(0)
 
@@ -179,22 +200,23 @@ for dline in dlines:
     # Replace label in operand by value
     label = re.sub('.*,\s*', '', dline['operand'])
     if label in labels:
-        dline['byte_lo'] = labels[label][2:4]
-        dline['byte_hi'] = labels[label][0:2]
-    if dline['code']:
-        byte_array[idx] = dline['code']
+        if dline['type'] == 'A':
+            dline['bytes'].append(labels[label][2:4])
+            dline['bytes'].append(labels[label][0:2])
+        elif dline['type'] == 'D' or dline['type'] == 'P' or dline['type'] == 'R,D':
+            dline['bytes'].append(labels[label][0:2])
+        elif dline['type'] == 'Rp,DD':
+
+            dline['bytes'].append(labels[label][0:2])
+            dline['bytes'].append(labels[label][2:4])
+    for byte in dline['bytes']:
+        byte_array[idx] = byte
         idx += 1
-    if dline['byte_lo']:
-        byte_array[idx] = dline['byte_lo']
-        idx += 1
-    if dline['byte_hi']:
-        byte_array[idx] = dline['byte_hi']
-        idx += 1
-    print "%5s"%dline['line'],
+    print "%4s"%dline['line'],
     print "%4s"%dline['address'],
-    print "%2s"%dline['code'],
-    print "%2s"%dline['byte_lo'],
-    print "%2s"%dline['byte_hi'],
+    for byte in dline['bytes']:
+        print "%2s"%byte,
+    print ' '*3*(3-len(dline['bytes'])),
     label = ''
     if dline['label'] != '':
         label = dline['label']+':'
@@ -222,3 +244,4 @@ for byte in byte_array:
     else:
         num += 1
 
+#["%02X"%ord(c) for c in str]

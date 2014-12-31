@@ -1,6 +1,7 @@
-		org	0010H
-LABEL:		defm	"Hellow, world!",0	;comment
-LABEL2:		defw	CHECK,ERROR,0		;comment
+		org	0000H
+LABEL:		defm	"Hello, world!"		;comment
+LABEL2:		defw	CHECK, ERROR,0		;comment
+LABEL3:		defm	AA,0,7
 		MVI	A,01H
 		CPI	01H
 		CALL	CHECK

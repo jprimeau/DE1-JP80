@@ -87,15 +87,15 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"21",x"10",x"00",x"CD",x"07",x"00",x"76",x"7E", -- 0000
-        x"A7",x"C8",x"D3",x"00",x"23",x"C3",x"07",x"00", -- 0008
-        x"48",x"65",x"6C",x"6C",x"6F",x"00",x"FF",x"FF", -- 0010
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0018
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0020
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0028
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0030
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0038
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0040
+        x"31",x"FF",x"00",x"21",x"34",x"00",x"CD",x"0D", -- 0000
+        x"00",x"C3",x"03",x"00",x"76",x"DB",x"03",x"E6", -- 0008
+        x"01",x"C2",x"0D",x"00",x"7E",x"A7",x"C8",x"D3", -- 0010
+        x"02",x"23",x"C3",x"0D",x"00",x"3E",x"0D",x"CD", -- 0018
+        x"28",x"00",x"3E",x"0A",x"CD",x"28",x"00",x"C9", -- 0020
+        x"47",x"DB",x"03",x"E6",x"01",x"C2",x"0D",x"00", -- 0028
+        x"78",x"D3",x"02",x"C9",x"48",x"65",x"6C",x"6C", -- 0030
+        x"6F",x"2C",x"20",x"77",x"6F",x"72",x"6C",x"64", -- 0038
+        x"21",x"20",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0040
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0048
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0050
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0058
@@ -130,21 +130,21 @@ architecture behv of jp80_top is
     signal cpu_reqio        : t_wire;
     
     -- BEGIN: SIMULATION ONLY
-    signal cpu_con          : t_control := (others => '0');
-    signal cpu_addr_bus     : t_address;
-    signal cpu_data_bus     : t_data;
-    signal cpu_pc           : t_address;
-    signal cpu_acc          : t_data;
-    signal cpu_bc           : t_16bit;
-    signal cpu_de           : t_16bit;
-    signal cpu_hl           : t_16bit;
-    signal cpu_sp           : t_16bit;
-    signal cpu_flag         : t_8bit;
-    signal cpu_ir           : t_8bit;
-    signal cpu_tmp          : t_16bit;
-    signal cpu_alu_a        : t_data;
-    signal cpu_alu_b        : t_data;
-    signal cpu_alu          : t_data;
+--    signal cpu_con          : t_control := (others => '0');
+--    signal cpu_addr_bus     : t_address;
+--    signal cpu_data_bus     : t_data;
+--    signal cpu_pc           : t_address;
+--    signal cpu_acc          : t_data;
+--    signal cpu_bc           : t_16bit;
+--    signal cpu_de           : t_16bit;
+--    signal cpu_hl           : t_16bit;
+--    signal cpu_sp           : t_16bit;
+--    signal cpu_flag         : t_8bit;
+--    signal cpu_ir           : t_8bit;
+--    signal cpu_tmp          : t_16bit;
+--    signal cpu_alu_a        : t_data;
+--    signal cpu_alu_b        : t_data;
+--    signal cpu_alu          : t_data;
     -- END: SIMULATION ONLY
     
 begin

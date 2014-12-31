@@ -92,7 +92,7 @@ begin
     write_out   <= con(Wr);
     reqmem_out  <= not con(IO);
     reqio_out   <= con(IO);
-    DIN_reg     <= data_in;
+    --DIN_reg     <= data_in;
     
     -- BEGIN: SIMULATION ONLY
 --    con_out         <= con;
@@ -177,6 +177,8 @@ begin
             if con(Ldata) = '1' then
                 DOUT_reg <= data_bus;
             end if;
+        elsif clk'event and clk = '0' then
+            DIN_reg <= data_in;
         end if;
     end process DATA_register;
     data_bus <= DIN_reg when con(Edata) = '1' else (others => 'Z');
@@ -365,7 +367,7 @@ begin
     begin
         if clk'event and clk = '0' then
             if con(Lu) = '1' then
-                if opcode(7 downto 6) = "10" then
+                if opcode(7 downto 6) = "10" or (opcode(7 downto 6) = "11" and opcode(2 downto 0) = "110") then
                     alu_to_reg <= (others=>'1');    -- Accumulator
                 else
                     alu_to_reg <= "1" & opcode(5 downto 3);

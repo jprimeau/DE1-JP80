@@ -510,6 +510,7 @@ set_global_assignment -name VHDL_FILE JP80_ALU.vhd
 set_global_assignment -name VECTOR_WAVEFORM_FILE JP80_ALU.vwf
 set_global_assignment -name VECTOR_WAVEFORM_FILE JP80_TOP.vwf
 set_global_assignment -name VHDL_FILE JP80_MCODE.vhd
+set_global_assignment -name VHDL_FILE UART_TX.vhd
 set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE "/home/jprimeau/Projects/DE1-JP80/sources/JP80_TOP.vwf"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_COLOR 2147039 -section_id Top

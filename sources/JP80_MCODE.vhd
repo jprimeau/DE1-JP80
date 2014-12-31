@@ -308,11 +308,11 @@ begin
             con(Wr) <= '1';
             ns <= opcode_fetch_1;
             
-        when push_1 =>
+        when push_5 =>
             con(Dsp) <= '1';        -- Decrement Stack Pointer
             ns <= push_2;
             
-        when push_2 =>
+        when push_1 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
 --            if op54 = "11" then
@@ -324,14 +324,14 @@ begin
                 con(SSS(op54&"0")) <= '1';
             end if;
             con(Ldata) <= '1';
+            ns <= push_2;
+                    
+        when push_2 =>
+            con(Dsp) <= '1';        -- Decrement Stack Pointer
+            con(Wr) <= '1';         -- Write enable
             ns <= push_3;
                     
         when push_3 =>
-            con(Dsp) <= '1';        -- Decrement Stack Pointer
-            con(Wr) <= '1';         -- Write enable
-            ns <= push_4;
-                    
-        when push_4 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
             if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
@@ -340,9 +340,10 @@ begin
                 con(SSS(op54&"1")) <= '1';
             end if;
             con(Ldata) <= '1';
-            ns <= push_5;
+            ns <= push_4;
             
-        when push_5 =>
+        when push_4 =>
+            con(Dsp) <= '1';
             con(Wr) <= '1';
             if opcode = "11001101" or (op76 = "11" and op20 = "100") then  -- CXXX address(16b)
                 con(Et) <= '1';
@@ -351,11 +352,15 @@ begin
             ns <= opcode_fetch_1;
             
         when pop_1 =>
+            con(Isp) <= '1';
+            ns <= pop_2;
+            
+        when pop_2 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
-            ns <= pop_2;
+            ns <= pop_3;
 
-        when pop_2 =>
+        when pop_3 =>
             con(Edata) <= '1';
 --            if op54 = "11" then
 --                con(Lflg) <= '1';
@@ -366,14 +371,14 @@ begin
                 con(DDD(op54&"1")) <= '1';
             end if;
             con(Isp) <= '1';
-            ns <= pop_3;
+            ns <= pop_4;
                     
-        when pop_3 =>
+        when pop_4 =>
             con(Esp) <= '1';
             con(Laddr) <= '1';
-            ns <= pop_4;
+            ns <= pop_5;
             
-        when pop_4 =>
+        when pop_5 =>
             con(Edata) <= '1';
             if opcode = "11001001" or (op76 = "11" and op20 = "000") then -- RXX
                 con(LpcH) <= '1';

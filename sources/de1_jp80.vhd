@@ -21,9 +21,9 @@ entity de1_jp80 is
 --        SRAM_CE_N   : out std_logic;
 --        SRAM_WE_N   : out std_logic; 
         
-        -- ***** RS-232
---        UART_RXD    : in std_logic;
---        UART_TXD    : out std_logic;
+        -- ***** UART / RS-232
+        UART_RXD    : in std_logic;
+        UART_TXD    : out std_logic;
         
         -- ***** Switches and buttons
         SW          : in std_logic_vector(9 downto 0);
@@ -44,14 +44,16 @@ end de1_jp80;
 
 architecture rtl of de1_jp80 is
     
-    signal clk_1hz          : std_logic;
-    signal counter_1hz      : std_logic_vector(25 downto 0);
+--    signal clk_1hz          : std_logic;
+--    signal counter_1hz      : std_logic_vector(25 downto 0);
     signal clk_10hz         : std_logic;
     signal counter_10hz     : std_logic_vector(25 downto 0);
-    signal clk_100hz        : std_logic;
-    signal counter_100hz    : std_logic_vector(25 downto 0);
-    signal clk_1khz         : std_logic;
-    signal counter_1khz     : std_logic_vector(25 downto 0);
+--    signal clk_100hz        : std_logic;
+--    signal counter_100hz    : std_logic_vector(25 downto 0);
+--    signal clk_1khz         : std_logic;
+--    signal counter_1khz     : std_logic_vector(25 downto 0);
+    signal clk_1MHz         : std_logic;
+    signal counter_1MHz     : std_logic_vector(25 downto 0);
 
     signal reset            : std_logic;
     signal cpu_clk          : std_logic;
@@ -61,16 +63,36 @@ architecture rtl of de1_jp80 is
     signal data_in          : std_logic_vector(7 downto 0);
     signal data_out         : std_logic_vector(7 downto 0);
     
+    signal sw_port          : std_logic := '1';
+    signal port_store       : std_logic := '0';
+    
     signal in_port_0_en     : std_logic := '1';
+    signal in_port_1_en     : std_logic := '0';
+    signal in_port_2_en     : std_logic := '0';
+    signal in_port_3_en     : std_logic := '0';
     
     signal in_port_0        : std_logic_vector(7 downto 0) := x"00";
     signal in_port_1        : std_logic_vector(7 downto 0) := x"00";
+    signal in_port_2        : std_logic_vector(7 downto 0) := x"00";
+    signal in_port_3        : std_logic_vector(7 downto 0) := x"00";
+    
+    signal out_port_2_en    : std_logic := '0';
+    signal out_port_3_en    : std_logic := '0';
+    
     signal out_port_0       : std_logic_vector(7 downto 0) := x"00";
     signal out_port_1       : std_logic_vector(7 downto 0) := x"00";
+    signal out_port_2       : std_logic_vector(7 downto 0) := x"00";
+    signal out_port_3       : std_logic_vector(7 downto 0) := x"00";
+
+    signal rd_request       : std_logic := '0';
+    signal wr_request       : std_logic := '0';
+    signal mem_request      : std_logic := '0';
+    signal io_request       : std_logic := '0';
     
-    signal in_port_store    : std_logic := '0';
-    signal out_port_wr      : std_logic := '0';
-    signal out_port_en      : std_logic := '0';
+    signal tx_start         : std_logic := '0';
+    signal tx_busy          : std_logic;
+    --signal rx_data          : std_logic_vector(7 downto 0);
+    --signal rx_busy          : std_logic;
 
 begin
 
@@ -80,26 +102,26 @@ begin
     LEDR(8) <=  cpu_clk;
     LEDR(7 downto 0) <= SW(7 downto 0);
     
-    LEDG(7) <= not in_port_0_en;
-    LEDG(6) <= in_port_0_en;
+    LEDG(7) <= not sw_port;
+    LEDG(6) <= sw_port;
     
-    in_port_store <= not KEY(2);
-    LEDG(5) <= in_port_store and not in_port_0_en;
-    LEDG(4) <= in_port_store and in_port_0_en;
+    port_store <= not KEY(2);
+    LEDG(5) <= port_store and not sw_port;
+    LEDG(4) <= port_store and sw_port;
     
-    cpu_clk <= clk_10hz when SW(8) = '0' else clk_1khz;
+    cpu_clk <= clk_10hz when SW(8) = '0' else clk_1MHz;
     
     process (KEY(3))
     begin
         if KEY(3)'event and KEY(3) = '0' then
-            in_port_0_en <= not in_port_0_en;
+            sw_port <= not sw_port;
         end if;
     end process;
     
-    process (in_port_store)
+    process (port_store)
     begin
-        if in_port_store'event and in_port_store = '1' then
-            if in_port_0_en = '1' then
+        if port_store'event and port_store = '1' then
+            if sw_port = '1' then
                 in_port_0 <= SW(7 downto 0);
             else
                 in_port_1 <= SW(7 downto 0);
@@ -107,25 +129,38 @@ begin
         end if;
     end process;
     
-    data_in <= in_port_0 when in_port_0_en = '1' else in_port_1;
+    data_in <=  in_port_0 when in_port_0_en = '1' else 
+                in_port_1 when in_port_1_en = '1' else
+                in_port_2 when in_port_2_en = '1' else
+                in_port_3 when in_port_3_en = '1';
+    
+    TX: entity work.UART_TX
+    port map
+    (
+        clk     => cpu_clk,
+        start   => out_port_2_en,
+        data    => out_port_2,
+        busy    => in_port_3(0),
+        tx_line => UART_TXD
+    );
 
     -- Generate a 1Hz clock.
-    process(CLOCK_50)
-    begin
-        if CLOCK_50'event and CLOCK_50 = '1' then
-            if reset = '1' then
-                clk_1hz <= '0';
-                counter_1hz <= (others => '0');
-            else
-                if conv_integer(counter_1hz) = 25000000 then
-                    counter_1hz <= (others => '0');
-                    clk_1hz <= not clk_1hz;
-                else
-                    counter_1hz <= counter_1hz + 1;
-                end if;
-            end if;
-        end if;
-    end process;
+--    process(CLOCK_50)
+--    begin
+--        if CLOCK_50'event and CLOCK_50 = '1' then
+--            if reset = '1' then
+--                clk_1hz <= '0';
+--                counter_1hz <= (others => '0');
+--            else
+--                if conv_integer(counter_1hz) = 25000000 then
+--                    counter_1hz <= (others => '0');
+--                    clk_1hz <= not clk_1hz;
+--                else
+--                    counter_1hz <= counter_1hz + 1;
+--                end if;
+--            end if;
+--        end if;
+--    end process;
     
     -- Generate a 10Hz clock.
     process(CLOCK_50)
@@ -146,36 +181,54 @@ begin
     end process;
     
     -- Generate a 100Hz clock.
-    process(CLOCK_50)
-    begin
-        if CLOCK_50'event and CLOCK_50 = '1' then
-            if reset = '1' then
-                clk_100hz <= '0';
-                counter_100hz <= (others => '0');
-            else
-                if conv_integer(counter_100hz) = 250000 then
-                    counter_100hz <= (others => '0');
-                    clk_100hz <= not clk_100hz;
-                else
-                    counter_100hz <= counter_100hz + 1;
-                end if;
-            end if;
-        end if;
-    end process;
+--    process(CLOCK_50)
+--    begin
+--        if CLOCK_50'event and CLOCK_50 = '1' then
+--            if reset = '1' then
+--                clk_100hz <= '0';
+--                counter_100hz <= (others => '0');
+--            else
+--                if conv_integer(counter_100hz) = 250000 then
+--                    counter_100hz <= (others => '0');
+--                    clk_100hz <= not clk_100hz;
+--                else
+--                    counter_100hz <= counter_100hz + 1;
+--                end if;
+--            end if;
+--        end if;
+--    end process;
     
     -- Generate a 1KHz clock.
+--    process(CLOCK_50)
+--    begin
+--        if CLOCK_50'event and CLOCK_50 = '1' then
+--            if reset = '1' then
+--                clk_1khz <= '0';
+--                counter_1khz <= (others => '0');
+--            else
+--                if conv_integer(counter_1khz) = 25000 then
+--                    counter_1khz <= (others => '0');
+--                    clk_1khz <= not clk_1khz;
+--                else
+--                    counter_1khz <= counter_1khz + 1;
+--                end if;
+--            end if;
+--        end if;
+--    end process;
+    
+    -- Generate a 1MHz clock.
     process(CLOCK_50)
     begin
         if CLOCK_50'event and CLOCK_50 = '1' then
             if reset = '1' then
-                clk_1khz <= '0';
-                counter_1khz <= (others => '0');
+                clk_1MHz <= '0';
+                counter_1MHz <= (others => '0');
             else
-                if conv_integer(counter_1khz) = 25000 then
-                    counter_1khz <= (others => '0');
-                    clk_1khz <= not clk_1khz;
+                if conv_integer(counter_1MHz) = 25 then
+                    counter_1MHz <= (others => '0');
+                    clk_1MHz <= not clk_1MHz;
                 else
-                    counter_1khz <= counter_1khz + 1;
+                    counter_1MHz <= counter_1MHz + 1;
                 end if;
             end if;
         end if;
@@ -184,12 +237,35 @@ begin
     process (cpu_clk)
     begin
         if cpu_clk'event and cpu_clk = '1' then
-            if out_port_en = '1' and out_port_wr = '1' then
+            if io_request = '1' and wr_request = '1' then
                 if addr_out(7 downto 0) = x"00" then
                     out_port_0 <= data_out;
                 elsif addr_out(7 downto 0) = x"01" then
                     out_port_1 <= data_out;
+                elsif addr_out(7 downto 0) = x"02" then
+                    out_port_2 <= data_out;
+                    out_port_2_en <= '1';
+                elsif addr_out(7 downto 0) = x"03" then
+                    out_port_3 <= data_out;
+                    out_port_3_en <= '1';
                 end if;
+            elsif io_request = '1' and rd_request = '1' then
+                if addr_out(7 downto 0) = x"00" then
+                    in_port_0_en <= '1';
+                elsif addr_out(7 downto 0) = x"01" then
+                    in_port_1_en <= '1';
+                elsif addr_out(7 downto 0) = x"02" then
+                    in_port_2_en <= '1';
+                elsif addr_out(7 downto 0) = x"03" then
+                    in_port_3_en <= '1';
+                end if;
+            else
+                out_port_2_en <= '0';
+                out_port_3_en <= '0';
+                in_port_0_en <= '0';
+                in_port_1_en <= '0';
+                in_port_2_en <= '0';
+                in_port_3_en <= '0';
             end if;
         end if;
     end process;
@@ -229,10 +305,10 @@ begin
         addr_out    => addr_out,
         data_in     => data_in,
         data_out    => data_out,
-        read_out    => open,
-        write_out   => out_port_wr,
-        reqmem_out  => open,
-        reqio_out   => out_port_en
+        read_out    => rd_request,
+        write_out   => wr_request,
+        reqmem_out  => mem_request,
+        reqio_out   => io_request
     );
 
 end architecture rtl;

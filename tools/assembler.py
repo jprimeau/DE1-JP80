@@ -100,7 +100,7 @@ def ExtractOperandRegister(operand, regs_dict):
 def ExtractOperandValue(operand, vtype):
     hi = ''
     lo = ''
-    m = re.search('[0-9A-Fa-f]{1,4}(h|H)?', operand)
+    m = re.search('[0-9][0-9A-Fa-f]{0,4}(h|H)?', operand)
     if m:
         if operand[-1:] == 'h' or operand[-1:] == 'H':
             operand = operand[:-1]
@@ -163,10 +163,25 @@ for line in f:
             elif mnemonic == 'defw':
                 msize = len(re.split(',', operand)) * 2
             elif mnemonic == 'defm':
-                msg = operand[1:-1]
-                bytes.extend(["%02X"%ord(c) for c in msg])
-                bytes.append('00')
-                msize = len(bytes)
+                quote = 0
+                items = []
+                item = ''
+                for c in operand:
+                    if c == '"':
+                        quote = not quote
+                        continue
+                    if not quote and c == ',':
+                        items.append(item)
+                        item = ''
+                        continue
+                    item += c
+                items.append(item)
+                for item in items:
+                    (hi,lo) = ExtractOperandValue(item, 'D')
+                    if lo != '':
+                        bytes.append(lo)                        
+                    else:
+                        bytes.extend(["%02X"%ord(c) for c in item])
 
     if mcode:
         bytes.append(mcode)
@@ -237,9 +252,6 @@ for dline in dlines:
                 dline['bytes'].append(labels[label][0:2])
             elif dline['type'] == 'D' or dline['type'] == 'R,D':
                 dline['bytes'].append(labels[label][0:2])
-#            elif dline['type'] == 'Rp,DD':
-#                dline['bytes'].append(labels[label][0:2])
-#                dline['bytes'].append(labels[label][2:4])
 
     for byte in dline['bytes']:
         byte_array[idx] = byte
@@ -266,4 +278,3 @@ for byte in byte_array:
     else:
         num += 1
 
-#["%02X"%ord(c) for c in str]

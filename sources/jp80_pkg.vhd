@@ -104,7 +104,7 @@ package jp80_pkg is
         acc_to_memio_1, acc_to_memio_2,
         x1, x2, x3, y1, y2, y3, y4,
         push_1, push_2, push_3, push_4, push_5,
-        pop_1, pop_2, pop_3, pop_4,
+        pop_1, pop_2, pop_3, pop_4, pop_5,
         data_to_reg, mem_write,
         decode_instruction
     );

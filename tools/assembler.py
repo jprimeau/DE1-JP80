@@ -15,7 +15,7 @@ address = 0
 labels = {}
 dlines = []
 
-f = open('cpu_self_test.asm', 'r')
+f = open('monitor.asm', 'r')
 
 def ExtractLabel(line):
     sc = re.split(';', line)
@@ -203,13 +203,16 @@ def PrintListLine(line):
     for byte in line['bytes']:
         print "%2s"%byte,
     print ' '*3*(3-len(line['bytes'])),
-    label = ''
-    if line['label'] != '':
-        label = line['label']+':'
-    print "%20s"%label,
-    print "%-4s"%line['mnemonic'],
-    print "%-24s"%line['operand'],
-    print line['comment']
+    if not line['label'] and not line['mnemonic'] and line['comment']:
+        print line['comment']
+    else:
+        label = ''
+        if line['label'] != '':
+            label = line['label']+':'
+        print "%-20s"%label,
+        print "%-4s"%line['mnemonic'],
+        print "%-24s"%line['operand'],
+        print line['comment']
 
 byte_array = ['FF']*256
 idx = 0
@@ -229,14 +232,14 @@ for dline in dlines:
     else:
         label = re.sub('.*,\s*', '', dline['operand'])
         if label in labels:
-            if dline['type'] == 'A':
+            if dline['type'] == 'A' or dline['type'] == 'Rp,DD':
                 dline['bytes'].append(labels[label][2:4])
                 dline['bytes'].append(labels[label][0:2])
             elif dline['type'] == 'D' or dline['type'] == 'R,D':
                 dline['bytes'].append(labels[label][0:2])
-            elif dline['type'] == 'Rp,DD':
-                dline['bytes'].append(labels[label][0:2])
-                dline['bytes'].append(labels[label][2:4])
+#            elif dline['type'] == 'Rp,DD':
+#                dline['bytes'].append(labels[label][0:2])
+#                dline['bytes'].append(labels[label][2:4])
 
     for byte in dline['bytes']:
         byte_array[idx] = byte

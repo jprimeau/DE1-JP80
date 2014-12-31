@@ -104,17 +104,17 @@ def ExtractOperandValue(operand, vtype):
     if m:
         if operand[-1:] == 'h' or operand[-1:] == 'H':
             operand = operand[:-1]
-        if vtype == 'D' or vtype == 'P' or vtype == 'R,D':
+        if vtype == 'D':
             tmp = "%02X" % int(operand, 16)
             lo = tmp[0:2]
-        elif vtype == 'Rp,DD' or vtype == 'X':
+        elif vtype == 'DD':
             tmp = "%04X" % int(operand, 16)
             lo = tmp[0:2]
-            hi = tmp[2:4]     
-        else:
+            hi = tmp[2:4]
+        elif vtype == 'A':
             tmp = "%04X" % int(operand, 16)
             lo = tmp[2:4]
-            hi = tmp[0:2]            
+            hi = tmp[0:2]        
     return (lo,hi)
 
 labels = ExtractLabels(f)
@@ -141,11 +141,11 @@ for line in f:
     (mnemonic,line) = ExtractMnemonicCleanLine(line, mnemonics)
     if mnemonic != '':
         (mcode,mtype,msize) = MnemonicInfo(mnemonic, grammar)
-        if mtype != "AD":
+        if mnemonic != "defm":
             operand = re.sub('\s*', '', line)
         if mtype == 'R,R' or mtype == 'Rp' or mtype == 'R':
             (reg,mcode) = ExtractOperandRegister(operand, mcode)
-        elif mtype == 'A' or mtype == 'D' or mtype == 'P':
+        elif mtype == 'A' or mtype == 'D':
             lbl = ExtractOperandLabel(operand)
             if lbl == '':
                 (byte_lo,byte_hi) = ExtractOperandValue(operand, mtype)
@@ -155,15 +155,17 @@ for line in f:
             t_operand = re.sub(reg+',', '', operand)
             lbl = ExtractOperandLabel(t_operand)
             if lbl == '':
-                (byte_lo,byte_hi) = ExtractOperandValue(t_operand, mtype)
+                t_type = re.split(',', mtype)[1]
+                (byte_lo,byte_hi) = ExtractOperandValue(t_operand, t_type)
         elif mtype == "AD":
             operand = re.sub('^\s*', '', line)
             operand = re.sub('\s*$', '', operand)
             if mnemonic == 'org':
                 lo = hi = 0
-                (lo,hi) = ExtractOperandValue(operand, 'X')
+                (lo,hi) = ExtractOperandValue(operand, 'DD')
                 org = int(lo+hi, 16)
-            pass
+            elif mnemonic == 'defw':
+                pass
 
     if mcode:
         bytes.append(mcode)

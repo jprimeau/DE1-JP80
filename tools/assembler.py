@@ -15,7 +15,7 @@ address = 0
 labels = {}
 dlines = []
 
-f = open('monitor.asm', 'r')
+f = open('monitor001.asm', 'r')
 
 def ExtractLabel(line):
     sc = re.split(';', line)
@@ -166,22 +166,25 @@ for line in f:
                 quote = 0
                 items = []
                 item = ''
+                is_string = False
                 for c in operand:
                     if c == '"':
                         quote = not quote
+                        is_string = True
                         continue
                     if not quote and c == ',':
-                        items.append(item)
+                        items.append([is_string,item])
+                        is_string = False
                         item = ''
                         continue
                     item += c
-                items.append(item)
+                items.append([is_string,item])
                 for item in items:
-                    (hi,lo) = ExtractOperandValue(item, 'D')
-                    if lo != '':
+                    if not item[0]:
+                        (hi,lo) = ExtractOperandValue(item[1], 'D')
                         bytes.append(lo)                        
                     else:
-                        bytes.extend(["%02X"%ord(c) for c in item])
+                        bytes.extend(["%02X"%ord(c) for c in item[1]])
 
     if mcode:
         bytes.append(mcode)

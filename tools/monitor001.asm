@@ -9,8 +9,8 @@ monitor_warm_start: LXI     H,monitor_message
 ;No error checking
 ;
 write_string:       IN      3                   ;read status
-                    ANI     001h                ;check TxRDY bit
-                    JNZ     write_string        ;loop if not set
+                    ANI 	001h                ;check TxRDY bit
+                    JNZ     write_string		;loop if not set
                     MOV     A,M                 ;get char from string
                     ANA     A                   ;check if 0
                     RZ                          ;yes, finished
@@ -32,8 +32,8 @@ write_newline:      MVI     A,00DH              ;ASCII carriage return character
 write_char:         MOV     B,A                 ;store char
 write_char_loop:    IN      3                   ;check if OK to send
                     ANI     001h                ;check TxRDY bit
-                    JNZ     write_string        ;loop if not set
+                    JNZ     write_char_loop     ;loop if not set
                     MOV     A,B                 ;get char back
                     OUT     2                   ;send to output
                     RET                         ;returns with char in a
-monitor_message:    defm    "JP-80 computer, ROM version 0.1",0
+monitor_message:    defm	"Hello, Stephane Lajoie!",0

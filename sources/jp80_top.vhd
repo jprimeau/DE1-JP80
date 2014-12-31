@@ -88,15 +88,15 @@ architecture behv of jp80_top is
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
         x"31",x"FF",x"00",x"21",x"34",x"00",x"CD",x"0D", -- 0000
-        x"00",x"C3",x"03",x"00",x"76",x"DB",x"03",x"E6", -- 0008
+        x"00",x"CD",x"1D",x"00",x"76",x"DB",x"03",x"E6", -- 0008
         x"01",x"C2",x"0D",x"00",x"7E",x"A7",x"C8",x"D3", -- 0010
         x"02",x"23",x"C3",x"0D",x"00",x"3E",x"0D",x"CD", -- 0018
         x"28",x"00",x"3E",x"0A",x"CD",x"28",x"00",x"C9", -- 0020
-        x"47",x"DB",x"03",x"E6",x"01",x"C2",x"0D",x"00", -- 0028
+        x"47",x"DB",x"03",x"E6",x"01",x"C2",x"29",x"00", -- 0028
         x"78",x"D3",x"02",x"C9",x"48",x"65",x"6C",x"6C", -- 0030
-        x"6F",x"2C",x"20",x"77",x"6F",x"72",x"6C",x"64", -- 0038
-        x"21",x"20",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0040
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0048
+        x"6F",x"2C",x"20",x"53",x"74",x"65",x"70",x"68", -- 0038
+        x"61",x"6E",x"65",x"20",x"4C",x"61",x"6A",x"6F", -- 0040
+        x"69",x"65",x"21",x"00",x"FF",x"FF",x"FF",x"FF", -- 0048
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0050
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0058
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0060

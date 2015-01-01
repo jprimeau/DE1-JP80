@@ -100,15 +100,18 @@ def ExtractOperandRegister(operand, regs_dict):
 def ExtractOperandValue(operand, vtype):
     hi = ''
     lo = ''
-    m = re.search('[0-9][0-9A-Fa-f]{0,4}(h|H)?', operand)
-    if m:
-        if operand[-1:] == 'h' or operand[-1:] == 'H':
+    m16 = re.search('[0-9][0-9A-Fa-f]{0,4}(h|H)', operand)
+    m10 = re.search('[0-9][0-9A-Fa-f]{0,5}', operand)
+    if m16 or m10:
+        base = 10
+        if m16 and (operand[-1:] == 'h' or operand[-1:] == 'H'):
             operand = operand[:-1]
+            base = 16
         if vtype == 'D':
-            tmp = "%02X" % int(operand, 16)
+            tmp = "%02X" % int(operand, base)
             lo = tmp[0:2]
         elif vtype == 'DD' or vtype == 'A':
-            tmp = "%04X" % int(operand, 16)
+            tmp = "%04X" % int(operand, base)
             hi = tmp[0:2]
             lo = tmp[2:4]
     return (hi,lo)
@@ -185,6 +188,9 @@ for line in f:
                         bytes.append(lo)                        
                     else:
                         bytes.extend(["%02X"%ord(c) for c in item[1]])
+            elif mnemonic == 'equ':
+                (lo,hi) = ExtractOperandValue(operand, 'A')
+                labels[label] = lo+hi
 
     if mcode:
         bytes.append(mcode)
@@ -205,7 +211,8 @@ for line in f:
     dlines.append(dline)
 
     if label != '':
-        labels[label] = "%04X"%address
+        if mnemonic != 'equ':
+            labels[label] = "%04X"%address
     
     num += 1
     if org == 0:
@@ -244,7 +251,7 @@ for dline in dlines:
                 dline['bytes'].append(labels[item][2:4])
                 dline['bytes'].append(labels[item][0:2])
             else:
-                (lo,hi) = ExtractOperandValue(item, 'A')
+                (hi,lo) = ExtractOperandValue(item, 'A')
                 dline['bytes'].append(lo)
                 dline['bytes'].append(hi)
     else:
@@ -261,6 +268,8 @@ for dline in dlines:
         idx += 1
 
     PrintListLine(dline)
+
+print labels
 
 # x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
 num = 0

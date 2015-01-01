@@ -100,7 +100,7 @@ begin
     
     LEDR(9) <= SW(9);
     LEDR(8) <=  cpu_clk;
-    LEDR(7 downto 0) <= SW(7 downto 0);
+    --LEDR(7 downto 0) <= SW(7 downto 0);
     
     LEDG(7) <= not sw_port;
     LEDG(6) <= sw_port;
@@ -142,6 +142,15 @@ begin
         data    => out_port_2,
         busy    => in_port_3(0),
         tx_line => UART_TXD
+    );
+    
+    RX: entity work.UART_RX
+    port map
+    (
+        clk     => cpu_clk,
+        rx_line => UART_RXD,
+        data    => in_port_2,
+        busy    => in_port_3(1)
     );
 
     -- Generate a 1Hz clock.

@@ -2,61 +2,59 @@ boot_loader_start:  LXI     H,prompt
                     CALL    write_string
 ;
 ;Subroutine to get a decimal string, return a word value
-;Calls decimal_string_to_word subroutine
+;Calls int_str_to_word subroutine
 ;
-decimal_entry:      LXI     H,0F00h
+read_integer:       LXI     H,buffer
                     CALL    get_line            ;returns with DE pointing to terminating zero
-                    LXI     H,0F00h
-                    CALL    decimal_string_to_word
-			        RNC                         ;no error, return with word in hl
-			;ld	hl,decimal_error_msg	;error, try again
-			;call	write_string
-			;jp	decimal_entry
+                    LXI     H,buffer
+                    CALL    int_str_to_word
+			        RET
 ;
 ;Subroutine to convert a decimal string to a word value
 ;Call with address of string in HL, pointer to end of string in DE
 ;Carry flag set if error (non-decimal char)
 ;Carry flag clear, word value in HL if no error.
-decimal_string_to_word:	ld	b,d
-			ld	c,e			;use BC as string pointer
-			ld	(current_location),hl	;store addr. of start of buffer in RAM word variable
-			ld	hl,000h			;starting value zero
-			ld	(current_value),hl
-			ld	hl,decimal_place_value	;pointer to values
-			ld	(value_pointer),hl
-decimal_next_char:	dec	bc			;next char in string (moving right to left)
-			ld	hl,(current_location)	;check if at end of decimal string
-			scf				;get ready to subtract de from buffer addr.
-			ccf				;set carry to zero (clear)
-			sbc	hl,bc			;keep going if bc > or = hl (buffer address)
-			jp	c,decimal_continue	;borrow means bc > hl
-			jp	z,decimal_continue	;z means bc = hl
-			ld	hl,(current_value)	;return if de < buffer address (no borrow)
-			scf				;get value back from RAM variable
-			ccf
-			ret				;return with carry clear, value in hl
-decimal_continue:	ld	a,(bc)			;next char in string (right to left)
-			sub	030h			;ASCII value of zero char
-			jp	m,decimal_error		;error if char value less than 030h
-			cp	00ah			;error if byte value > or = 10 decimal
-			jp	p,decimal_error		;a reg now has value of decimal numeral
-			ld	hl,(value_pointer)	;get value to add an put in de
-			ld	e,(hl)			;little-endian (low byte in low memory)
-			inc	hl
-			ld	d,(hl)
-			inc	hl			;hl now points to next value
-			ld	(value_pointer),hl
-			ld	hl,(current_value)	;get back current value
-decimal_add:		dec	a			;add loop to increase total value
-			jp	m,decimal_add_done	;end of multiplication
-			add	hl,de
-			jp	decimal_add
-decimal_add_done:	ld	(current_value),hl
-			jp	decimal_next_char
-decimal_error:		scf
-			ret
-			jp	decimal_add
-decimal_place_value:	defw	1,10,100,1000,10000
+;
+int_str_to_word:    MOV     B,D
+                    MOV     C,E                 ;use BC as string pointer
+                    SHLD    current_location    ;store addr. of start of buffer in RAM word variable
+                    LXI     H,000h              ;starting value zero
+                    SHLD    current_value
+                    LXI     H,int_place_value   ;pointer to values
+                    SHLD    value_pointer
+int_next_char:      DCX     B                   ;next char in string (moving right to left)
+                    LXI     H,current_location  ;check if at end of decimal string
+;			scf				;get ready to subtract de from buffer addr.
+;			ccf				;set carry to zero (clear)
+;			sbc	hl,bc			;keep going if bc > or = hl (buffer address)
+;			jp	c,decimal_continue	;borrow means bc > hl
+;			jp	z,decimal_continue	;z means bc = hl
+;			ld	hl,(current_value)	;return if de < buffer address (no borrow)
+;			scf				;get value back from RAM variable
+;			ccf
+;			ret				;return with carry clear, value in hl
+;decimal_continue:	ld	a,(bc)			;next char in string (right to left)
+;			sub	030h			;ASCII value of zero char
+;			jp	m,decimal_error		;error if char value less than 030h
+;			cp	00ah			;error if byte value > or = 10 decimal
+;			jp	p,decimal_error		;a reg now has value of decimal numeral
+;			ld	hl,(value_pointer)	;get value to add an put in de
+;			ld	e,(hl)			;little-endian (low byte in low memory)
+;			inc	hl
+;			ld	d,(hl)
+;			inc	hl			;hl now points to next value
+;			ld	(value_pointer),hl
+;			ld	hl,(current_value)	;get back current value
+;decimal_add:		dec	a			;add loop to increase total value
+;			jp	m,decimal_add_done	;end of multiplication
+;			add	hl,de
+;			jp	decimal_add
+;decimal_add_done:	ld	(current_value),hl
+;			jp	decimal_next_char
+;decimal_error:		scf
+;			ret
+;			jp	decimal_add
+int_place_value:    defw    1,10,100,1000,10000
 ;
 ;Subroutine to write a zero-terminated string to serial output
 ;Pass address of string in HL register
@@ -108,3 +106,7 @@ write_char_loop:    IN      3                   ;check if OK to send
                     OUT     2                   ;send to output
                     RET                         ;returns with char in a
 prompt:             defm    "> ",0
+current_location:   equ     0F80h               ;word variable in RAM
+value_pointer:      equ     0F84h               ;word variable in RAM
+current_value:      equ     0F86h               ;word variable in RAM
+buffer:             equ     0F88h               ;buffer in RAM -- up to stack area

@@ -133,24 +133,43 @@ begin
                 in_port_1 when in_port_1_en = '1' else
                 in_port_2 when in_port_2_en = '1' else
                 in_port_3 when in_port_3_en = '1';
+                
+--    UARTO: entity work.UART
+--    generic map
+--    (
+--        CLK_FREQ    => 1,
+--        BAUD_RATE   => 9600
+--    )
+--    port map
+--    (
+--        clk         => cpu_clk,
+--        rst         => reset,
+--        rx          => UART_RXD,
+--        tx          => UART_TXD,
+--        tx_req      => out_port_2_en,
+--        tx_ready    => in_port_3(0),
+--        tx_data     => out_port_2,
+--        rx_ready    => in_port_3(1),
+--        rx_data     => in_port_2
+--    );
     
     TX: entity work.UART_TX
     port map
     (
-        clk     => cpu_clk,
-        start   => out_port_2_en,
-        data    => out_port_2,
-        busy    => in_port_3(0),
+        clk => cpu_clk,
+        start => out_port_2_en,
+        data => out_port_2,
+        ready => in_port_3(0),
         tx_line => UART_TXD
     );
-    
     RX: entity work.UART_RX
     port map
     (
-        clk     => cpu_clk,
+        clk => cpu_clk,
         rx_line => UART_RXD,
-        data    => in_port_2,
-        busy    => in_port_3(1)
+        data => in_port_2,
+        ready => in_port_3(1),
+        done => out_port_3(1) and out_port_3_en
     );
 
     -- Generate a 1Hz clock.

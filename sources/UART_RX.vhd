@@ -8,7 +8,8 @@ entity UART_RX is
         clk     : in std_logic;
         rx_line : in std_logic;
         data    : out std_logic_vector(7 downto 0);
-        busy    : out std_logic
+        ready   : out std_logic;
+        done    : in std_logic
     );
 end UART_RX;
 
@@ -17,14 +18,19 @@ architecture rtl of UART_RX is
     signal rx_flg       : std_logic := '0';
     signal prscl        : integer range 0 to 104 := 0;
     signal index        : integer range 0 to 9 := 0;
+    signal ready_tmp    : std_logic := '0';
 begin
     process(clk)
     begin
         if clk'event and clk = '1' then
+            if done = '1' then
+                ready_tmp <= '0';
+            end if;
+            
             if rx_flg = '0' and rx_line = '0' then
                 index <= 0;
                 prscl <= 0;
-                busy <= '1';
+                ready_tmp <= '0';
                 rx_flg <= '1';
             end if;
          
@@ -45,11 +51,12 @@ begin
                             data <= (others=>'0');
                         end if;
                         rx_flg <= '0';
-                        busy <= '0';
+                        ready_tmp <= '1';
                     end if;
                 end if;
             end if;
         end if;
     end process;
+    ready <= ready_tmp;
 end architecture rtl;
 

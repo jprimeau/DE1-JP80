@@ -2834,7 +2834,7 @@ TRANSITION_LIST("data_in[0]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 1 FOR 30000.0;
+		LEVEL 0 FOR 30000.0;
 	}
 }
 
@@ -7268,7 +7268,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 250;
 	TREE_LEVEL = 0;
 	CHILDREN = 251, 252, 253, 254, 255, 256, 257, 258;
@@ -7278,7 +7278,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[7]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 251;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7288,7 +7288,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[6]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 252;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7298,7 +7298,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[5]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 253;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7308,7 +7308,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[4]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 254;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7318,7 +7318,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[3]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 255;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7328,7 +7328,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[2]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 256;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7338,7 +7338,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[1]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 257;
 	TREE_LEVEL = 1;
 	PARENT = 250;
@@ -7348,7 +7348,7 @@ DISPLAY_LINE
 {
 	CHANNEL = "flag_out[0]";
 	EXPAND_STATUS = COLLAPSED;
-	RADIX = Hexadecimal;
+	RADIX = Binary;
 	TREE_INDEX = 258;
 	TREE_LEVEL = 1;
 	PARENT = 250;

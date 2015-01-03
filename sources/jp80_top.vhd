@@ -87,19 +87,19 @@ architecture behv of jp80_top is
 
     type t_ram is array (0 to 255) of t_data;
     signal ram : t_ram := (
-        x"31",x"FF",x"00",x"21",x"4E",x"00",x"CD",x"27", -- 0000
-        x"00",x"CD",x"37",x"00",x"CD",x"10",x"00",x"76", -- 0008
-        x"DB",x"03",x"E6",x"02",x"3E",x"FF",x"D3",x"01", -- 0010
-        x"C2",x"10",x"00",x"3E",x"00",x"D3",x"01",x"DB", -- 0018
-        x"02",x"CD",x"42",x"00",x"C3",x"10",x"00",x"DB", -- 0020
-        x"03",x"E6",x"01",x"C2",x"27",x"00",x"7E",x"A7", -- 0028
-        x"C8",x"D3",x"02",x"23",x"C3",x"27",x"00",x"3E", -- 0030
-        x"0D",x"CD",x"42",x"00",x"3E",x"0A",x"CD",x"42", -- 0038
-        x"00",x"C9",x"47",x"DB",x"03",x"E6",x"01",x"C2", -- 0040
-        x"43",x"00",x"78",x"D3",x"02",x"C9",x"48",x"65", -- 0048
-        x"6C",x"6C",x"6F",x"2C",x"20",x"77",x"6F",x"72", -- 0050
-        x"6C",x"64",x"21",x"00",x"FF",x"FF",x"FF",x"FF", -- 0058
-        x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0060
+        x"31",x"FF",x"00",x"21",x"5A",x"00",x"CD",x"33", -- 0000
+        x"00",x"CD",x"43",x"00",x"21",x"A0",x"00",x"CD", -- 0008
+        x"13",x"00",x"76",x"0E",x"00",x"7C",x"57",x"7D", -- 0010
+        x"5F",x"06",x"00",x"DB",x"03",x"E6",x"02",x"CA", -- 0018
+        x"1B",x"00",x"DB",x"02",x"CD",x"4E",x"00",x"3E", -- 0020
+        x"02",x"D3",x"03",x"13",x"0C",x"3E",x"00",x"12", -- 0028
+        x"C3",x"1B",x"00",x"DB",x"03",x"E6",x"01",x"CA", -- 0030
+        x"33",x"00",x"7E",x"A7",x"C8",x"D3",x"02",x"23", -- 0038
+        x"C3",x"33",x"00",x"3E",x"0D",x"CD",x"4E",x"00", -- 0040
+        x"3E",x"0A",x"CD",x"4E",x"00",x"C9",x"47",x"DB", -- 0048
+        x"03",x"E6",x"01",x"CA",x"4F",x"00",x"78",x"D3", -- 0050
+        x"02",x"C9",x"48",x"65",x"6C",x"6C",x"6F",x"2C", -- 0058
+        x"20",x"77",x"6F",x"72",x"6C",x"64",x"21",x"00", -- 0060
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0068
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0070
         x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF",x"FF", -- 0078
@@ -130,21 +130,21 @@ architecture behv of jp80_top is
     signal cpu_reqio        : t_wire;
     
     -- BEGIN: SIMULATION ONLY
---    signal cpu_con          : t_control := (others => '0');
---    signal cpu_addr_bus     : t_address;
---    signal cpu_data_bus     : t_data;
---    signal cpu_pc           : t_address;
---    signal cpu_acc          : t_data;
---    signal cpu_bc           : t_16bit;
---    signal cpu_de           : t_16bit;
---    signal cpu_hl           : t_16bit;
---    signal cpu_sp           : t_16bit;
---    signal cpu_flag         : t_8bit;
---    signal cpu_ir           : t_8bit;
---    signal cpu_tmp          : t_16bit;
---    signal cpu_alu_a        : t_data;
---    signal cpu_alu_b        : t_data;
---    signal cpu_alu          : t_data;
+    signal cpu_con          : t_control := (others => '0');
+    signal cpu_addr_bus     : t_address;
+    signal cpu_data_bus     : t_data;
+    signal cpu_pc           : t_address;
+    signal cpu_acc          : t_data;
+    signal cpu_bc           : t_16bit;
+    signal cpu_de           : t_16bit;
+    signal cpu_hl           : t_16bit;
+    signal cpu_sp           : t_16bit;
+    signal cpu_flag         : t_8bit;
+    signal cpu_ir           : t_8bit;
+    signal cpu_tmp          : t_16bit;
+    signal cpu_alu_a        : t_data;
+    signal cpu_alu_b        : t_data;
+    signal cpu_alu          : t_data;
     -- END: SIMULATION ONLY
     
 begin

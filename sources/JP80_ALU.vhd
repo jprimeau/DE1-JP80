@@ -59,12 +59,15 @@ begin
         when "0100" => -- ANA
             tmp_q := tmp_a and tmp_b;
             tmp_c := '0';
+            check_z := '1';
         when "0101" => -- XRA
             tmp_q := tmp_a xor tmp_b;
             tmp_c := '0';
+            check_z := '1';
         when "0110" => -- ORA
             tmp_q := tmp_a or tmp_b;
             tmp_c := '0';
+            check_z := '1';
             
 --        when "1000" => -- RLC
 --            tmp_q := to_stdlogicvector(to_bitvector(a) rol 1);

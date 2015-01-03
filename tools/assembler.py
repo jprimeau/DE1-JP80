@@ -269,7 +269,7 @@ for dline in dlines:
 
     PrintListLine(dline)
 
-print labels
+#print labels
 
 # x"C3",x"18",x"00",x"FF",x"FF",x"FF",x"FF",x"FF", -- 00H
 num = 0

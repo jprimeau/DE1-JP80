@@ -8,7 +8,7 @@ entity UART_TX is
         clk     : in std_logic;
         start   : in std_logic;
         data    : in std_logic_vector(7 downto 0);
-        busy    : out std_logic;
+        ready   : out std_logic;
         tx_line : out std_logic
     );
 end UART_TX;
@@ -18,13 +18,14 @@ architecture rtl of UART_TX is
     signal index        : integer range 0 to 9 := 0;
     signal full_data    : std_logic_vector(9 downto 0);
     signal tx_flg       : std_logic := '0';
+    signal ready_tmp    : std_logic := '1';
 begin
     process(clk)
     begin
         if clk'event and clk = '1' then
             if tx_flg = '0' and start = '1' then
                 tx_flg <= '1';
-                busy <= '1';
+                ready_tmp <= '0';
                 full_data(0) <= '0';
                 full_data(9) <= '1';
                 full_data(8 downto 1) <= data;
@@ -43,12 +44,13 @@ begin
                         index <= index + 1;
                     else
                         tx_flg <= '0';
-                        busy <= '0';
+                        ready_tmp <= '1';
                         index <= 0;
                     end if;
                 end if;
             end if;
         end if;
     end process;
+    ready <= ready_tmp;
 end architecture rtl;
 

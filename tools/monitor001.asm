@@ -17,9 +17,6 @@ echo_char:          IN      3                   ;get status
                     JZ      echo_char           ;not ready, loop
                     IN      2                   ;get char
                     CALL    write_char          ;put char on screen
-                    ;INR     B
-                    ;MOV     A,B
-                    ;OUT     0
                     MVI     A,002h
                     OUT     3
                     INX     D                   ;point to next space in buffer
